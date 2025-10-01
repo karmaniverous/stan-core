@@ -1,180 +1,137 @@
-> **_STAN is a CLI that bridges your IDE with your favorite LLM and drives a rapid, powerful, low-friction, design-first iterative development process. Real-world AI-assisted development for professional engineers!_**
+> Engine for STAN — programmatic archiving/diffing, patch application, config loading, file selection, and imports staging. No CLI/TTY concerns.
 
-# STAN — STAN Tames Autoregressive Nonsense
+# @karmaniverous/stan-core (engine)
 
-[![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) <!-- TYPEDOC_EXCLUDE --> [![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/stan) [![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/CHANGELOG.md)<!-- /TYPEDOC_EXCLUDE --> [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/LICENSE.md)
+[![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](./LICENSE) [Changelog](./CHANGELOG.md)
 
-![STAN Loop](https://github.com/karmaniverous/stan-core/raw/main/assets/stan-loop.png)
+This package exposes the STAN engine as a library:
 
-STAN produces a single source of truth for AI‑assisted development: a tarball of your repo plus deterministic text outputs from your build/test/lint/typecheck scripts.
+- File selection (gitignore + includes/excludes + reserved workspace rules)
+- Archiving: full archive.tar and diff archive.diff.tar (binary screening)
+- Patch engine: worktree‑first git apply cascade with jsdiff fallback
+- File Ops: safe mv/rm/rmdir/mkdirp block as “pre‑ops”
+- Config loading/validation (stan.config.yml|json)
+- Imports staging under <stanPath>/imports/<label>/…
+- Response‑format validator (optional)
 
-You get portable, auditable, reproducible context—locally and in CI.
+For the CLI and TTY runner, see @karmaniverous/stan-cli.
 
-Because a freaking chatbot shouldn’t gaslight your code.
+## Install
 
----
-
-## Quick start
-
-### 1. Install
-
-```
-npm i -g @karmaniverous/stan-core
-# or
-pnpm add -g @karmaniverous/stan-core
-# or
-yarn global add @karmaniverous/stan-core
+```bash
+pnpm add @karmaniverous/stan-core
+# or npm i @karmaniverous/stan-core
 ```
 
-### 2. Initialize in your repo
+Node: >= 20
 
-```
-stan init
-```
+## Quick examples
 
-- Creates stan.config.yml and scaffolds STAN docs under <stanPath> (default .stan).
-- Adds sensible .gitignore entries for <stanPath> subfolders.
+Create a full archive (binary‑safe) and a diff archive:
 
-### 3. Run the loop
+```ts
+import { createArchive } from '@karmaniverous/stan-core/stan';
+import { createArchiveDiff } from '@karmaniverous/stan-core/stan/diff';
 
-- **Build & Snapshot**
+const cwd = process.cwd();
+const stanPath = '.stan';
 
-  Make any changes you like to your code. Then snapshot your code base and outputs from test, build & diagnostic scripts with:
+// Full archive (excludes <stanPath>/diff and binaries; include outputs with { includeOutputDir: true })
+const fullTar = await createArchive(cwd, stanPath, { includeOutputDir: false });
 
-  ```
-  stan run
-  ```
-
-- **Share & Baseline**
-
-  Commit your changes.
-
-  Attach `.stan/output/archive.tar` and your script outputs to your chat along with your requirements or comments. Or nothing: STAN will just advance your current dev plan. Use the smaller `archive.diff.tar` in subsequent turns to make the most your context window.
-
-  Then baseline your next differential archive with:
-
-  ```
-  stan snap
-  ```
-
-- **Discuss & Patch**
-
-  Iterate in chat until you have a set of patches that advance your dev plan in the direction you want to go. These will include updates to your requirements and your dev plan, as well as a detailed commit message!
-
-  If you exhaust your context window, say `handoff`, copy the resulting document, and paste it into a new chat thread along with your latest artifacts.
-
-  Apply each patch with:
-
-  ```
-  stan patch
-  ```
-
-- **Repeat**
-
-  When all your tests are passing and all your requirements are met, you're done!
-
----
-
-## Why STAN?
-
-- **Reproducible context:** one archive captures exactly the files to read.
-- **Structured outputs:** test/lint/typecheck/build logs are deterministic and easy to diff.
-- **Always‑on diffs:** STAN writes archive.diff.tar for changed files automatically.
-- **Preflight guardrails:** nudges you to update prompts when the baseline changes.
-- **Patch workflow:** paste a unified diff or read from a file; STAN applies it safely and opens modified files in your editor. If a patch fails, STAN provides an improved patch and a full listing just for good measure.
-
----
-
-## Configuration (stan.config.yml)
-
-Minimal example:
-
-```
-stanPath: .stan
-includes: []
-excludes: []
-scripts:
-  build: npm run build
-  lint: npm run lint
-  test: npm run test
-  typecheck: npm run typecheck
+// Diff archive (changes vs snapshot under <stanPath>/diff)
+const { diffPath } = await createArchiveDiff({
+  cwd,
+  stanPath,
+  baseName: 'archive',
+  includeOutputDirInDiff: false,
+  updateSnapshot: 'createIfMissing',
+});
 ```
 
-See [STAN Configuration](https://docs.karmanivero.us/stan/documents/Stan_Configuration.html) for more!
+Apply a unified diff (with safe fallback) and/or run File Ops:
 
----
+```ts
+import {
+  applyPatchPipeline,
+  detectAndCleanPatch,
+  executeFileOps,
+  parseFileOpsBlock,
+} from '@karmaniverous/stan-core/stan/patch';
 
-## Commands at a glance
+const cwd = process.cwd();
 
-- **Run** (build & snapshot)
-  ```bash
-  stan run                 # runs all configured scripts and writes archives
-  stan run -s test         # run only “test”
-  stan run -S              # do not run scripts (combine with -A/-p)
-  stan run -x test         # run all except “test”
-  stan run -q -s lint test # sequential run subset in provided order
-  stan run -c -s test      # combine archives & outputs
-  stan run -A              # do not create archives
-  stan run -p              # print plan only, no side effects
-  stan run -P              # do not print the plan first
-  ```
-- **Snap** (share & baseline)
-  ```bash
-  stan snap  stan snap undo | redo | set <index> | info
-  stan snap -s # stash before snap; pop after
-  ```
-- **Patch** (discuss & patch)
-  ```bash
-  stan patch               # from clipboard
-  stan patch --check       # validate only
-  stan patch -f file.patch # from file
-  ```
+// File Ops (pre‑ops) example
+const plan = parseFileOpsBlock([
+  '### File Ops',
+  'mkdirp src/new/dir',
+  'mv src/old.txt src/new/dir/new.txt',
+].join('\n'));
+if (plan.errors.length) throw new Error(plan.errors.join('\n'));
+await executeFileOps(cwd, plan.ops, false);
 
-See [CLI Usage & Examples](https://docs.karmanivero.us/stan/documents/CLI_Usage___Examples.html) for more!
+// Unified diff example (from a string)
+const cleaned = detectAndCleanPatch(`
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1,1 +1,1 @@
+-old
++new
+`);
+const out = await applyPatchPipeline({
+  cwd,
+  patchAbs: '/dev/null', // absolute path to a saved .patch file (not required for js fallback)
+  cleaned,
+  check: false, // true => sandbox write
+});
+if (!out.ok) {
+  // Inspect out.result.captures (git attempts) and out.js?.failed (jsdiff reasons)
+}
+```
 
----
+Load and validate config (stan.config.yml|json), including cliDefaults mapping:
 
-## Documentation
+```ts
+import { loadConfig } from '@karmaniverous/stan-core/stan/config';
+const cfg = await loadConfig(process.cwd());
+// cfg.stanPath, cfg.scripts, cfg.includes/excludes, cfg.cliDefaults, ...
+```
 
-- [API reference](https://docs.karmanivero.us/stan)
-- Guides:
-  - [Getting Started](https://docs.karmanivero.us/stan/documents/Getting_Started.html) — Install the CLI, initialize a repo, attach archives in chat, and use the bootloader with TypingMind (GPT‑5, High reasoning, 128k tokens).
-  - [The STAN Loop](https://docs.karmanivero.us/stan/documents/The_STAN_Loop.html) — How Build & Snapshot → Share & Baseline → Discuss & Patch work together.
-  - [CLI Usage & Examples](https://docs.karmanivero.us/stan/documents/CLI_Usage___Examples.html) — Common flags and invocation patterns, including `-p`, `-P`, `-S`, `-A`, and `-c`.
-  - [Stan Configuration](https://docs.karmanivero.us/stan/documents/Stan_Configuration.html) — All config keys, includes/excludes semantics, and phase‑scoped CLI defaults.
-  - [Patch Workflow & Diagnostics](https://docs.karmanivero.us/stan/documents/Patch_Workflow___Diagnostics.html) — Unified diff policy, diagnostics envelopes, and assistant expectations.
-  - [Archives & Snapshots](https://docs.karmanivero.us/stan/documents/Archives___Snapshots.html) — What goes into `archive.tar`/`archive.diff.tar`, combine mode, and snapshot history. Additional references:
+Stage external imports under <stanPath>/imports/<label>/… before archiving:
 
-- The following documents are maintained by STAN and live under `<stanPath>/system/` in your repo:
-  - `stan.project.md` contains your evolving project requirements.
-  - `stan-todo.md` contains your evolving development plan.
-- Case studies:
-  - [rrstack](https://docs.karmanivero.us/stan/documents/Case_Study_%E2%80%94_rrstack.html) — how STAN enabled rapid development in a couple of days.
-- Comparison: [Why STAN Over Alternatives?](https://docs.karmanivero.us/stan/documents/Why_STAN_Over_Alternatives_.html)
-- Tutorial: [Quickstart (End‑to‑End)](<https://docs.karmanivero.us/stan/documents/Tutorial_%E2%80%94_Quickstart_(End%E2%80%91to%E2%80%91End).html>)
-- FAQ: answers to common questions and pitfalls.
-- Contributing: [Dev Quickstart](https://docs.karmanivero.us/stan/documents/Contributing_%E2%80%94_Dev_Quickstart.html)
+```ts
+import { prepareImports } from '@karmaniverous/stan-core/stan';
+await prepareImports({
+  cwd: process.cwd(),
+  stanPath: '.stan',
+  map: {
+    '@scope/docs': ['external/docs/**/*.md'],
+  },
+});
+```
 
----
+Validate assistant responses (optional utility):
 
-## Troubleshooting
+```ts
+import { validateResponseMessage } from '@karmaniverous/stan-core/stan';
+const res = validateResponseMessage(replyBody);
+if (!res.ok) console.error(res.errors.join('\n'));
+```
 
-- “system prompt missing”: ensure <stanPath>/system/stan.system.md is included in the attached archive; otherwise attach it directly as stan.system.md.
-- Patch failures: use --check to validate first; if a patch fails, STAN writes a concise diagnostics envelope (attempt summaries + jsdiff reasons) and copies it to your clipboard (stdout fallback) so you can get a corrected patch.
-- Large files: STAN may flag very long source files (~300+ LOC) and ask for a split plan before proceeding.
+## API surface
 
----
+Top‑level (via `import '@karmaniverous/stan-core/stan'`):
 
-## Contributing
+- Archiving/diff/snapshot: `createArchive`, `createArchiveDiff`, `writeArchiveSnapshot`
+- Selection/FS: `listFiles`, `filterFiles`
+- Patch engine: `applyPatchPipeline`, `detectAndCleanPatch`, `executeFileOps`, `parseFileOpsBlock`
+- Imports: `prepareImports`
+- Config: `loadConfig`, `loadConfigSync`, `resolveStanPath`, `resolveStanPathSync`
+- Validation: `validateResponseMessage`
 
-- See the [Contributing — Dev Quickstart](https://docs.karmanivero.us/stan/documents/Contributing_%E2%80%94_Dev_Quickstart.html) for local setup and workflow tips.
-
-- Keep the loop simple. Each stage ends with one command.
-- Favor small, testable modules; treat >300 LOC as design feedback.
-- Improve the project prompt (<stanPath>/system/stan.project.md) when repo‑specific policies evolve.
-
----
+See CHANGELOG for behavior changes. Typedoc site is generated from source.
 
 ## License
 
-BSD‑3‑Clause
+BSD‑3‑Clause

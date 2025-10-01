@@ -17,7 +17,7 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
   - [x] Replace colored archive warnings with colorless logging in core.
   - [x] Narrow public exports to engine-only (drop run/help).
   - [ ] Follow-up: eliminate remaining console I/O from core APIs; return warnings/notes via return values only.
-  - [ ] Follow-up: expose patch pipeline/file-ops/types explicitly from the top-level barrel and update README/docs to reflect engine usage.
+  - [x] Follow-up: expose patch pipeline/file-ops/types explicitly from the top-level barrel and update README/docs to reflect engine usage.
   - [ ] Follow-up: confirm no engine modules depend on package-directory/module root in runtime paths (trim if unnecessary).
   - [ ] Follow-up: move CLI behavior/tests into stan-cli repo and wire to stan-core package.
 
@@ -83,6 +83,10 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 
 - Tooling housekeeping:
   - knip: removed @types/eslint__js from ignoreDependencies; unresolved import warnings resolved with test removals and patch barrel fix.
+
+- Developer-facing docs & exports:
+  - Exposed patch engine and imports staging from top-level barrel.
+  - Refreshed README for engine-only usage; updated package description/keywords.
 
 ---
 

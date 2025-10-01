@@ -21,7 +21,7 @@
     "zod": "^3.23.8",
     "yaml": "^2.8.1"
   },
-  "description": "STAN is a CLI that bridges your IDE with your favorite LLM and drives a rapid, powerful, low-friction, design-first iterative development process. Real-world AI-assisted development for professional engineers!",
+  "description": "Engine for STAN — programmatic archiving/diffing/snapshotting, patch application, config loading, selection, and imports staging. No CLI/TTY concerns.",
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.49.0",
     "@eslint/js": "^9.35.0",
@@ -82,10 +82,9 @@
     "dist"
   ],
   "keywords": [
-    "ai",
-    "ai-assisted",
+    "engine",
+    "library",
     "ai-assisted-development",
-    "cli",
     "snapshot",
     "archive",
     "tar",
@@ -93,12 +92,7 @@
     "patch",
     "code-review",
     "context",
-    "typescript",
-    "typedoc",
-    "eslint",
-    "prettier",
-    "rollup",
-    "vitest"
+    "typescript"
   ],
   "license": "BSD-3-Clause",
   "main": "dist/cjs/index.js",
