@@ -83,6 +83,7 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 
 - Tooling housekeeping:
   - knip: removed @types/eslint__js from ignoreDependencies; unresolved import warnings resolved with test removals and patch barrel fix.
+  - Engine boundary hardening: refactored patch source resolver to accept an injected `clipboardRead` function (no direct clipboard dependency in core); tests updated accordingly.
 
 - Developer-facing docs & exports:
   - Exposed patch engine and imports staging from top-level barrel.

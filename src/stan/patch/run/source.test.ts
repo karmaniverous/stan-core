@@ -4,16 +4,10 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('clipboardy', () => ({
-  __esModule: true,
-  default: {
-    read: vi.fn(async () => 'CLIPBOARD_CONTENT'),
-  },
-}));
-
 import { readPatchSource } from './source';
 describe('readPatchSource precedence and behaviors', () => {
   let dir: string;
+  const clip = async () => 'CLIPBOARD_CONTENT';
 
   beforeEach(async () => {
     dir = await mkdtemp(path.join(tmpdir(), 'stan-source-'));
@@ -31,7 +25,9 @@ describe('readPatchSource precedence and behaviors', () => {
   });
 
   it('uses argument when provided (highest precedence)', async () => {
-    const res = await readPatchSource(dir, 'ARG_PATCH');
+    const res = await readPatchSource(dir, 'ARG_PATCH', {
+      clipboardRead: clip,
+    });
     expect(res.kind).toBe('argument');
     expect(res.raw).toBe('ARG_PATCH');
   });
@@ -40,7 +36,10 @@ describe('readPatchSource precedence and behaviors', () => {
     const rel = 'test.patch';
     const abs = path.join(dir, rel);
     await writeFile(abs, 'FILE_PATCH\n', 'utf8');
-    const res = await readPatchSource(dir, undefined, { file: rel });
+    const res = await readPatchSource(dir, undefined, {
+      file: rel,
+      clipboardRead: clip,
+    });
     expect(res.kind).toBe('file');
     expect(res.filePathRel).toBe(rel);
     const body = await readFile(abs, 'utf8');
@@ -48,13 +47,16 @@ describe('readPatchSource precedence and behaviors', () => {
   });
 
   it('treats -f without filename as clipboard source', async () => {
-    const res = await readPatchSource(dir, undefined, { file: true });
+    const res = await readPatchSource(dir, undefined, {
+      file: true,
+      clipboardRead: clip,
+    });
     expect(res.kind).toBe('clipboard');
     expect(res.raw).toBe('CLIPBOARD_CONTENT');
   });
 
   it('defaults to clipboard when no inputs provided', async () => {
-    const res = await readPatchSource(dir);
+    const res = await readPatchSource(dir, undefined, { clipboardRead: clip });
     expect(res.kind).toBe('clipboard');
     expect(res.raw).toBe('CLIPBOARD_CONTENT');
   });
@@ -65,6 +67,7 @@ describe('readPatchSource precedence and behaviors', () => {
     await writeFile(abs, 'DEFAULT_FILE_PATCH\n', 'utf8');
     const res = await readPatchSource(dir, undefined, {
       defaultFile: rel,
+      clipboardRead: clip,
     });
     expect(res.kind).toBe('file');
     expect(res.filePathRel).toBe(rel);
@@ -79,6 +82,7 @@ describe('readPatchSource precedence and behaviors', () => {
     const res = await readPatchSource(dir, undefined, {
       defaultFile: rel,
       ignoreDefaultFile: true,
+      clipboardRead: clip,
     });
     expect(res.kind).toBe('clipboard');
     expect(res.raw).toBe('CLIPBOARD_CONTENT');

@@ -31,7 +31,7 @@ export const readPatchSource = async (
     file?: string | boolean;
     /** Default patch file path to use when no argument/-f provided and not ignored. */
     defaultFile?: string | null | undefined;
-    /** When true, ignore configured default file (forces clipboard unless arg/-f given). */
+    /** When true, ignore configured default patch file (forces clipboard unless arg/-f provided). */
     ignoreDefaultFile?: boolean;
   },
 ): Promise<PatchSourceResult> => {
