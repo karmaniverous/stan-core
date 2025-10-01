@@ -18,20 +18,7 @@
   "hostedBaseUrl": "https://docs.karmanivero.us/stan",
   "out": "./docs/",
   "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
-  "projectDocuments": [
-    "./docs-src/getting-started.md",
-    "./docs-src/the-stan-loop.md",
-    "./docs-src/cli-examples.md",
-    "./docs-src/configuration.md",
-    "./docs-src/patch-workflow.md",
-    "./docs-src/archives-and-snapshots.md",
-    "./docs-src/tutorial-quickstart.md",
-    "./docs-src/why-stan-over-alternatives.md",
-    "./docs-src/case-studies/rrstack.md",
-    "./contributing.md",
-    "./docs-src/faq.md",
-    "./CHANGELOG.md"
-  ],
+  "projectDocuments": ["./CHANGELOG.md"],
   "navigationLinks": {
     "GitHub": "https://github.com/karmaniverous/stan-core"
   },

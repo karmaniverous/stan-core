@@ -10,13 +10,26 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 
 ### Next up (priority order)
 
+- Core/CLI decomposition — phase 1 (stan-core):
+  - [x] Remove CLI adapters and runner/TTY UI from stan-core (src/cli, src/stan/run, preflight/init/snap/help/version, patch CLI service and open).
+  - [x] Stop building CLI in Rollup; build library and types only.
+  - [x] Remove CLI runtime deps from package.json; drop “stan” bin/script.
+  - [x] Replace colored archive warnings with colorless logging in core.
+  - [x] Narrow public exports to engine-only (drop run/help).
+  - [ ] Follow-up: eliminate remaining console I/O from core APIs; return warnings/notes via return values only.
+  - [ ] Follow-up: expose patch pipeline/file-ops/types explicitly from the top-level barrel and update README/docs to reflect engine usage.
+  - [ ] Follow-up: confirm no engine modules depend on package-directory/module root in runtime paths (trim if unnecessary).
+  - [ ] Follow-up: move CLI behavior/tests into stan-cli repo and wire to stan-core package.
+
+---
+
 - Extract engine package scaffolding
   - Create a new repo/package “@karmaniverous/stan-core”.
   - Copy engine modules:
     - config/, fs.ts, fs/reserved.ts, paths.ts
     - archive.ts (+ archive/constants.ts), archive/util.ts (return warnings)
     - diff.ts, snap/{capture,shared,context}.ts
-    - patch/\*\* (apply, jsdiff, detect, headers, parse, file-ops, diag/util, run/pipeline, util/fs)
+    - patch/** (apply, jsdiff, detect, headers, parse, file-ops, diag/util, run/pipeline, util/fs)
     - imports/stage.ts
     - validate/response.ts (optional export)
   - Remove CLI/runner/process/TTY concerns.
@@ -55,6 +68,22 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 - Performance profiling for large repos (selection and tar streaming).
 - Optional logger injection pattern (future) to support structured logging.
 
+### Completed (recent)
+
+- Decomposition (phase 1, core):
+  - Removed CLI adapters and runner from stan-core; pruned CLI-only services/tests.
+  - Simplified Rollup build to library + types; trimmed CLI bin/script and deps.
+  - Core archive warnings now log without color (no chalk).
+
+- Split hygiene (core):
+  - Removed CLI/runner tests from core: src/stan/diff.test.ts, src/stan/run.combine.test.ts, src/stan/run.plan.test.ts, src/stan/run.test.ts.
+
+- Docs pruning (core):
+  - Removed CLI-focused docs under docs-src/; restricted typedoc project documents to CHANGELOG only.
+
+- Tooling housekeeping:
+  - knip: removed @types/eslint__js from ignoreDependencies; unresolved import warnings resolved with test removals and patch barrel fix.
+
 ---
 
 ## Track B — stan-cli (CLI and runner)
@@ -92,12 +121,3 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 
 - Live table final-frame flush audit for edge cases.
 - Editor-open gating policy doc (“test mode” and force‑open).
-
----
-
-## Completed (recent)
-
-- Unified diagnostics envelope and follow-up options clarified.
-- Response-format validator improvements and WARN parity across UIs.
-- Windows EBUSY mitigation in tests and cancellation paths.
-- Imports staging and selection parity improvements.

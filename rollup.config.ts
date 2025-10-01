@@ -90,7 +90,6 @@ const outCommon = (dest: string): OutputOptions[] => [
   { dir: `${dest}/mjs`, format: 'esm', sourcemap: false },
   { dir: `${dest}/cjs`, format: 'cjs', sourcemap: false },
 ];
-
 export const buildLibrary = (dest: string): RollupOptions => ({
   input: 'src/index.ts',
   output: outCommon(dest),
@@ -99,24 +98,6 @@ export const buildLibrary = (dest: string): RollupOptions => ({
     // Copy docs once from library config
     [copyDocsPlugin(dest)],
   ),
-});
-
-const discoverCliEntries = (): string[] => {
-  const candidates = ['src/cli/stan/index.ts', 'src/cli/stan/stan.ts'];
-  return candidates.filter((p) => fs.existsSync(p));
-};
-
-export const buildCli = (dest: string): RollupOptions => ({
-  input: discoverCliEntries(),
-  output: [
-    {
-      dir: `${dest}/cli`,
-      format: 'esm',
-      sourcemap: false,
-      banner: '#!/usr/bin/env node',
-    },
-  ],
-  ...commonInputOptions(false),
 });
 
 export const buildTypes = (dest: string): RollupOptions => ({
@@ -128,5 +109,5 @@ export const buildTypes = (dest: string): RollupOptions => ({
 
 export default [
   buildLibrary(outputPath),
-  buildCli(outputPath),  buildTypes(outputPath),
-];
+  buildTypes(outputPath),
+];
