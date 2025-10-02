@@ -36,6 +36,12 @@ A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is i
   - [ ] Remove TTY/presentation helpers from core:
         - Delete `src/stan/util/{color.ts,status.ts,time.ts}` and ensure they are not exported.
 
+### Completed (recent)
+
+- Engine boundary hardening (clipboard):
+  - Removed clipboard usage from core patch source resolver; no `clipboardy` import in engine.
+  - Added injected `clipboardRead` option for callers; tests updated to pass a stub.
+
 - Public API stability for swappable core
   - [ ] Export `CORE_VERSION` constant and verify that the public surface matches the spec below (duck-typed by CLI at load time).
   - [ ] Keep prompt helpers exported and quiet:

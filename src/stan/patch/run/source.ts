@@ -16,13 +16,6 @@ export type PatchSourceResult = {
 const repoJoin = (cwd: string, p: string): string =>
   p.startsWith('/') ? path.join(cwd, p.slice(1)) : path.resolve(cwd, p);
 
-const readFromClipboard = async (): Promise<string> => {
-  const { default: clipboardy } = (await import('clipboardy')) as {
-    default: { read: () => Promise<string> };
-  };
-  return clipboardy.read();
-};
-
 /** Read patch source with CLI-friendly logging performed by the caller. */
 export const readPatchSource = async (
   cwd: string,
@@ -33,6 +26,8 @@ export const readPatchSource = async (
     defaultFile?: string | null | undefined;
     /** When true, ignore configured default patch file (forces clipboard unless arg/-f provided). */
     ignoreDefaultFile?: boolean;
+    /** Injection point for clipboard reads (adapter/CLI provides). */
+    clipboardRead?: () => Promise<string>;
   },
 ): Promise<PatchSourceResult> => {
   // Resolve source precedence (argument -> file flag -> clipboard)
@@ -44,7 +39,12 @@ export const readPatchSource = async (
     const fileRel = typeof opt === 'string' && opt.length > 0 ? opt : undefined;
     if (!fileRel) {
       // Treat as clipboard when -f/--file present without a name
-      return { kind: 'clipboard', raw: await readFromClipboard() };
+      if (typeof opts?.clipboardRead !== 'function') {
+        throw new Error(
+          'clipboardRead not provided; cannot read clipboard in engine',
+        );
+      }
+      return { kind: 'clipboard', raw: await opts.clipboardRead() };
     }
     const absFile = repoJoin(cwd, fileRel);
     const raw = await readFile(absFile, 'utf8');
@@ -57,7 +57,12 @@ export const readPatchSource = async (
   }
   // -F/--no-file: ignore default file and use clipboard
   if (opts?.ignoreDefaultFile) {
-    return { kind: 'clipboard', raw: await readFromClipboard() };
+    if (typeof opts.clipboardRead !== 'function') {
+      throw new Error(
+        'clipboardRead not provided; cannot read clipboard in engine',
+      );
+    }
+    return { kind: 'clipboard', raw: await opts.clipboardRead() };
   }
   // Default file (from config) if present; else clipboard
   const defaultFile =
@@ -73,5 +78,10 @@ export const readPatchSource = async (
       filePathRel: path.relative(cwd, abs).replace(/\\/g, '/'),
     };
   }
-  return { kind: 'clipboard', raw: await readFromClipboard() };
+  if (typeof opts?.clipboardRead !== 'function') {
+    throw new Error(
+      'clipboardRead not provided; cannot read clipboard in engine',
+    );
+  }
+  return { kind: 'clipboard', raw: await opts.clipboardRead() };
 };
