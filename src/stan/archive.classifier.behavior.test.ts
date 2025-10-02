@@ -34,14 +34,12 @@ vi.mock('tar', () => ({
   },
 }));
 
-describe('createArchive integrates classifier (excludes binaries, logs warnings)', () => {
+describe('createArchive integrates classifier (excludes binaries, surfaces warnings via callback)', () => {
   let dir: string;
-  let logSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
     dir = await mkdtemp(path.join(os.tmpdir(), 'stan-arch-class-'));
     calls.length = 0;
-    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(async () => {
@@ -49,7 +47,7 @@ describe('createArchive integrates classifier (excludes binaries, logs warnings)
     vi.restoreAllMocks();
   });
 
-  it('non-combine: excludes binaries and logs archive warnings to console', async () => {
+  it('non-combine: excludes binaries and reports archive warnings via onArchiveWarnings', async () => {
     const out = 'out';
     // Prepare a few files in repo root
     await writeFile(
@@ -60,7 +58,13 @@ describe('createArchive integrates classifier (excludes binaries, logs warnings)
     const big = Array.from({ length: 3100 }, () => 'x').join('\n') + '\n';
     await writeFile(path.join(dir, 'big.txt'), big, 'utf8');
 
-    await createArchive(dir, out, { includeOutputDir: false });
+    const seen: string[] = [];
+    await createArchive(dir, out, {
+      includeOutputDir: false,
+      onArchiveWarnings: (t) => {
+        seen.push(t);
+      },
+    });
 
     const regCall = calls.find((c) => c.file.endsWith('archive.tar'));
     expect(regCall).toBeTruthy();
@@ -70,9 +74,8 @@ describe('createArchive integrates classifier (excludes binaries, logs warnings)
     expect(files).not.toEqual(expect.arrayContaining(['binary.bin']));
     // text included
     expect(files).toEqual(expect.arrayContaining(['small.txt', 'big.txt']));
-    // warnings logged to console
-    const logged = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
-    expect(logged).toMatch(/archive warnings/);
-    expect(logged).toMatch(/Binary files excluded|Large text files/);
+    // warnings surfaced via callback (engine does not log)
+    const body = seen.join('\n');
+    expect(body).toMatch(/Binary files excluded|Large text files/);
   });
 });

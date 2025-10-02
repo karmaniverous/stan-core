@@ -15,7 +15,7 @@ import { copyFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { ARCHIVE_PREV_TAR } from './archive/constants';
-import { logArchiveWarnings, makeTarFilter } from './archive/util';
+import { makeTarFilter } from './archive/util';
 import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 
@@ -46,6 +46,8 @@ export type CreateArchiveOptions = {
    * workspace rules. These are applied only when `includes` is empty.
    */
   excludes?: string[];
+  /** Optional callback for archive classifier warnings (engine remains silent by default). */
+  onArchiveWarnings?: (text: string) => void;
 };
 
 /** Create `stanPath/output/archive.tar` (or custom file name) from the repo root. */
@@ -93,7 +95,11 @@ export const createArchive = async (
   const { textFiles, warningsBody } = await classifyForArchive(cwd, files);
   const filesForArchive = textFiles;
 
-  logArchiveWarnings(warningsBody ?? '');
+  // Surface warnings via optional callback (no console I/O in core)
+  const trimmed = (warningsBody ?? '').trim();
+  if (trimmed && trimmed !== 'No archive warnings.') {
+    options.onArchiveWarnings?.(trimmed);
+  }
 
   const tar = (await import('tar')) as unknown as TarLike;
 

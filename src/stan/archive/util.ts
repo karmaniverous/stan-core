@@ -19,12 +19,3 @@ export const makeTarFilter = (stanPath: string) => {
   return (p: string): boolean =>
     !(isReservedWorkspacePath(base, p) || isOutputArchivePath(base, p));
 };
-
-/** Log archive classifier warnings consistently (no file output). */
-export const logArchiveWarnings = (warningsBody: string): void => {
-  const trimmed = (warningsBody ?? '').trim();
-  if (trimmed && trimmed !== 'No archive warnings.') {
-    // Single, concise section; colorless in core
-    console.log(`stan: archive warnings\n${trimmed}`);
-  }
-};

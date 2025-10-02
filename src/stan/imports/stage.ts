@@ -3,7 +3,7 @@
  * - Labels: allow A–Z a–z 0–9 @ / _ - ; forbid “..”; sanitize other chars to "_".
  * - Globs: resolve with fast-glob; allow absolute/../ patterns; include dot files.
  * - Mapping: dest = <stanPath>/imports/<label>/<tail>; tail = path relative to glob-parent(pattern).
- * - Logging: one concise line per label: "stan: import <label> -> N file(s)".
+ * - Engine remains silent; optional onStage(label, files[]) callback surfaces results.
  */
 import { copyFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -51,13 +51,15 @@ export type ImportsMap = Record<string, string[]>;
  * - Copies only files (skips directories); unreadable files are skipped best‑effort.
  *
  * @param args - Object containing cwd, stanPath, and map of label -\> patterns.
+ * @param args.onStage - Optional callback receiving per-label staged repo‑relative paths.
  */
 export const prepareImports = async (args: {
   cwd: string;
   stanPath: string;
   map?: ImportsMap | null;
+  onStage?: (label: string, files: string[]) => void;
 }): Promise<void> => {
-  const { cwd, stanPath, map } = args;
+  const { cwd, stanPath, map, onStage } = args;
   if (!map || typeof map !== 'object') return;
   const dirs = makeStanDirs(cwd, stanPath);
   const root = path.join(dirs.rootAbs, 'imports');
@@ -113,11 +115,14 @@ export const prepareImports = async (args: {
         // best‑effort continue with other patterns
       }
     }
-    // Summary log for this label
+    // Optional callback summary for this label (engine remains silent by default)
     try {
-      console.log(
-        `stan: import ${label} -> ${staged.length.toString()} file(s)`,
-      );
+      if (typeof onStage === 'function') {
+        const rels = staged.map((abs) =>
+          path.relative(cwd, abs).replace(/\\/g, '/'),
+        );
+        onStage(label, rels);
+      }
     } catch {
       /* ignore */
     }

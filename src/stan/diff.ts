@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { logArchiveWarnings, makeTarFilter } from './archive/util';
+import { makeTarFilter } from './archive/util';
 import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 type TarLike = {
@@ -111,6 +111,7 @@ export const createArchiveDiff = async ({
   excludes,
   updateSnapshot = 'createIfMissing',
   includeOutputDirInDiff = false,
+  onArchiveWarnings,
 }: {
   cwd: string;
   stanPath: string;
@@ -119,6 +120,7 @@ export const createArchiveDiff = async ({
   excludes?: string[];
   updateSnapshot?: SnapshotUpdateMode;
   includeOutputDirInDiff?: boolean;
+  onArchiveWarnings?: (text: string) => void;
 }): Promise<{ diffPath: string }> => {
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -149,7 +151,11 @@ export const createArchiveDiff = async ({
   const { textFiles, warningsBody } = await classifyForArchive(cwd, changedRaw);
   const changed = textFiles;
 
-  logArchiveWarnings(warningsBody ?? '');
+  // Surface warnings via optional callback (no console I/O in core)
+  const trimmed = (warningsBody ?? '').trim();
+  if (trimmed && trimmed !== 'No archive warnings.') {
+    onArchiveWarnings?.(trimmed);
+  }
 
   const diffPath = join(outDir, `${baseName}.diff.tar`);
   const tar = (await import('tar')) as unknown as TarLike;
