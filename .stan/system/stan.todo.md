@@ -1,6 +1,6 @@
 # STAN Development Plan
 
-When updated: 2025-10-01 (UTC)
+When updated: 2025-10-02 (UTC)
 
 This plan tracks two synchronized tracks to complete the separation between engine and CLI and to enable a swappable engine at runtime:
 
@@ -23,6 +23,21 @@ A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is i
 ## Track A — stan-core (engine)
 
 ### Next up (priority order)
+
+- Console‑free surfaces (callbacks/returns)
+  - [ ] Archive/diff warnings:
+        - Replace direct logging with a returned `warnings` string and optional
+          `onArchiveWarnings(text)` callback across `createArchive` and `createArchiveDiff`.
+        - Update tests to assert returned data and/or callback (no console spies).
+  - [ ] Imports staging summaries:
+        - `prepareImports` returns per‑label summaries and supports optional
+          `onStage(label, files)`; default silent.
+        - Update tests accordingly.
+- Engine surface hygiene
+  - [ ] Remove presentation helpers from core and ensure they are not exported:
+        delete `src/stan/util/{color.ts,status.ts,time.ts}`; fix barrels; update knip hints.
+  - [ ] Export `CORE_VERSION` and add a small unit test asserting presence; CLI
+        will duck‑type version/shape during `--core` load.
 
 - Core purity (no acquisition/presentation edges)
   - [ ] Remove direct clipboard usage from the engine:
@@ -72,6 +87,10 @@ A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is i
   - [ ] `prepareImports` returns summaries and supports `onStage` callback (engine silent by default).
 
 - Testing (engine)
+  - [ ] Replace any lingering console spies with assertions on returned data and
+        callback invocations; ensure all tests pass in BORING/non‑TTY environments.
+  - [ ] Add coverage for `onArchiveWarnings` and `onStage` callbacks (including
+        “omitted callback” no‑op paths).
   - [ ] Update tests that currently spy on console; assert returned data and/or callback invocations.
   - [ ] Add tests for the callback paths (`onArchiveWarnings`, `onStage`) and for absence of side effects when callbacks are omitted.
 
@@ -129,6 +148,10 @@ A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is i
   - [ ] Persist cleaned patch to `<stanPath>/patch/.patch` for git apply path.
   - [ ] Print unified diagnostics envelopes on failure (downstream/stan contexts).
   - [ ] Open modified files via configured editor (best‑effort).
+  - [ ] Implement the `readPatchSource` adapter in CLI (arg/`-f`/default/clipboard)
+        to keep acquisition policy at the edge; do not re‑implement cleaning —
+        call `detectAndCleanPatch(raw)` from core, then write cleaned to
+        `<stanPath>/patch/.patch` and call `applyPatchPipeline`.
 
 - Archive/diff adapter
   - [ ] Present archive warnings returned by core exactly once per phase; CLI controls styling and TTY behavior (engine silent by default).
