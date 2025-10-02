@@ -50,8 +50,9 @@ export type ImportsMap = Record<string, string[]>;
  * - Cleans each label directory prior to staging.
  * - Copies only files (skips directories); unreadable files are skipped best‑effort.
  *
- * @param args - Object containing cwd, stanPath, and map of label -\> patterns.
- * @param args.onStage - Optional callback receiving per-label staged repo‑relative paths.
+ * @param args - Object with cwd, stanPath, and map of label -\> patterns.
+ *   Optionally includes `onStage`, a callback invoked per label with
+ *   repo‑relative staged paths.
  */
 export const prepareImports = async (args: {
   cwd: string;
