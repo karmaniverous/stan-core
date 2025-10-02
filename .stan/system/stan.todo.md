@@ -40,6 +40,9 @@ A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is i
 
 ### Completed (recent)
 
+- Posted interop guidance to stan-cli listing engine‑duplicate modules safe to
+  delete and the replacement imports from @karmaniverous/stan-core.
+
 - Removed readPatchSource from core; moved patch source acquisition to the CLI.
   Deleted `src/stan/patch/run/source.ts` and `src/stan/patch/run/source.test.ts`.
   Core remains string‑first (CLI acquires raw text, calls `detectAndCleanPatch`,
