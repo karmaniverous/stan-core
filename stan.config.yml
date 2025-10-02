@@ -2,7 +2,11 @@ cliDefaults:
   run:
     plan: false
     sequential: true
-includes: []
+imports:
+  stan-cli: 
+    - '../stan-cli/.stan/system/stan.requirements.md'
+    - '../stan-cli/.stan/system/stan.todo.md'
+    - '../stan-cli/.stan/interop/stan-core/**'
 excludes:
   - "*.local"
   - assets

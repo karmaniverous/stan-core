@@ -2,7 +2,21 @@
 
 When updated: 2025-10-01 (UTC)
 
-This plan tracks two synchronized tracks in preparation for splitting the code base into two packages: stan-core (engine) and stan-cli (CLI/runner). Until the repo is duplicated, both tracks live here; after duplication, each repo will retain only its corresponding track.
+This plan tracks two synchronized tracks to complete the separation between engine and CLI and to enable a swappable engine at runtime:
+
+- Track A — stan-core (engine): pure services, no CLI/TTY/process concerns.
+- Track B — stan-cli (CLI/runner): adapters, UX, input acquisition, presentation, and composition.
+
+A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is included to coordinate changes across repos. Once the repos are connected and stable, we will prune this plan’s dual-track content and migrate each track to its respective repository.
+
+---
+
+## Guiding principles (both tracks)
+
+- Engine purity: core doesn’t acquire inputs (no clipboard), doesn’t present outputs (no console/TTY/color), and exposes diagnostics through return values and/or optional callbacks.
+- Swappable core: the entire engine can be loaded by the CLI via a single `--core` option, which determines how to import the engine (dist or TS source via tsx) and verifies version/shape before use.
+- Deterministic archives: imports are staged under `<stanPath>/imports/<label>/…` and included in both full and diff archives.
+- Interop threads (multi‑file, no front matter): outgoing messages live under `.stan/interop/<label>/*.md`, incoming (peer) messages are staged under `.stan/imports/<label>/*.md`. Aggressively prune once conclusions are ingested into requirements and dev plan.
 
 ---
 
@@ -10,84 +24,68 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 
 ### Next up (priority order)
 
-- Core/CLI decomposition — phase 1 (stan-core):
-  - [x] Remove CLI adapters and runner/TTY UI from stan-core (src/cli, src/stan/run, preflight/init/snap/help/version, patch CLI service and open).
-  - [x] Stop building CLI in Rollup; build library and types only.
-  - [x] Remove CLI runtime deps from package.json; drop “stan” bin/script.
-  - [x] Replace colored archive warnings with colorless logging in core.
-  - [x] Narrow public exports to engine-only (drop run/help).
-  - [ ] Follow-up: eliminate remaining console I/O from core APIs; return warnings/notes via return values only.
-  - [x] Follow-up: expose patch pipeline/file-ops/types explicitly from the top-level barrel and update README/docs to reflect engine usage.
-  - [ ] Follow-up: confirm no engine modules depend on package-directory/module root in runtime paths (trim if unnecessary).
-  - [ ] Follow-up: move CLI behavior/tests into stan-cli repo and wire to stan-core package.
+- Core purity (no acquisition/presentation edges)
+  - [ ] Remove direct clipboard usage from the engine:
+        - Do not import `clipboardy` anywhere in core.
+        - Engine accepts patch input as strings only (`detectAndCleanPatch` → `applyPatchPipeline`).
+        - Move any patch source resolution (argument/file/clipboard) helper to CLI; keep only cleaners and pipeline in core.
+  - [ ] Remove console logging from core:
+        - `createArchive` / `createArchiveDiff`: expose `warnings?: string` in the result and support optional `onArchiveWarnings?: (text: string) => void`; default silent.
+        - `prepareImports`: return per-label summaries (e.g., `{label, files[]}`) and support optional `onStage?: (label: string, files: string[]) => void`; default silent.
+        - Update tests to assert returned warnings/summaries or injected callbacks (no console spies).
+  - [ ] Remove TTY/presentation helpers from core:
+        - Delete `src/stan/util/{color.ts,status.ts,time.ts}` and ensure they are not exported.
 
----
+- Public API stability for swappable core
+  - [ ] Export `CORE_VERSION` constant and verify that the public surface matches the spec below (duck-typed by CLI at load time).
+  - [ ] Keep prompt helpers exported and quiet:
+        - `getPackagedSystemPromptPath(): string | null`
+        - `assembleSystemMonolith(cwd: string, stanPath: string) → Promise<{ target: string; action: 'written' | 'skipped-no-parts' | 'skipped-no-md' }>`
+  - [ ] Ensure all APIs return data and optionally accept callbacks; no direct logging.
 
-- Extract engine package scaffolding
-  - Create a new repo/package “@karmaniverous/stan-core”.
-  - Copy engine modules:
-    - config/, fs.ts, fs/reserved.ts, paths.ts
-    - archive.ts (+ archive/constants.ts), archive/util.ts (return warnings)
-    - diff.ts, snap/{capture,shared,context}.ts
-    - patch/** (apply, jsdiff, detect, headers, parse, file-ops, diag/util, run/pipeline, util/fs)
-    - imports/stage.ts
-    - validate/response.ts (optional export)
-  - Remove CLI/runner/process/TTY concerns.
+- Archiving/diff/snapshot
+  - [ ] Confirm binary screening and large-text flagging remain deterministic; surface warnings via return/callbacks only.
+  - [ ] Ensure snapshot write parity and sentinel behavior are unchanged.
 
-- Remove console I/O from core
-  - Replace console.log in archive/util.ts with a return value (warningsBody) surfaced to the caller.
-  - Ensure snap history helpers return data/events only.
+- Patch engine
+  - [ ] Keep the canonical string-based ingestion: `detectAndCleanPatch(raw) → cleaned` → `applyPatchPipeline({ cleaned, patchAbs, check })`.
+  - [ ] Maintain jsdiff fallback behavior (EOL/whitespace tolerance) and structured failure outputs; no console I/O.
+  - [ ] Creation-patch fallback (see requirements): run only after pipeline failure and only for confident new-file cases.
 
-- Patch ingestion — creation fallback (new)
-  - Implement “creation patch” heuristic in stan-core:
-    - When unified‑diff application fails and the patch is confidently detected as a new-file creation (e.g., /dev/null → b/<path>), strip diff headers and decode body by removing leading “+” from each payload line.
-    - Normalize to LF and create parent directories for nested paths.
-    - Gate behind the standard pipeline: only runs after git/jsdiff fail and only for new-file patches.
-  - Add unit tests covering:
-    - Simple creation, nested path, fenced chat artifacts, sandbox (check=true).
+- Imports staging (engine-side)
+  - [ ] `prepareImports` returns summaries and supports `onStage` callback (engine silent by default).
 
-- API surface and types
-  - Export public APIs listed in stan.requirements.md; ensure stable d.ts.
-  - Document return contracts where logging was removed.
+- Testing (engine)
+  - [ ] Update tests that currently spy on console; assert returned data and/or callback invocations.
+  - [ ] Add tests for the callback paths (`onArchiveWarnings`, `onStage`) and for absence of side effects when callbacks are omitted.
 
-- Imports bridge (context from cli)
-  - Add a task to configure imports in stan-core’s stan.config.yml:
-    - label: “cli-docs”
-    - patterns: paths to staged stan-cli docs (README, CHANGELOG, docs/).
+- Packaging & distribution
+  - [ ] Ensure Rollup outputs (mjs/cjs/types) include `dist/stan.system.md` and exclude CLI-only concerns.
+  - [ ] Confirm tar and fs-extra remain externals (tree-shaking preserved).
 
-- Cross‑repo recommendation
-  - Update stan.project.md in stan-core with a section that instructs the assistant to recommend stan-cli changes for any adapter/UX concerns.
+### Completed (recent)
 
-- Packaging & CI
-  - Rollup build for library + d.ts bundle (no CLI bundle).
-  - Ensure tar & fs-extra are runtime deps; no Commander/inquirer/log-update.
-  - Publish under a pre-release tag for initial integration.
+- Core/CLI decomposition (phase 1):
+  - Removed CLI adapters and runner from stan-core; pruned CLI-only services/tests.
+  - Rollup builds library and types only; CLI bundle removed.
+  - Package.json trimmed; CLI bin and CLI-only runtime deps removed.
+  - Core archive warnings de-colored; decoupled from CLI styling.
+  - Public exports narrowed to engine APIs; patch barrel surfaced engine primitives.
+  - Typedoc project documents trimmed (engine only; CHANGELOG).
+
+- Split hygiene:
+  - Removed CLI/runner tests that imported removed `./run` modules.
+  - Fixed patch API barrel (exported `applyPatchPipeline`, `detectAndCleanPatch`, `executeFileOps`, `parseFileOpsBlock`).
+  - README updated for engine usage and top-level barrel exports.
+
+- Tooling housekeeping:
+  - knip hints addressed; unused ignoreDependencies entries pruned.
 
 ### Backlog / follow‑through
 
 - Performance profiling for large repos (selection and tar streaming).
-- Optional logger injection pattern (future) to support structured logging.
-
-### Completed (recent)
-
-- Decomposition (phase 1, core):
-  - Removed CLI adapters and runner from stan-core; pruned CLI-only services/tests.
-  - Simplified Rollup build to library + types; trimmed CLI bin/script and deps.
-  - Core archive warnings now log without color (no chalk).
-
-- Split hygiene (core):
-  - Removed CLI/runner tests from core: src/stan/diff.test.ts, src/stan/run.combine.test.ts, src/stan/run.plan.test.ts, src/stan/run.test.ts.
-
-- Docs pruning (core):
-  - Removed CLI-focused docs under docs-src/; restricted typedoc project documents to CHANGELOG only.
-
-- Tooling housekeeping:
-  - knip: removed @types/eslint__js from ignoreDependencies; unresolved import warnings resolved with test removals and patch barrel fix.
-  - Engine boundary hardening: refactored patch source resolver to accept an injected `clipboardRead` function (no direct clipboard dependency in core); tests updated accordingly.
-
-- Developer-facing docs & exports:
-  - Exposed patch engine and imports staging from top-level barrel.
-  - Refreshed README for engine-only usage; updated package description/keywords.
+- Optional logger injection pattern (future) to support structured logging across hosts.
+- Creation-patch fallback heuristics: broaden coverage for nested new files and Markdown.
 
 ---
 
@@ -95,34 +93,142 @@ This plan tracks two synchronized tracks in preparation for splitting the code b
 
 ### Next up (priority order)
 
-- Wire stan-cli to stan-core
-  - Replace internal imports with “@karmaniverous/stan-core” APIs:
-    - config loading, selection, archive/diff, snapshot, patch pipeline, imports staging.
-  - Keep CLI behaviors: preflight/docs injection, plan printing, live/logger UI, cancellation gates, editor open, clipboard source.
+- Swappable core loader (`--core`)
+  - [ ] Implement a single `--core <value>` flag (env: `STAN_CORE`) that loads the entire core:
+        - Omitted → installed `@karmaniverous/stan-core`.
+        - `dist:/path` → import `<path>/dist/mjs/index.js` (fallback cjs).
+        - `src:/path` → register `tsx` from `<path>` and import `<path>/src/stan/index.ts`.
+        - Auto path → prefer dist if present; else src via tsx; else error with actionable guidance.
+  - [ ] Version/shape handshake:
+        - Require `CORE_VERSION` and expected exports (duck-typed).
+        - Print banner: `Using core: <package|path> (CORE_VERSION <x.y.z>) [dist|src]`.
 
-- Archive warnings display
-  - Print stan-core’s warningsBody once per archive/diff phase in CLI.
+- Prompt injection from selected core
+  - [ ] Resolve monolith via `getPackagedSystemPromptPath()`.
+  - [ ] In dev (src mode), optionally run `assembleSystemMonolith(cwd, stanPath)` before injection.
+  - [ ] Ensure injected prompt rides in full and diff archives deterministically.
 
-- Runner cancellation hardening
-  - Ensure the sequential scheduling gate prevents “after” scripts from starting after a SIGINT boundary; preserve late‑cancel guard before archive.
+- Patch adapter (acquisition/presentation)
+  - [ ] Acquire patch from argument/file/clipboard; pass the string to core (`detectAndCleanPatch` → `applyPatchPipeline`).
+  - [ ] Persist cleaned patch to `<stanPath>/patch/.patch` for git apply path.
+  - [ ] Print unified diagnostics envelopes on failure (downstream/stan contexts).
+  - [ ] Open modified files via configured editor (best‑effort).
 
-- Help/UX parity
-  - Confirm BORING vs TTY parity on labels and summary lines.
-  - Verify defaults tagging and conflict messages.
+- Archive/diff adapter
+  - [ ] Present archive warnings returned by core exactly once per phase; CLI controls styling and TTY behavior (engine silent by default).
 
-- Imports bridge (context from core)
-  - Add a task to configure imports in stan-cli’s stan.config.yml:
-    - label: “core-docs”
-    - patterns: paths to staged stan-core API docs and changelog.
+- Interop threads (multi-file, no front matter)
+  - [ ] Adopt outgoing directory `.stan/interop/<label>/*.md` (e.g., `core-interop`).
+  - [ ] Stage incoming peer messages via imports under `.stan/imports/<label>/*.md`.
+  - [ ] When a change implies peer action, create a new outgoing interop file:
+        - Filename: `<UTC>-<slug>.md` (e.g., `20251001-170730Z-clipboard-boundary.md`).
+        - Body: concise Markdown (subject optional + bullets with what/why/actions/links).
+  - [ ] Aggressive pruning: once conclusions are ingested into local requirements/dev plan, propose File Ops to remove resolved messages.
 
-- Cross‑repo recommendation
-  - Update stan.project.md in stan-cli with a section that instructs the assistant to recommend stan-core changes for any engine concerns (selection/patch/archiving semantics).
+- Testing (CLI)
+  - [ ] Loader tests for `--core` paths (dist/src/auto) and banner output.
+  - [ ] Prompt injection tests (packaged and on-demand assemble in dev).
+  - [ ] Interop message creation and pruning via File Ops.
+  - [ ] Archive/diff presentation tests (warnings printed once; parity in BORING/non-TTY).
 
-- Tests & docs
-  - Keep existing CLI/runner integration tests; adjust to stan-core wiring.
-  - Update README/help footers if flags/wording changed.
+- Documentation (CLI)
+  - [ ] Update help/usage for `--core`, interop threads policy, and engine purity expectations.
+
+### Completed (recent)
+
+- N/A (CLI work begins now; prior work focused on core decomposition and surfacing engine APIs).
 
 ### Backlog / follow‑through
 
 - Live table final-frame flush audit for edge cases.
-- Editor-open gating policy doc (“test mode” and force‑open).
+- Editor-open gating policy doc (test mode and force-open options).
+- UX polish for diagnostics envelope presentation.
+
+---
+
+## Cross‑repo Interop & Imports (both repos)
+
+### Interop threads (multi‑file, no front matter; aggressive pruning)
+
+- Purpose
+  - Coordinate cross‑repo actions (CLI ↔ Core) with small, self-contained message files that order deterministically and produce minimal diffs.
+
+- Locations
+  - Outgoing (authored locally): `.stan/interop/<label>/*.md`
+    - `<label>` is the agreed import label the peer uses to stage your messages (operational slug).
+    - Examples:
+      - In stan-cli: `.stan/interop/core-interop/*.md`
+      - In stan-core: `.stan/interop/cli-interop/*.md`
+  - Incoming (staged via imports): `.stan/imports/<label>/*.md`
+    - Examples:
+      - In stan-cli: `core-interop` imports peer messages from `../stan-core/.stan/interop/stan-cli/*.md`
+      - In stan-core: `cli-interop` imports peer messages from `../stan-cli/.stan/interop/stan-core/*.md`
+
+- Filename convention
+  - `<UTC>-<slug>.md`
+    - `<UTC>`: `YYYYMMDD-HHMMSSZ` (UTC; lexicographic chronological order)
+    - `<slug>`: short, url‑safe, lower‑case (e.g., `api-surface`, `clipboard-boundary`, `swappable-core`)
+
+- Body format
+  - Plain Markdown; optional first-line subject (`# …`) and bullets for: what/why/actions/links.
+
+- Assistant obligations
+  - Always scan incoming interop messages (sorted by filename) before proposing cross‑repo work.
+  - When a change implies peer action, propose creation of an outgoing interop file using the naming convention and concise body.
+  - Append‑only: never rewrite prior messages; new info = new file.
+  - Aggressive pruning: once conclusions are reflected in local requirements/dev plan, propose File Ops to remove resolved interop messages. No rotation — keep threads short and ephemeral.
+
+### Imports (dev-friendly defaults)
+
+- stan-cli `stan.config.yml`:
+  - `core-docs`: `../stan-core/.stan/system/stan.requirements.md`, `../stan-core/.stan/system/stan.todo.md`
+  - `core-types`: `../stan-core/dist/index.d.ts`
+  - `core-interop`: `../stan-core/.stan/interop/stan-cli/*.md`
+
+- stan-core `stan.config.yml`:
+  - `cli-docs`: `../stan-cli/.stan/system/stan.requirements.md`, `../stan-cli/.stan/system/stan.todo.md`
+  - `cli-interop`: `../stan-cli/.stan/interop/stan-core/*.md`
+
+---
+
+## Risks & mitigations
+
+- API drift between CLI and swappable core:
+  - Mitigation: `CORE_VERSION` + duck-typed shape checks; fail-fast banner with guidance.
+- Test churn from removing console logs in core:
+  - Mitigation: transitional optional callbacks + returned data; update assertions accordingly.
+- Interop noise:
+  - Mitigation: aggressive pruning policy; assistants must propose File Ops to remove stale messages on resolution.
+
+---
+
+## Completed (recent) — consolidated
+
+- Decomposition (phase 1, core)
+  - Removed CLI adapters/runner; pruned CLI-only services/tests.
+  - Library/types-only Rollup build; CLI bundle removed; externals enforced.
+  - Archive warnings de-colored; decoupled from styling.
+  - Patch barrel exports surfaced engine primitives.
+  - Typedoc project documents trimmed; engine‑only README.
+  - knip hints addressed; unused config entries pruned.
+
+- Split hygiene (core)
+  - Removed `./run*` tests and repaired imports/exports.
+  - Package metadata converged on engine‑only usage.
+
+---
+
+## Near-term acceptance criteria (exit for this phase)
+
+- Core
+  - No direct clipboard/editor/TTY dependencies; no console I/O.
+  - `createArchive`/`createArchiveDiff`/`prepareImports` expose warnings/summaries via return and/or callback; tests updated accordingly.
+  - `CORE_VERSION` exported; prompt helpers available and quiet.
+
+- CLI
+  - `--core` loader functional (dist/src/auto), with banner and version guard.
+  - Prompt injection from selected core works (packaged or assembled in dev).
+  - Patch adapter acquires string sources and delegates to core; diagnostics envelope presentation stable.
+  - Interop threads flow exercised; aggressive pruning demonstrated (File Ops).
+
+When all acceptance criteria are met and integration is stable, migrate each track to its respective repository and prune cross‑content here.
