@@ -38,6 +38,13 @@ A cross-repo “Interop Threads” mechanism (multi-file Markdown messages) is i
 
 ### Completed (recent)
 
+### Completed (recent)
+
+- Removed readPatchSource from core; moved patch source acquisition to the CLI.
+  Deleted `src/stan/patch/run/source.ts` and `src/stan/patch/run/source.test.ts`.
+  Core remains string‑first (CLI acquires raw text, calls `detectAndCleanPatch`,
+  writes to `<stanPath>/patch/.patch`, and invokes `applyPatchPipeline`).
+ 
 - Engine boundary hardening (clipboard):
   - Removed clipboard usage from core patch source resolver; no `clipboardy` import in engine.
   - Added injected `clipboardRead` option for callers; tests updated to pass a stub.
