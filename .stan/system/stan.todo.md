@@ -48,6 +48,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     asserts presence and shape. This enables stan‑cli’s `--core` banner and
     compatibility checks without coupling.
 
+- Interop coordination (exports confirmation)
+  - Posted `.stan/interop/stan-cli/20251002-exports-confirmed.md` confirming
+    top‑level exports for config, selection, archive/diff/snapshot, patch
+    engine, imports staging, validation, prompt helpers, and `CORE_VERSION`.
+    Package “types” normalized to `dist/types/index.d.ts`; CLI can import all
+    surfaces via `@karmaniverous/stan-core` without subpaths.
+
 - Posted interop guidance to stan‑cli identifying engine‑duplicate modules safe to delete and the corresponding `@karmaniverous/stan-core` imports to adopt.
 
 - Removed `readPatchSource` from core and delegated patch source acquisition to stan‑cli.
