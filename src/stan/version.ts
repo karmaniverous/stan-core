@@ -1,7 +1,6 @@
 // src/stan/version.ts
 // Export package version for stan-cli handshake (no side effects).
 // Resolved statically by Rollup via @rollup/plugin-json.
-// eslint-disable-next-line import/no-relative-packages
 import pkg from '../../package.json' assert { type: 'json' };
 
 export const CORE_VERSION: string =

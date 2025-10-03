@@ -9,4 +9,7 @@ export * from './validate/response';
 export * from './patch';
 // Imports staging (label → staged files under <stanPath>/imports)
 export { prepareImports } from './imports/stage';
+// Prompt helpers (packaged path, dev assembly)
+export { getPackagedSystemPromptPath } from './module';
+export { assembleSystemMonolith } from './system/assemble';
 export { CORE_VERSION } from './version';
