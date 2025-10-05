@@ -10,7 +10,7 @@ import type { JsDiffOutcome } from '../jsdiff';
 import { applyWithJsDiff } from '../jsdiff';
 
 /**
- * Try a last-resort creation fallback for a confident "/dev/null -> b/<path>" patch:
+ * Try a last-resort creation fallback for a confident "/dev/null -\> b/<path>" patch:
  * - Detect exactly one creation target.
  * - Extract hunk body lines; keep "+" and " " (drop "-" lines).
  * - Write to repo (check=false) or sandbox (check=true).
@@ -55,7 +55,7 @@ const tryCreationFallback = async (
       continue;
     }
     if (!inHunk) continue;
-    if (/^[ +\-]/.test(l)) {
+    if (/^[ +-]/.test(l)) {
       const marker = l[0] as ' ' | '+' | '-';
       if (marker === '+' || marker === ' ') {
         bodyLines.push(l.slice(1));

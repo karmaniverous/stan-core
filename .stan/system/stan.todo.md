@@ -16,6 +16,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- Lint & docs polish
+  - Fixed tsdoc “\>” escape in creation‑fallback comment and removed a useless
+    escape in a regex character class to satisfy ESLint.
+  - Re‑exported `ApplyResult` so Typedoc includes the type referenced by
+    `PipelineOutcome.result` (eliminates the last documentation warning).
+
 - Patch engine fidelity
   - Implemented creation‑patch fallback (post git+jsdiff) for confident
     `/dev/null → b/<path>` diffs. Honors `--check` by writing to
