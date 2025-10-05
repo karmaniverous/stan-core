@@ -17,10 +17,17 @@ const formatZodError = (e: unknown): string => {
   return e.issues
     .map((i) => {
       const path = i.path.join('.') || '(root)';
-      // Friendly specialization for tests/UX: canonical wording for stanPath type mismatch.
+      // Friendly specialization for tests/UX.
       let msg = i.message;
       if (path === 'stanPath' && /Expected string/i.test(msg)) {
         msg = 'stanPath must be a non-empty string';
+      }
+      // Normalize scripts type mismatch to stable wording expected by tests.
+      // Zod may emit variants like:
+      //  - "Invalid input: expected record, received number"
+      //  - "Expected object, received number"
+      if (path === 'scripts' && /expected\s+(record|object)/i.test(msg)) {
+        msg = 'scripts must be an object';
       }
       return `${path}: ${msg}`;
     })

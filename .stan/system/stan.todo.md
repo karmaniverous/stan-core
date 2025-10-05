@@ -24,6 +24,11 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Completed (recent)
 
+- Test fix (config.load)
+  - Normalized Zod error wording for a scripts type‑mismatch
+    to the stable message “scripts must be an object” so the
+    `config.load` extra test matches `/scripts.*object/i`.
+
 - Typecheck cleanup
   - Fixed Zod v4 record overload usage by specifying key schema in `z.record(...)`
     for `ImportsSchema` and `ScriptsSchema`.
