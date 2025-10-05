@@ -7,3 +7,7 @@ export { executeFileOps, parseFileOpsBlock } from './file-ops';
 export { applyPatchPipeline } from './run/pipeline';
 // Low-level jsdiff apply (optional export)
 export { applyWithJsDiff } from './jsdiff';
+// Public type re-exports for documentation/discovery
+export type { FileOpsPlan, OpResult } from './file-ops';
+export type { JsDiffOutcome } from './jsdiff';
+export type { PipelineOutcome } from './run/pipeline';

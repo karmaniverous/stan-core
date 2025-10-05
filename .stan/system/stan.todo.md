@@ -1,16 +1,12 @@
 # STAN Development Plan
 
-When updated: 2025-10-02 (UTC)
+When updated: 2025-10-05 (UTC)
 
 This plan tracks near‑term and follow‑through work for the stan‑core engine only. CLI/runner tasks are managed in the stan‑cli repository.
 
 ---
 
 ## Next up (priority order)
-
-- Patch engine fidelity
-  - Maintain the canonical ingestion path: `detectAndCleanPatch(raw) → cleaned` → `applyPatchPipeline({ cleaned, patchAbs, check })`.
-  - Implement creation‑patch fallback for confident new‑file diffs (post‑pipeline), including nested path creation; add unit tests (write/sandbox).
 
 - Packaging & distribution
   - Ensure Rollup outputs ESM/CJS + `.d.ts` only (no CLI bundle).
@@ -20,6 +16,14 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- Patch engine fidelity
+  - Implemented creation‑patch fallback (post git+jsdiff) for confident
+    `/dev/null → b/<path>` diffs. Honors `--check` by writing to
+    `.stan/patch/.sandbox/F/<path>`; writes to repo otherwise.
+
+- Typedoc polish
+  - Re‑exported public types referenced by top‑level APIs
+    (`PipelineOutcome`, `JsDiffOutcome`, `AssembleResult`, `FileOpsPlan`, `OpResult`, `ImportsMap`) to remove documentation warnings.
 
 - Maintenance (knip/interop)
   - Temporarily ignored six knip‑flagged helpers in stan‑core.
