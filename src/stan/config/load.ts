@@ -10,7 +10,7 @@ import { ZodError } from 'zod';
 import { DEFAULT_OPEN_COMMAND, DEFAULT_STAN_PATH } from './defaults';
 import { findConfigPathSync } from './discover';
 import { ConfigSchema, type ParsedConfig } from './schema';
-import type { ContextConfig } from './types';
+import type { ContextConfig, ScriptMap } from './types';
 
 const formatZodError = (e: unknown): string => {
   if (!(e instanceof ZodError)) return String(e);
@@ -75,7 +75,7 @@ const parseFile = async (abs: string): Promise<ContextConfig> => {
   const importsNormalized = normalizeImports(parsed.imports);
   return {
     stanPath: parsed.stanPath,
-    scripts: parsed.scripts,
+    scripts: parsed.scripts as ScriptMap,
     includes: parsed.includes ?? [],
     excludes: parsed.excludes ?? [],
     imports: importsNormalized,
@@ -108,7 +108,7 @@ export const loadConfigSync = (cwd: string): ContextConfig => {
     const importsNormalized = normalizeImports(parsed.imports);
     return {
       stanPath: parsed.stanPath,
-      scripts: parsed.scripts,
+      scripts: parsed.scripts as ScriptMap,
       includes: parsed.includes ?? [],
       excludes: parsed.excludes ?? [],
       imports: importsNormalized,

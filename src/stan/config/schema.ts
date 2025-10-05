@@ -18,7 +18,7 @@ const isValidRegex = (s: string): boolean => {
 const StrictStringArray = z.array(z.string()).default([]).optional();
 
 const ImportsValue = z.union([z.string(), z.array(z.string())]);
-export const ImportsSchema = z.record(ImportsValue).optional();
+export const ImportsSchema = z.record(z.string(), ImportsValue).optional();
 
 const ScriptObject = z
   .object({
@@ -34,7 +34,7 @@ const ScriptObject = z
   .strict();
 
 export const ScriptsSchema = z
-  .record(z.union([z.string().min(1), ScriptObject]))
+  .record(z.string(), z.union([z.string().min(1), ScriptObject]))
   .default({});
 
 const coerceBool = z

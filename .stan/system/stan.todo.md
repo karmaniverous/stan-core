@@ -24,6 +24,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Completed (recent)
 
+- Typecheck cleanup
+  - Fixed Zod v4 record overload usage by specifying key schema in `z.record(...)`
+    for `ImportsSchema` and `ScriptsSchema`.
+  - Tightened typing in config loader: cast validated `parsed.scripts` to
+    `ScriptMap` to satisfy TS while preserving schema guarantees.
+  - Resolves TS errors reported in typecheck output for `schema.ts` and `load.ts`.
+
 - Top-level surface readiness
   - Exposed prompt helpers at the engine barrel:
     `getPackagedSystemPromptPath` and `assembleSystemMonolith` are now
