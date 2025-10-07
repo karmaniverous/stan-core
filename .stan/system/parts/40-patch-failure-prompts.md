@@ -20,8 +20,7 @@ When a patch cannot be fully applied, STAN provides a concise diagnostics envelo
   - jsdiff reasons appear whenever jsdiff was attempted and any file still failed.
   - Do not echo the failed patch body or any excerpt (for example, “cleanedHead”).
     Rely on the patch that already exists in the chat context; correlate the attempt
-    summaries and jsdiff reasons to that patch. When additional context is needed,
-    request Full Listings for only the affected files instead of reprinting the patch.
+    summaries and jsdiff reasons to that patch.
 
 - File Ops failures (all repos)
   - diagnostics envelope content (stdout fallback):
@@ -36,7 +35,13 @@ When a patch cannot be fully applied, STAN provides a concise diagnostics envelo
 
 ## Assistant follow‑up (after feedback; all repos)
 
-After reading the diagnostics envelope, analyze the likely causes and present the results briefly. Then offer these options explicitly:
-
-1. New patch[es] (recommended): I’ll emit [a corrected patch | corrected patches] for [path/to/file.ts | the affected files].
-2. Full listings: I’ll provide [a full, post‑patch listing | full, post‑patch listings] for [path/to/file.ts | the affected files]. U
+After reading one or more diagnostics envelopes:
+1) Provide Full, post‑patch listings (no patches) for each affected file.
+   - If the user pasted multiple envelopes, produce listings for the union of all referenced files.
+   - Do not include a Commit Message in patch‑failure replies.
+2) Apply the 300‑LOC decomposition pivot:
+   - If an affected file would exceed 300 LOC, pivot to a decomposition plan.
+   - Emit “### File Ops” to introduce the new structure and replace the single listing with Full Listings for the decomposed files instead.
+3) Never mix a Patch and a Full Listing for the same file in the same turn.
+   - Patch‑failure replies contain only Full Listings for the affected files (no patches).
+4) Keep the listings authoritative and complete (LF endings); skip listings for deletions.

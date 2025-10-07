@@ -16,6 +16,17 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- System prompt — guardrails & diagnostics
+  - 300‑LOC hard gate + decomposition pivot: never emit a patch that makes a file
+    exceed 300 LOC; pivot to File Ops + multiple patches. When producing listings
+    (diagnostics), if a file would exceed 300 LOC, decompose and list the new files
+    instead of the monolith.
+  - Patch‑failure replies: always provide Full, post‑patch listings ONLY (no patches)
+    for each affected file; when multiple envelopes are pasted, list the union of
+    affected files; skip the Commit Message in diagnostics replies.
+  - No mixing: never deliver a Patch and a Full Listing for the same file in the
+    same turn; Response Format and validation text updated accordingly.
+
 - Lint & docs polish
   - Fixed tsdoc “\>” escape in creation‑fallback comment and removed a useless
     escape in a regex character class to satisfy ESLint.

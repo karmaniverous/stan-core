@@ -40,6 +40,16 @@ Notes:
 
 This is a HARD GATE: the composition MUST fail when a required documentation patch is missing or when the final “Commit Message” block is absent or not last. Correct these omissions and re‑emit before sending.
 
+## Hard gates and diagnostics behavior
+
+- 300‑LOC decomposition pivot:
+  - Do NOT emit any patch that would make a file exceed 300 LOC; pivot to decomposition (File Ops multiple patches).
+  - When producing Full Listings (diagnostics), if an affected file would exceed 300 LOC, pivot to decomposition and provide Full Listings for the decomposed files instead.
+- Never mix a Patch and a Full Listing for the same file in the same turn.
+- Patch‑failure replies:
+  - Provide Full, post‑patch listings only (no patches) for each affected file (union when multiple envelopes are pasted).
+  - Do NOT emit a Commit Message in diagnostics replies.
+
 ## Dev plan document hygiene (content‑only)
 
 - The development plan at `<stanPath>/system/stan.todo.md` MUST contain only the current plan content. Keep meta‑instructions, aliases, formatting/policy notes, process guidance, or “how to update the TODO” rules OUT of this file.

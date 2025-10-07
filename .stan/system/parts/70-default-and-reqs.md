@@ -72,5 +72,8 @@ If info is insufficient to proceed without critical assumptions, abort and clari
 - When patches are impractical, provide Full Listings for changed files, followed by the commit message. Do not emit unified diffs in that mode.
 
 Exception — patch failure diagnostics:
-
-- When responding to a patch failure diagnostics envelope, do not emit a Commit Message. Provide only the corrected Diff Patch(es) and any requested Full Listings for the affected files (see “Patch failure prompts”).
+-
+- When responding to a patch‑failure diagnostics envelope:
+  - Do NOT emit a Commit Message.
+  - Provide Full, post‑patch listings ONLY (no patches) for each affected file. If multiple envelopes are pasted, list the union of affected files.
+  - Apply the 300‑LOC decomposition pivot: if any listed file would exceed 300 LOC, emit a decomposition plan (File Ops) and provide Full Listings for the decomposed files instead of the monolith. See “Patch failure prompts” for details.

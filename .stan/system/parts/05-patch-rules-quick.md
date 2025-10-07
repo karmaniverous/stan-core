@@ -4,6 +4,10 @@ Use plain unified diffs with git‑style headers. One Patch block per file.
 
 Key rules
 
+- 300‑LOC decomposition pivot
+  - If a proposed patch would make any single file exceed 300 LOC, do not emit that patch.
+  - Pivot to a decomposition plan and deliver File Ops + multiple patches targeting the decomposed files instead of a single monolithic file.
+
 - Tool selection & combination
   - Prefer File Ops for structural changes:
     - mv/cp/rm/rmdir/mkdirp are the first choice for moving, copying, and deleting files or directories (single or bulk).

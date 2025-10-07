@@ -26,10 +26,10 @@ General Markdown formatting
   - Requirements & TODO documents: do not number primary (top‑level) items. Use unordered lists to minimize renumbering churn as priorities shift. Numbering may be used in clearly stable, truly ordered procedures only.
 
 - Opportunistic repair: when editing existing Markdown files or sections as part of another change, if you encounter manually wrapped paragraphs, unwrap and reflow them to natural paragraphs while preserving content. Do not perform a repository‑wide reflow as part of an unrelated change set.
-- Coverage (first presentation): For every file you add, modify, or delete in this response:
-  - Provide a plain unified diff “Patch” that precisely covers those changes.
-  - Do not include “Full Listing” blocks by default.
-  - On request or when following a patch failure diagnostics envelope, include “Full Listing” blocks for the affected files only; otherwise omit listings by default. See “Patch failure prompts” and “Optional Full Listings,” below.
+- Coverage and mixing rules:
+  - Normal replies (non‑diagnostics): provide Patches only (one Patch per file). Do not include Full Listings by default.
+  - Diagnostics replies (after patch‑failure envelopes): provide Full Listings only for each affected file (no patches). Support multiple envelopes by listing the union of affected files. Do not emit a Commit Message.
+  - Never deliver a Patch and a Full Listing for the same file in the same turn.
   - Tool preference & scope:
     - Use File Ops for structural changes (mv/cp/rm/rmdir/mkdirp), including bulk operations; File Ops are exempt from the one‑patch‑per‑file rule.
     - Use Diff Patches for creating new files or changing files in place.
@@ -82,8 +82,14 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 
 ## Validation
 
-- Confirm that every created/updated/deleted file has a “Full Listing” (skipped for deletions) and a matching “Patch”.
-- Confirm that fence lengths obey the +1 backtick rule for every block.
+- Normal replies:
+  - Confirm one Patch block per changed file (and zero Full Listings).
+  - Confirm fence lengths obey the +1 backtick rule for every block.
+  - Confirm that no Patch would cause any file to exceed 300 LOC; pivoted decomposition patches instead.
+- Diagnostics replies (after patch‑failure envelopes):
+  - Confirm that the reply contains Full Listings only (no patches), one per affected file (union across envelopes).
+  - Confirm fence lengths obey the +1 backtick rule for every block.
+  - Confirm that no listed file exceeds 300 LOC; if it would, pivoted decomposition + listings for the decomposed files instead.
 
 ---
 
@@ -98,10 +104,13 @@ Before sending a reply, verify all of the following:
    - Forbidden wrappers are not present: `*** Begin Patch`, `*** Add File:`, `Index:` (or similar non‑unified preludes).
    - For new files, headers MUST be `--- /dev/null` and `+++ b/<path>`.
    - For deleted files, headers MUST be `--- a/<path>` and `+++ /dev/null`.
+   - Never mix a Patch and a Full Listing for the same file in the same turn.
    - Note: This rule does not apply to File Ops; File Ops may include many paths in one block.
 
 2. Commit message isolation and position
-   - The “Commit Message” is MANDATORY. It appears once, as the final section, and its fence is not inside any other fenced block.
+   - Normal replies: The “Commit Message” is MANDATORY. It appears once, as the final section, and its fence is not inside any other fenced block.
+   - Diagnostics replies (after patch‑failure envelopes): Do NOT emit a Commit Message.
+
 3. Fence hygiene (+1 rule)
    - For every fenced block, the outer fence is strictly longer than any internal backtick run (minimum 3).
    - Patches, optional Full Listings, and commit message all satisfy the +1 rule.
@@ -109,8 +118,8 @@ Before sending a reply, verify all of the following:
    - Headings match the template exactly (names and order).
 
 5. Documentation cadence (gating)
-   - Normal replies: If any Patch block is present, there MUST also be a Patch for <stanPath>/system/stan.todo.md that reflects the change set (unless the change set is deletions‑only or explicitly plan‑only).
-   - The “Commit Message” MUST be present and last.
+   - Normal replies: If any Patch block is present, there MUST also be a Patch for <stanPath>/system/stan.todo.md that reflects the change set (unless the change set is deletions‑only or explicitly plan‑only). The “Commit Message” MUST be present and last.
+   - Diagnostics replies: Skip Commit Message; listings‑only for the affected files.
 6. Nested-code templates (hard gate)
    - Any template or example that contains nested fenced code blocks (e.g., the Dependency Bug Report or a patch failure diagnostics envelope) MUST pass the fence‑hygiene scan: compute N = maxInnerBackticks + 1 (min 3), apply that fence, then re‑scan before sending. If any collision remains, STOP and re‑emit. If any check fails, STOP and re‑emit after fixing. Do not send a reply that fails these checks.
 

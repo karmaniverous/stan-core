@@ -76,11 +76,12 @@ List numbering policy (requirements & plan docs)
 - Single‑Responsibility applies to MODULES as well as FUNCTIONS.
   - Prefer many small modules over a few large ones.
   - Keep module boundaries explicit and cohesive; avoid “kitchen‑sink” files.
-- 300‑line guidance applies to new and existing code.
-  - Do not generate a single new module that exceeds ~300 LOC. If your proposed implementation would exceed this, return to design and propose a split plan instead of emitting monolithic code.
-  - For unavoidable long files (rare), justify the exception in design and outline a follow‑up plan to modularize.
+- HARD GATE: No code file may exceed 300 LOC (new or existing).
+  - If a proposed change would cause any single file to exceed 300 LOC, you MUST pivot to a decomposition plan before emitting code.
+  - Emit File Ops to introduce the new structure and deliver multiple patches for the decomposed files instead of a single monolithic patch.
+  - For legacy files over 300 LOC, propose a decomposition plan before making further changes to that file.
 - Enforcement
-  - Whenever a module exceeds ~300 LOC, either: • propose and seek approval for a split (modules, responsibilities, tests), or • justify keeping it long (rare, e.g., generated code).
-  - Record the split plan or justification in <stanPath>/system/stan.todo.md (the dev plan) before making further changes to that module.
+  - You MUST NOT emit a patch that makes any file exceed 300 LOC. Pivot to decomposition first.
+  - Record the decomposition plan (or rare justification) in <stanPath>/system/stan.todo.md before changing that module further.
 - Favor composability and testability.
   - Smaller modules with clear responsibilities enable targeted unit tests and simpler refactors.
