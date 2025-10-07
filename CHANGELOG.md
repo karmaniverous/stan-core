@@ -2,11 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.1](https://github.com/karmaniverous/stan-core/compare/0.1.0...0.1.1)
+
+- docs(system): 300‑LOC hard gate + decomposition; diagnostics = listings only [`7363cd6`](https://github.com/karmaniverous/stan-core/commit/7363cd68b74e0fbb06dad7f0f1907c82d1eb05c3)
+
 #### 0.1.0
+
+> 6 October 2025
 
 - Initial commit [`1494037`](https://github.com/karmaniverous/stan-core/commit/1494037cdc692696f4fd4eecfdecdf0b5d6a5ea1)
 - chore(core): remove CLI adapters/runner and CLI-only deps from stan-core [`13f0e9e`](https://github.com/karmaniverous/stan-core/commit/13f0e9eea4a2f000397d8edce500493548d3d5e8)
 - renamed repo & updated version [`2e447bc`](https://github.com/karmaniverous/stan-core/commit/2e447bc23bc705c9d6da890706c947cf4160af3e)
+- chore: release v0.1.0 [`df558ba`](https://github.com/karmaniverous/stan-core/commit/df558ba5d49dce4afc8fcf6b92dacc9d681694ee)
 - docs(core/cli): swappable core + interop threads [`cea12e3`](https://github.com/karmaniverous/stan-core/commit/cea12e3b9eb9e3b9dfc9ea7dbffcd0935d23e68f)
 - docs(core): prune CLI content; converge requirements and plan on stan-core [`f81d10f`](https://github.com/karmaniverous/stan-core/commit/f81d10f41e3ceabd6e6e9be157c3295d5ab48899)
 - updated dependencies [`3dbb202`](https://github.com/karmaniverous/stan-core/commit/3dbb20200388b65078a10187e41d5f36c1d8bdfd)
