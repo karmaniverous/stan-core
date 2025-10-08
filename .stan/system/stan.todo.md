@@ -16,6 +16,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- System prompt — diagnostics clarity
+  - Removed legacy wording that implied Full Listings are “optional on request”
+    for patch‑failure replies. Response Format now explicitly scopes “optional
+    listings” to normal replies only and makes diagnostics listings mandatory (no
+    patches, union across envelopes, no commit message). Quick rules now call
+    this out explicitly alongside the 300‑LOC decomposition pivot for listings.
+
 - System prompt — guardrails & diagnostics
   - 300‑LOC hard gate + decomposition pivot: never emit a patch that makes a file
     exceed 300 LOC; pivot to File Ops + multiple patches. When producing listings

@@ -17,11 +17,16 @@ Key rules
   - Combine when appropriate:
     - For example, move a file with File Ops, then follow with a Diff Patch in the new location to update imports or content.
 
+- Diagnostics replies after patch failure
+  - Provide Full, post‑patch listings ONLY for each affected file (no patches).
+  - If the user pasted multiple diagnostics envelopes, list the union of affected files.
+  - Do not emit a Commit Message in diagnostics replies.
+  - Apply the 300‑LOC decomposition pivot to listings (decompose and list the new files instead of a monolith exceeding 300 LOC).
+
 - Failure prompts:
   - If a unified‑diff patch fails for one or more files, STAN copies one line per failed file to your clipboard requesting a full, post‑patch listing for just those files (stdout fallback if clipboard is unavailable).
   - If a File Ops block fails (parse or exec), STAN copies a prompt that quotes the original fenced “### File Ops” block and asks to redo the operation via unified diffs (stdout fallback if clipboard is unavailable).
   - No persisted diagnostics (.rej, attempts.json, per‑attempt logs) are written.
-
 - Exactly one header per Patch block:
   - `diff --git a/<path> b/<path>`
   - `--- a/<path>` and `+++ b/<path>` - At least 3 lines of context per hunk (`@@ -oldStart,oldLines +newStart,newLines @@`)

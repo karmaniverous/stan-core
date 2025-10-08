@@ -3,10 +3,10 @@ cliDefaults:
     plan: false
     sequential: true
 imports:
-  stan-cli: 
-    - '../stan-cli/.stan/system/stan.requirements.md'
-    - '../stan-cli/.stan/system/stan.todo.md'
-    - '../stan-cli/.stan/interop/stan-core/**'
+  stan-cli:
+    - ../stan-cli/.stan/system/stan.requirements.md
+    - ../stan-cli/.stan/system/stan.todo.md
+    - ../stan-cli/.stan/interop/stan-core/**
 excludes:
   - "*.local"
   - assets
@@ -23,3 +23,4 @@ scripts:
   knip: npm run knip
 patchOpenCommand: code -g {file}
 stanPath: .stan
+includes: []

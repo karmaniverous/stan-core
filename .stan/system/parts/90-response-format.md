@@ -127,12 +127,13 @@ Before sending a reply, verify all of the following:
 
 Follow the canonical rules in “Patch Policy” (see earlier section). The Response Format adds presentation requirements only (fencing, section ordering, per‑file one‑patch rule). Do not duplicate prose inside patch fences; emit plain unified diff payloads.
 
-Optional Full Listings – On explicit request (including prompts emitted by STAN after a failed apply), include Full Listings only for the relevant files; otherwise omit listings by default. Skip listings for deletions.
+Optional Full Listings — Normal replies only: when explicitly requested by the user in a non‑diagnostics turn, include Full Listings for the relevant files; otherwise omit listings by default.
+Diagnostics replies (after patch‑failure envelopes) MUST provide Full, post‑patch listings as described above (no patches, union across envelopes, no commit message).
+Skip listings for deletions.
 
 ## File Ops (optional pre‑ops; structural changes)
 
 Use “### File Ops” to declare safe, repo‑relative file and directory operations that run before content patches. File Ops are for structure (moves/renames, creates, deletes), while unified‑diff Patches are for editing file contents.
-
 - Verbs:
   - mv <src> <dest> # move/rename a file or directory (recursive), no overwrite
   - cp <src> <dest> # copy a file or directory (recursive), no overwrite; creates parents for <dest>
