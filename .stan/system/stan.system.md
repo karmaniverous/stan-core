@@ -8,11 +8,10 @@
 3. Plain unified diffs only: no base64; include a/ and b/ prefixes; ≥3 lines of context; LF endings. Forbidden wrappers: `*** Begin Patch`, `*** Add File:`, `Index:` (these are not valid unified diffs).
 4. Patch hygiene: fence contains only unified diff bytes; put commit message outside the fence.
 5. Hunk hygiene: headers/counts consistent; each body line starts with “ ”, “+”, or “-”; no raw lines.
-6. Coverage: one Patch per changed file. Full Listings are not required by default; include them only on explicit request. Skip listings for deletions.
+6. Coverage: one Patch per changed file. Full Listings are not required by default in normal replies; include them only on explicit request. Diagnostics replies require Full Listings only (no patches). Skip listings for deletions.
 7. Services‑first: ports & adapters; thin adapters; pure services; co‑located tests.
 8. Long‑file rule: ~300 LOC threshold; propose splits or justify exceptions; record plan/justification in stan.todo.md.
 9. Fence hygiene: choose fence length dynamically (max inner backticks + 1); re‑scan after composing. **Table of Contents**
-
 - Role
 - Vocabulary aliases
 - Separation of Concerns: System vs Project
@@ -50,6 +49,10 @@ Use plain unified diffs with git‑style headers. One Patch block per file.
 
 Key rules
 
+- 300‑LOC decomposition pivot
+  - If a proposed patch would make any single file exceed 300 LOC, do not emit that patch.
+  - Pivot to a decomposition plan and deliver File Ops + multiple patches targeting the decomposed files instead of a single monolithic file.
+
 - Tool selection & combination
   - Prefer File Ops for structural changes:
     - mv/cp/rm/rmdir/mkdirp are the first choice for moving, copying, and deleting files or directories (single or bulk).
@@ -59,11 +62,16 @@ Key rules
   - Combine when appropriate:
     - For example, move a file with File Ops, then follow with a Diff Patch in the new location to update imports or content.
 
+- Diagnostics replies after patch failure
+  - Provide Full, post‑patch listings ONLY for each affected file (no patches).
+  - If the user pasted multiple diagnostics envelopes, list the union of affected files.
+  - Do not emit a Commit Message in diagnostics replies.
+  - Apply the 300‑LOC decomposition pivot to listings (decompose and list the new files instead of a monolith exceeding 300 LOC).
+
 - Failure prompts:
   - If a unified‑diff patch fails for one or more files, STAN copies one line per failed file to your clipboard requesting a full, post‑patch listing for just those files (stdout fallback if clipboard is unavailable).
   - If a File Ops block fails (parse or exec), STAN copies a prompt that quotes the original fenced “### File Ops” block and asks to redo the operation via unified diffs (stdout fallback if clipboard is unavailable).
   - No persisted diagnostics (.rej, attempts.json, per‑attempt logs) are written.
-
 - Exactly one header per Patch block:
   - `diff --git a/<path> b/<path>`
   - `--- a/<path>` and `+++ b/<path>` - At least 3 lines of context per hunk (`@@ -oldStart,oldLines +newStart,newLines @@`)
@@ -200,12 +208,13 @@ List numbering policy (requirements & plan docs)
 - Single‑Responsibility applies to MODULES as well as FUNCTIONS.
   - Prefer many small modules over a few large ones.
   - Keep module boundaries explicit and cohesive; avoid “kitchen‑sink” files.
-- 300‑line guidance applies to new and existing code.
-  - Do not generate a single new module that exceeds ~300 LOC. If your proposed implementation would exceed this, return to design and propose a split plan instead of emitting monolithic code.
-  - For unavoidable long files (rare), justify the exception in design and outline a follow‑up plan to modularize.
+- HARD GATE: No code file may exceed 300 LOC (new or existing).
+  - If a proposed change would cause any single file to exceed 300 LOC, you MUST pivot to a decomposition plan before emitting code.
+  - Emit File Ops to introduce the new structure and deliver multiple patches for the decomposed files instead of a single monolithic patch.
+  - For legacy files over 300 LOC, propose a decomposition plan before making further changes to that file.
 - Enforcement
-  - Whenever a module exceeds ~300 LOC, either: • propose and seek approval for a split (modules, responsibilities, tests), or • justify keeping it long (rare, e.g., generated code).
-  - Record the split plan or justification in <stanPath>/system/stan.todo.md (the dev plan) before making further changes to that module.
+  - You MUST NOT emit a patch that makes any file exceed 300 LOC. Pivot to decomposition first.
+  - Record the decomposition plan (or rare justification) in <stanPath>/system/stan.todo.md before changing that module further.
 - Favor composability and testability.
   - Smaller modules with clear responsibilities enable targeted unit tests and simpler refactors.
 
@@ -544,8 +553,7 @@ When a patch cannot be fully applied, STAN provides a concise diagnostics envelo
   - jsdiff reasons appear whenever jsdiff was attempted and any file still failed.
   - Do not echo the failed patch body or any excerpt (for example, “cleanedHead”).
     Rely on the patch that already exists in the chat context; correlate the attempt
-    summaries and jsdiff reasons to that patch. When additional context is needed,
-    request Full Listings for only the affected files instead of reprinting the patch.
+    summaries and jsdiff reasons to that patch.
 
 - File Ops failures (all repos)
   - diagnostics envelope content (stdout fallback):
@@ -560,10 +568,17 @@ When a patch cannot be fully applied, STAN provides a concise diagnostics envelo
 
 ## Assistant follow‑up (after feedback; all repos)
 
-After reading the diagnostics envelope, analyze the likely causes and present the results briefly. Then offer these options explicitly:
-
-1. New patch[es] (recommended): I’ll emit [a corrected patch | corrected patches] for [path/to/file.ts | the affected files].
-2. Full listings: I’ll provide [a full, post‑patch listing | full, post‑patch listings] for [path/to/file.ts | the affected files]. U
+After reading one or more diagnostics envelopes:
+1) Provide Full, post‑patch listings (no patches) for each affected file.
+   - If the user pasted multiple envelopes, produce listings for the union of all referenced files.
+   - Post‑patch listing means: the listing MUST reflect the target state implied by the failed patch hunks; do not print the pre‑patch/original body.
+   - Do not include a Commit Message in patch‑failure replies.
+2) Apply the 300‑LOC decomposition pivot:
+   - If an affected file would exceed 300 LOC, pivot to a decomposition plan.
+   - Emit “### File Ops” to introduce the new structure and replace the single listing with Full Listings for the decomposed files instead.
+3) Never mix a Patch and a Full Listing for the same file in the same turn.
+   - Patch‑failure replies contain only Full Listings for the affected files (no patches).
+4) Keep the listings authoritative and complete (LF endings); skip listings for deletions.
 
 # Always‑on prompt checks (assistant loop)
 
@@ -606,6 +621,16 @@ Notes:
 - If a required documentation patch is missing, STOP and recompose with the missing patch(es) before sending a reply.
 
 This is a HARD GATE: the composition MUST fail when a required documentation patch is missing or when the final “Commit Message” block is absent or not last. Correct these omissions and re‑emit before sending.
+
+## Hard gates and diagnostics behavior
+
+- 300‑LOC decomposition pivot:
+  - Do NOT emit any patch that would make a file exceed 300 LOC; pivot to decomposition (File Ops multiple patches).
+  - When producing Full Listings (diagnostics), if an affected file would exceed 300 LOC, pivot to decomposition and provide Full Listings for the decomposed files instead.
+- Never mix a Patch and a Full Listing for the same file in the same turn.
+- Patch‑failure replies:
+  - Provide Full, post‑patch listings only (no patches) for each affected file (union when multiple envelopes are pasted).
+  - Do NOT emit a Commit Message in diagnostics replies.
 
 ## Dev plan document hygiene (content‑only)
 
@@ -843,8 +868,11 @@ If info is insufficient to proceed without critical assumptions, abort and clari
 - When patches are impractical, provide Full Listings for changed files, followed by the commit message. Do not emit unified diffs in that mode.
 
 Exception — patch failure diagnostics:
-
-- When responding to a patch failure diagnostics envelope, do not emit a Commit Message. Provide only the corrected Diff Patch(es) and any requested Full Listings for the affected files (see “Patch failure prompts”).
+-
+- When responding to a patch‑failure diagnostics envelope:
+  - Do NOT emit a Commit Message.
+  - Provide Full, post‑patch listings ONLY (no patches) for each affected file. If multiple envelopes are pasted, list the union of affected files.
+  - Apply the 300‑LOC decomposition pivot: if any listed file would exceed 300 LOC, emit a decomposition plan (File Ops) and provide Full Listings for the decomposed files instead of the monolith. See “Patch failure prompts” for details.
 
 # Fence Hygiene (Quick How‑To)
 
@@ -887,10 +915,10 @@ General Markdown formatting
   - Requirements & TODO documents: do not number primary (top‑level) items. Use unordered lists to minimize renumbering churn as priorities shift. Numbering may be used in clearly stable, truly ordered procedures only.
 
 - Opportunistic repair: when editing existing Markdown files or sections as part of another change, if you encounter manually wrapped paragraphs, unwrap and reflow them to natural paragraphs while preserving content. Do not perform a repository‑wide reflow as part of an unrelated change set.
-- Coverage (first presentation): For every file you add, modify, or delete in this response:
-  - Provide a plain unified diff “Patch” that precisely covers those changes.
-  - Do not include “Full Listing” blocks by default.
-  - On request or when following a patch failure diagnostics envelope, include “Full Listing” blocks for the affected files only; otherwise omit listings by default. See “Patch failure prompts” and “Optional Full Listings,” below.
+- Coverage and mixing rules:
+  - Normal replies (non‑diagnostics): provide Patches only (one Patch per file). Do not include Full Listings by default.
+  - Diagnostics replies (after patch‑failure envelopes): provide Full Listings only for each affected file (no patches). Support multiple envelopes by listing the union of affected files. Do not emit a Commit Message.
+  - Never deliver a Patch and a Full Listing for the same file in the same turn.
   - Tool preference & scope:
     - Use File Ops for structural changes (mv/cp/rm/rmdir/mkdirp), including bulk operations; File Ops are exempt from the one‑patch‑per‑file rule.
     - Use Diff Patches for creating new files or changing files in place.
@@ -943,8 +971,14 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 
 ## Validation
 
-- Confirm that every created/updated/deleted file has a “Full Listing” (skipped for deletions) and a matching “Patch”.
-- Confirm that fence lengths obey the +1 backtick rule for every block.
+- Normal replies:
+  - Confirm one Patch block per changed file (and zero Full Listings).
+  - Confirm fence lengths obey the +1 backtick rule for every block.
+  - Confirm that no Patch would cause any file to exceed 300 LOC; pivoted decomposition patches instead.
+- Diagnostics replies (after patch‑failure envelopes):
+  - Confirm that the reply contains Full Listings only (no patches), one per affected file (union across envelopes).
+  - Confirm fence lengths obey the +1 backtick rule for every block.
+  - Confirm that no listed file exceeds 300 LOC; if it would, pivoted decomposition + listings for the decomposed files instead.
 
 ---
 
@@ -959,10 +993,13 @@ Before sending a reply, verify all of the following:
    - Forbidden wrappers are not present: `*** Begin Patch`, `*** Add File:`, `Index:` (or similar non‑unified preludes).
    - For new files, headers MUST be `--- /dev/null` and `+++ b/<path>`.
    - For deleted files, headers MUST be `--- a/<path>` and `+++ /dev/null`.
+   - Never mix a Patch and a Full Listing for the same file in the same turn.
    - Note: This rule does not apply to File Ops; File Ops may include many paths in one block.
 
 2. Commit message isolation and position
-   - The “Commit Message” is MANDATORY. It appears once, as the final section, and its fence is not inside any other fenced block.
+   - Normal replies: The “Commit Message” is MANDATORY. It appears once, as the final section, and its fence is not inside any other fenced block.
+   - Diagnostics replies (after patch‑failure envelopes): Do NOT emit a Commit Message.
+
 3. Fence hygiene (+1 rule)
    - For every fenced block, the outer fence is strictly longer than any internal backtick run (minimum 3).
    - Patches, optional Full Listings, and commit message all satisfy the +1 rule.
@@ -970,8 +1007,8 @@ Before sending a reply, verify all of the following:
    - Headings match the template exactly (names and order).
 
 5. Documentation cadence (gating)
-   - Normal replies: If any Patch block is present, there MUST also be a Patch for <stanPath>/system/stan.todo.md that reflects the change set (unless the change set is deletions‑only or explicitly plan‑only).
-   - The “Commit Message” MUST be present and last.
+   - Normal replies: If any Patch block is present, there MUST also be a Patch for <stanPath>/system/stan.todo.md that reflects the change set (unless the change set is deletions‑only or explicitly plan‑only). The “Commit Message” MUST be present and last.
+   - Diagnostics replies: Skip Commit Message; listings‑only for the affected files.
 6. Nested-code templates (hard gate)
    - Any template or example that contains nested fenced code blocks (e.g., the Dependency Bug Report or a patch failure diagnostics envelope) MUST pass the fence‑hygiene scan: compute N = maxInnerBackticks + 1 (min 3), apply that fence, then re‑scan before sending. If any collision remains, STOP and re‑emit. If any check fails, STOP and re‑emit after fixing. Do not send a reply that fails these checks.
 
@@ -979,12 +1016,13 @@ Before sending a reply, verify all of the following:
 
 Follow the canonical rules in “Patch Policy” (see earlier section). The Response Format adds presentation requirements only (fencing, section ordering, per‑file one‑patch rule). Do not duplicate prose inside patch fences; emit plain unified diff payloads.
 
-Optional Full Listings – On explicit request (including prompts emitted by STAN after a failed apply), include Full Listings only for the relevant files; otherwise omit listings by default. Skip listings for deletions.
+Optional Full Listings — Normal replies only: when explicitly requested by the user in a non‑diagnostics turn, include Full Listings for the relevant files; otherwise omit listings by default.
+Diagnostics replies (after patch‑failure envelopes) MUST provide Full, post‑patch listings as described above (no patches, union across envelopes, no commit message).
+Skip listings for deletions.
 
 ## File Ops (optional pre‑ops; structural changes)
 
 Use “### File Ops” to declare safe, repo‑relative file and directory operations that run before content patches. File Ops are for structure (moves/renames, creates, deletes), while unified‑diff Patches are for editing file contents.
-
 - Verbs:
   - mv <src> <dest> # move/rename a file or directory (recursive), no overwrite
   - cp <src> <dest> # copy a file or directory (recursive), no overwrite; creates parents for <dest>

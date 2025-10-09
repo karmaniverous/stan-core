@@ -58,8 +58,8 @@ const main = async (): Promise<void> => {
   }
 };
 
-// Execute only when invoked directly (e.g., `tsx gen-system.ts`)
-const thisHref = pathToFileURL(path.resolve('gen-system.ts')).href;
+// Execute only when invoked directly (e.g., `tsx tools/gen-system.ts`)
+const thisHref = pathToFileURL(path.resolve('tools', 'gen-system.ts')).href;
 if (import.meta.url === thisHref) {
   void main();
 }
