@@ -2,8 +2,10 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### [0.1.2](https://github.com/karmaniverous/stan-core/compare/0.1.1...0.1.2)
+#### [0.1.3](https://github.com/karmaniverous/stan-core/compare/0.1.1...0.1.3)
 
+- docs(system): clarify diagnostics and post‑patch listing [`faa23b2`](https://github.com/karmaniverous/stan-core/commit/faa23b2c7e7b7dc95e78e94bd1a2303af66e1f7c)
+- fixed system prompt generator & updated prompt [`349e1d4`](https://github.com/karmaniverous/stan-core/commit/349e1d4e8d5e9939935cc762cf8d99fa86d3591e)
 - docs(system): make diagnostics listings mandatory; remove legacy “optional on request” [`40ab4dc`](https://github.com/karmaniverous/stan-core/commit/40ab4dc50b272c96bf667eefbc978c46b539ce12)
 
 #### [0.1.1](https://github.com/karmaniverous/stan-core/compare/0.1.0...0.1.1)
