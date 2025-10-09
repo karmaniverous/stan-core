@@ -2,9 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.1.2](https://github.com/karmaniverous/stan-core/compare/0.1.1...0.1.2)
+
+- docs(system): make diagnostics listings mandatory; remove legacy “optional on request” [`40ab4dc`](https://github.com/karmaniverous/stan-core/commit/40ab4dc50b272c96bf667eefbc978c46b539ce12)
+
 #### [0.1.1](https://github.com/karmaniverous/stan-core/compare/0.1.0...0.1.1)
 
+> 7 October 2025
+
 - docs(system): 300‑LOC hard gate + decomposition; diagnostics = listings only [`7363cd6`](https://github.com/karmaniverous/stan-core/commit/7363cd68b74e0fbb06dad7f0f1907c82d1eb05c3)
+- chore: release v0.1.1 [`e7815da`](https://github.com/karmaniverous/stan-core/commit/e7815dac4f3678352791d4829c467cf82cb06525)
 
 #### 0.1.0
 

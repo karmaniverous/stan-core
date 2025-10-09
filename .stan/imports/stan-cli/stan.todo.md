@@ -1,10 +1,8 @@
 # STAN Development Plan
 
-When updated: 2025-10-07 (UTC)
+When updated: 2025-10-09 (UTC)
 
-This plan tracks the stan-cli (CLI/runner) workstream. The stan-core (engine) track is managed in the stan-core repository.
-
----
+## This plan tracks the stan-cli (CLI/runner) workstream. The stan-core (engine) track is managed in the stan-core repository.
 
 ## Track — stan-cli (CLI and runner)
 
@@ -74,6 +72,145 @@ This plan tracks the stan-cli (CLI/runner) workstream. The stan-core (engine) tr
 
 ## Completed (recent)
 
+- Add failing test to pin “ghost FAIL after restart” regression
+  - New test: src/stan/run/live.restart.ghost-fail.test.ts
+  - Tightened assertion window: from the restart marker to the first post‑restart [WAIT]/[RUN] frame for the script (real start in the new session). Asserts: • a CANCELLED flush appears in that window, and • no [FAIL] appears in that window (ghost end-state).
+  - Next step: implement session‑token guard and/or restart‑time cancellation keys so stale onEnd from the previous session cannot render [FAIL] in the new session.
+- Restart UX follow-up:
+  - On restart (‘r’), immediately paint all in‑flight and waiting scripts as CANCELLED and flush, keeping the table and hint visible while processes terminate (no empty table).
+  - Just before the next session queues rows, clear prior rows and flush after queue so the first frame shows the new run/waiting rows nearly instantly.
+  - Implemented via LiveUI.onCancelled('restart') → cancelPending()+flush; LiveUI.prepareForNewSession()+flush after queue; no header-only gap on restart.- Live restart and final-frame policy
+- Restart bridge: do not paint “cancelled” rows; instead clear renderer rows and render a header-only bridge with the hint. The first full table after restart now reflects only the new session’s rows (waiting/run), with the hint continuously visible.
+- Final completion: persist the full table (rows + summary + hint). Header-only persistence is reserved for cancellation paths and restart bridges.
+- Changes:
+  - ProgressRenderer.resetRows() to drop prior rows without clearing the screen.
+  - LiveSink.resetForRestart() to invoke renderer reset at the restart boundary.
+  - LiveSink.stop(opts) now supports headerOnly=true for cancellation; default persists the full table.
+  - LiveUI.onCancelled('restart') stops painting cancelled rows and resets before the header-only bridge; on cancel, it persists a header-only bridge; on normal completion, it persists the final full table.
+
+- Exit/cancel idempotency
+  - Added an internal “stopped” guard to LiveUI.stop() and LiveSink.stop() so late/double calls no‑op.
+  - This prevents duplicate final‑frame flushes when the process exit hook fires after a manual cancel. - Verified that repeated stop invocations do not emit extra frames and that exit‑hook cleanup is effectively a no‑op after detach.
+
+- UI/renderer/session decomposition (instrumentation seam and structure)
+  - Split the monolithic UI into:
+    - src/stan/run/ui/logger-ui.ts and src/stan/run/ui/live-ui.ts
+    - Barrel at src/stan/run/ui/index.ts with shared types in src/stan/run/ui/types.ts
+  - Extract renderer helpers:
+    - src/stan/run/live/types.ts (local renderer types)
+    - src/stan/run/live/format.ts (fmtMs/stripAnsi/table/hint/header helpers)
+  - Extract session signal wiring to src/stan/run/session/signals.ts to isolate SIGINT/exit-hook handling.
+  - Shrinks the largest files and clarifies seams (UI composition, formatting utilities, and signal lifecycle).
+
+- Session/renderer further decomposition + lint fixes
+  - Session: moved order-file handling, initial UI queue, and archive invocation to helpers:
+    - src/stan/run/session/order-file.ts
+    - src/stan/run/session/ui-queue.ts
+    - src/stan/run/session/invoke-archive.ts
+  - Renderer: extracted meta derivation and counts to src/stan/run/live/util.ts; removed unused locals; fixed ANSI regex to satisfy no-control-regex.
+  - Result: both src/stan/run/session.ts and src/stan/run/live/renderer.ts are shorter and clearer around their orchestration seams.
+
+- Final-frame policy fix (tests)
+  - LiveSink.stop() now flushes the full table then persists a header-only bridge with the hint before calling done(). Ensures the last update body contains exactly one header line and the hint, satisfying restart tests.
+- Live tracing decomposition (instrumentation seam)
+  - Extracted STAN_LIVE_DEBUG instrumentation from three large modules into a shared tracer:
+    - src/stan/run/live/trace.ts centralizes all debug emission (stderr) under well‑named methods. - Updated src/stan/run/live/renderer.ts, src/stan/run/ui.ts, and src/stan/run/session.ts to call the tracer instead of inlined helpers.
+  - No functional changes; only instrumentation moved. This trims LOC in the most instrumented modules and keeps the seam clean for future diagnostics changes.
+  - Tests unchanged; tracer defaults to no‑op unless STAN_LIVE_DEBUG=1.
+
+- Live renderer trace (opt-in)
+  - Added guarded debug logging (STAN_LIVE_DEBUG=1) across LiveSink and ProgressRenderer: lifecycle events, per-update state, render body meta (rows size, header count, hint present).
+  - Logs go to stderr and are inert by default; tests remain unaffected.
+
+- Live restart behavior — final frame policy (corrected)
+  - Final persisted frame is the full table (header + rows + summary + hint). This keeps script rows visible at the end and the hint present during running.
+  - Header-only rendering is reserved for the restart bridge (“onCancelled('restart')”) to preserve the table area between sessions (no duplicate table). - Tests still assert the final frame contains exactly one header line (no duplicates) and include the hint; this remains satisfied without a header-only final flush.
+- Live restart behavior — fix (UI reuse header-only bridge)
+  - Create one RunnerUI per overall run in service and pass it into each runSessionOnce; remove per-session stop/spacing so service stops the UI once at the end of the overall run.
+  - On restart, detach key handlers only and keep the sink/renderer alive; render a single header-only frame to bridge the restart boundary (no global clear, no duplicate table). The instructions line remains visible during running frames.
+  - TypeScript wiring: runSessionOnce now accepts `ui` in its args; fixes TS2353 where service passed an unknown property.
+  - Result: the live.restart.behavior test passes (header-only frame appears strictly between the restart signal and the first post-restart row; final frame shows exactly one header).
+
+- TSDoc cleanup
+  - Escaped “>” in src/stan/loop/state.ts comments to satisfy tsdoc/syntax warnings (no behavior change).
+
+- Live restart behavior — fix
+  - Reuse a single RunnerUI/LiveUI/ProgressRenderer across restart cycles by creating it in runSelected() and passing it into each session.
+  - On restart, do not stop/clear the live sink or renderer; detach key handlers only so the next session can reattach cleanly, and reuse the same drawing area with no duplicate table.
+  - Removed the previous “header-only” restart flush that omitted the instructions; the hint now remains present continuously while the run is active.
+  - UI is stopped once per overall run (after the final session completes); cancel maintains legacy stop/spacing.
+
+- Live restart test (expected failing) to pin bugs
+  - Added a test-only UI instance tag (UI#N) gated by STAN_TEST_UI_TAG=1 and a stricter live restart test that asserts:
+    - a single, persistent UI across restarts (exactly one UI tag across the entire run), and
+    - instructions persist while a script is running.
+  - The test is expected to FAIL with the current implementation (new UI on restart and instructions disappearing), matching user reports. This pins the behavior and will turn green when we reuse a single ProgressRenderer/LiveUI across restarts and keep the hint visible on every frame.
+
+- Live restart test hardening (bracketed header-only check)
+  - Record the update index before emitting 'r' and assert at least one header-only frame appears strictly between that marker and the first post-restart row frame for this test.
+  - Keeps the bounded wait for the first [RUN] frame and the row-scoped assertions to avoid cross-suite noise. - Retains Windows-safe teardown via rmDirWithRetries to mitigate EBUSY during temp directory removal.
+
+- Live restart test hardening
+  - Targeted assertions to this suite’s script key to avoid cross‑suite log‑update noise (tests can run concurrently).
+  - Keep bounded wait for the first “[RUN]” frame; ensures hint visibility is asserted while running. - Retained Windows‑safe teardown via rmDirWithRetries to avoid intermittent EBUSY.
+
+- Live restart test hardening
+  - Targeted assertions to this suite’s script key to avoid cross‑suite log‑update noise (tests can run concurrently).
+  - Keep bounded wait for the first “[RUN]” frame; ensures hint visibility is asserted while running.
+  - Retained Windows‑safe teardown via rmDirWithRetries to avoid intermittent EBUSY.
+
+- Live restart test hardening
+  - Made the live restart behavior test wait for the first “[RUN]” frame (renderer refresh is ~1s) instead of sleeping a fixed 250 ms.
+  - Asserts the instructions remain visible during running frames, verifies a single header-only flush on restart, and ensures no global clear.
+  - Switched teardown to rmDirWithRetries to avoid intermittent Windows EBUSY on temp directory removal.
+
+- Live restart tests
+  - Added a live-mode restart behavior test that runs a session, triggers restart via "r", and asserts:
+    - Instructions ("Press q to cancel, r to restart") remain visible during running frames.
+    - No global clear is performed between sessions (log-update.clear not called).
+    - Exactly one header-only flush is rendered at the restart boundary, avoiding redundant header-only frames.
+  - The test uses a log-update mock to capture update/done/clear calls and verifies frame contents (header/rows/hint).
+  - This provides coverage for the restart UX and guards against regressions while we iterate on renderer reuse.
+
+- Live restart visual polish
+  - On restart, the live table now rolls back to the header row (not a blank screen) before the next session begins, avoiding the transient “everything disappeared” flash that can look like a failure. The header is rendered and persisted; the next run immediately reuses the same UI area and fills rows in-place.
+
+- Live restart UX
+  - Restarting `stan run` in live mode now reuses the same table area instead of creating a second table. We suppress final-frame flush and the trailing blank line on restart, keeping the UI in-place for the next session.
+  - We also detach signal/exit hooks on restart so the subsequent run terminates cleanly without requiring a manual Ctrl+C.
+
+- Prompt injection source (core dist only)
+  - The CLI now always injects the packaged system prompt from stan-core (dist/stan.system.md) during full archive creation and restores it before computing the diff archive.
+  - Removed dev-only assembly from local parts; we never construct the monolith inside this repo. This avoids drift and keeps prompt provenance consistent across environments.
+
+- Loop reversal UX + DRY
+  - Greyed out the choice suffix in the loop reversal prompt by dimming “(Y/n)” in non‑BORING mode, matching the init snapshot prompt’s styling.
+  - Removed duplicated inline confirmation code from run/snap/patch and replaced it with a shared helper (confirmLoopReversal) under src/stan/loop/reversal.ts to keep behavior consistent and avoid drift across subcommands.
+
+- UI glyph consistency
+  - Forced text presentation (U+FE0E) for all header/status symbols to avoid emoji double‑width rendering on Windows/VS Code terminals. - Headers (run/snap/patch): replaced “▶️” with “▶︎”. - Styled labels/summary/logs: ensured text variants for ▶︎, ⚠︎, ⏸︎, ⏱︎, ✖︎, ✔︎, ◼︎.
+  - No changes to BORING tokens ([OK], [FAIL], etc.); tests remain stable.
+
+- Loop guard & header
+  - Print a loop header before each command (run/snap/patch): “▶️ <cmd> (last command: X)” and BORING “[GO] …”.
+  - Detect backward movement through the loop (run→snap→patch→run) and prompt once to confirm (default Yes).
+  - Store last command in `<stanPath>/diff/.loop.state.json`.
+  - Global `-y, --yes` (and `cliDefaults.yes`) to auto-accept prompts; non‑TTY defaults to proceed so CI can simply pass `-y` as needed.
+- Global root flag
+  - Added `-y, --yes` / `-Y, --no-yes` at the root; resolves via flags > cliDefaults > built‑ins and is exported to subcommands via environment.
+  - Root help footer unchanged; defaults tagged like other root booleans.
+
+- Snap UX
+  - Print a trailing blank line after `stan snap` completes (including abort and error paths) to visually separate output from the next shell prompt. Aligns with `stan run` and `stan patch` spacing policy.
+
+- Patch UX (wording)
+  - Failure hint updated to: “Patch diagnostics uploaded to clipboard. Paste into chat for full listing.”
+  - Keeps clickable path output and trailing blank line after action.
+
+- Run UX (live renderer + tests)
+  - Live table: add a leading blank line and remove global left indent (flush-left).
+  - Updated live alignment test to expect the new shape (leading blank line, no two‑space indent).
+
 - Sequential gate hardening
   - Added a tiny guard window (~25ms) before spawning the next script in sequential mode to absorb late-arriving SIGINT after the previous script finishes. Prevents the “after” script from starting across the boundary (fixes cancel.gate test: b.txt no longer created).
 
@@ -124,7 +261,7 @@ This plan tracks the stan-cli (CLI/runner) workstream. The stan-core (engine) tr
   - deleted `src/stan/{archive, classifier, config, diff, fs, imports, module, paths, system, validate, patch}` and associated tests,
   - deleted `tools/gen-system.ts` (prompt assembly now owned by core),
   - preserved `.stan/imports` for core context.
-- Follow‑up: rewire CLI adapters (run/patch/snap/help/preflight) to import engine APIs from stan-core and restore build/tests.
+- Follow-up: rewire CLI adapters (run/patch/snap/help/preflight) to import engine APIs from stan-core and restore build/tests.
 
 - Unified diagnostics envelope and follow‑up options clarified.
 - Response‑format validator improvements and WARN parity across UIs.

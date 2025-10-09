@@ -38,6 +38,7 @@ When a patch cannot be fully applied, STAN provides a concise diagnostics envelo
 After reading one or more diagnostics envelopes:
 1) Provide Full, post‑patch listings (no patches) for each affected file.
    - If the user pasted multiple envelopes, produce listings for the union of all referenced files.
+   - Post‑patch listing means: the listing MUST reflect the target state implied by the failed patch hunks; do not print the pre‑patch/original body.
    - Do not include a Commit Message in patch‑failure replies.
 2) Apply the 300‑LOC decomposition pivot:
    - If an affected file would exceed 300 LOC, pivot to a decomposition plan.

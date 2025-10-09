@@ -7,11 +7,10 @@
 3. Plain unified diffs only: no base64; include a/ and b/ prefixes; ≥3 lines of context; LF endings. Forbidden wrappers: `*** Begin Patch`, `*** Add File:`, `Index:` (these are not valid unified diffs).
 4. Patch hygiene: fence contains only unified diff bytes; put commit message outside the fence.
 5. Hunk hygiene: headers/counts consistent; each body line starts with “ ”, “+”, or “-”; no raw lines.
-6. Coverage: one Patch per changed file. Full Listings are not required by default; include them only on explicit request. Skip listings for deletions.
+6. Coverage: one Patch per changed file. Full Listings are not required by default in normal replies; include them only on explicit request. Diagnostics replies require Full Listings only (no patches). Skip listings for deletions.
 7. Services‑first: ports & adapters; thin adapters; pure services; co‑located tests.
 8. Long‑file rule: ~300 LOC threshold; propose splits or justify exceptions; record plan/justification in stan.todo.md.
 9. Fence hygiene: choose fence length dynamically (max inner backticks + 1); re‑scan after composing. **Table of Contents**
-
 - Role
 - Vocabulary aliases
 - Separation of Concerns: System vs Project
