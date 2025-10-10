@@ -9,7 +9,7 @@ import { ZodError } from 'zod';
 
 import { DEFAULT_OPEN_COMMAND, DEFAULT_STAN_PATH } from './defaults';
 import { findConfigPathSync } from './discover';
-import { ConfigSchema, type ParsedConfig } from './schema';
+import { type Config, configSchema } from './schema';
 import type { ContextConfig, ScriptMap } from './types';
 
 const formatZodError = (e: unknown): string => {
@@ -69,9 +69,9 @@ const parseFile = async (abs: string): Promise<ContextConfig> => {
   const cfgUnknown: unknown = abs.endsWith('.json')
     ? (JSON.parse(raw) as unknown)
     : (YAML.parse(raw) as unknown);
-  let parsed: ParsedConfig;
+  let parsed: Config;
   try {
-    parsed = ConfigSchema.parse(cfgUnknown);
+    parsed = configSchema.parse(cfgUnknown);
   } catch (e) {
     throw new Error(formatZodError(e));
   }
@@ -107,7 +107,7 @@ export const loadConfigSync = (cwd: string): ContextConfig => {
     ? (JSON.parse(raw) as unknown)
     : (YAML.parse(raw) as unknown);
   try {
-    const parsed = ConfigSchema.parse(cfgUnknown);
+    const parsed = configSchema.parse(cfgUnknown);
 
     // Guard against reserved CLI script names.
     ensureNoReservedScriptKeys(parsed.scripts ?? {});

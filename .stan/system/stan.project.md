@@ -107,3 +107,26 @@ Use interop messages to coordinate cross‑repo actions (CLI ↔ Core). Messages
 - Never propose changes to imported documents (`.stan/imports/**`). Imported content is context only.
 
 ---
+
+## 7) Code conventions — Zod schema and derived types
+
+- Naming convention:
+  - Zod schema identifiers MUST be lowerCamelCase with a Schema suffix:
+    - Example: `abcXyzSchema` (e.g., `configSchema`, `userSettingsSchema`).
+  - The derived TypeScript type MUST be PascalCase without a suffix:
+    - Example: `AbcXyz` (e.g., `Config`, `UserSettings`).
+- Pairing rule:
+  - Always pair names consistently between schema and type:
+    - <name>Schema (schema) ↔ <Name> (type).
+  - Do not reuse the same identifier for both a schema and a type.
+- Example:
+
+```ts
+import { z } from 'zod';
+
+export const userSettingsSchema = z.object({
+  theme: z.enum(['light', 'dark']).default('light'),
+});
+export type UserSettings = z.infer<typeof userSettingsSchema>;
+```
+---

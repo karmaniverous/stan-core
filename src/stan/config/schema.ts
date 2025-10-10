@@ -18,7 +18,7 @@ const isValidRegex = (s: string): boolean => {
 const StrictStringArray = z.array(z.string()).default([]).optional();
 
 const ImportsValue = z.union([z.string(), z.array(z.string())]);
-export const ImportsSchema = z.record(z.string(), ImportsValue).optional();
+export const importsSchema = z.record(z.string(), ImportsValue).optional();
 
 const ScriptObject = z
   .object({
@@ -33,7 +33,7 @@ const ScriptObject = z
   })
   .strict();
 
-export const ScriptsSchema = z
+export const scriptsSchema = z
   .record(z.string(), z.union([z.string().min(1), ScriptObject]))
   .default({});
 
@@ -49,7 +49,7 @@ const coerceBool = z
   })
   .optional();
 
-const CliDefaultsRun = z
+const cliDefaultsRunSchema = z
   .object({
     archive: coerceBool,
     combine: coerceBool,
@@ -65,45 +65,45 @@ const CliDefaultsRun = z
   .strict()
   .optional();
 
-const CliDefaultsPatch = z
+const cliDefaultsPatchSchema = z
   .object({
     file: z.string().optional(),
   })
   .strict()
   .optional();
 
-const CliDefaultsSnap = z
+const cliDefaultsSnapSchema = z
   .object({
     stash: coerceBool,
   })
   .strict()
   .optional();
 
-export const CliDefaultsSchema = z
+export const cliDefaultsSchema = z
   .object({
     debug: coerceBool,
     boring: coerceBool,
-    patch: CliDefaultsPatch,
-    run: CliDefaultsRun,
-    snap: CliDefaultsSnap,
+    patch: cliDefaultsPatchSchema,
+    run: cliDefaultsRunSchema,
+    snap: cliDefaultsSnapSchema,
   })
   .strict()
   .optional();
 
-export const ConfigSchema = z
+export const configSchema = z
   .object({
     stanPath: z
       .string()
       .min(1, { message: 'stanPath must be a non-empty string' }),
-    scripts: ScriptsSchema,
+    scripts: scriptsSchema,
     includes: StrictStringArray,
     excludes: StrictStringArray,
-    imports: ImportsSchema,
+    imports: importsSchema,
     maxUndos: z.coerce.number().int().positive().optional(),
     devMode: coerceBool,
-    cliDefaults: CliDefaultsSchema,
+    cliDefaults: cliDefaultsSchema,
     patchOpenCommand: z.string().optional(),
   })
   .strict();
 
-export type ParsedConfig = z.infer<typeof ConfigSchema>;
+export type Config = z.infer<typeof configSchema>;

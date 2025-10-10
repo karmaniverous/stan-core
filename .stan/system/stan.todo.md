@@ -1,6 +1,6 @@
 # STAN Development Plan
 
-When updated: 2025-10-09 (UTC)
+When updated: 2025-10-10 (UTC)
 
 This plan tracks near‑term and follow‑through work for the stan‑core engine only. CLI/runner tasks are managed in the stan‑cli repository.
 
@@ -16,6 +16,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- Project policy — Zod schema/type naming
+  - Adopted a project-wide convention for Zod artifacts:
+    - Schemas: lowerCamelCase with “Schema” suffix (e.g., `configSchema`).
+    - Derived types: PascalCase without suffix (e.g., `Config`).
+  - Documented the rule in `.stan/system/stan.project.md` under
+    “Code conventions — Zod schema and derived types.”
 - System prompt — diagnostics clarity (polish)
   - Quick Reference rule #6 now explicitly distinguishes normal replies (patches by default; listings on request) from diagnostics replies (Full Listings only; no patches).
   - Added a one‑sentence definition of “post‑patch listing” in the patch‑failure follow‑up: listings MUST reflect the target state implied by the failed hunks; never print the original body.
