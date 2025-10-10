@@ -16,6 +16,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- Interop (stan-cli) — core config slimming + CLI config extraction
+  - Posted `.stan/interop/stan-cli/20251010-000000Z-core-config-slimming-and-cli-config.md`
+    with the plan of attack and drop-in code:
+    - defaults (DEFAULT_OPEN_COMMAND),
+    - CLI schemas (scripts/cliDefaults/*),
+    - loader with x-stan-cli preferred and legacy top-level fallback.
+  - Preserves current CLI behavior while enabling a clean, namespaced config.
 - Project policy — Zod schema/type naming
   - Adopted a project-wide convention for Zod artifacts:
     - Schemas: lowerCamelCase with “Schema” suffix (e.g., `configSchema`).
