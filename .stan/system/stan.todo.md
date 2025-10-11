@@ -6,6 +6,20 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- Configuration namespacing (immediate)
+  - Core
+    - Loader reads `stan-core` strictly; error when missing.
+    - Remove root‑object passthrough; validate only minimal keys in `stan-core`.
+    - Normalize `imports` to arrays; keep `includes/excludes` empty‑array defaults.
+    - Tests: YAML/JSON positive cases; missing `stan-core` error case; negative schema cases.
+  - CLI (handoff to stan-cli)
+    - Loader reads `stan-cli` strictly (see interop note); early friendly error when missing.
+    - Update examples/init templates to namespaced layout; update help/docs accordingly.
+    - Tests: namespaced happy paths; early error; remove/disable x‑stan‑cli/legacy tests after both sides ship.
+  - Transition hygiene
+    - Keep STAN functional during release sequencing only; no long tail of backward‑compat behavior.
+    - Announce canonical model in docs and interop; remove transitional acceptance as soon as both packages publish.
+
 - Packaging & distribution
   - Ensure Rollup outputs ESM/CJS + `.d.ts` only (no CLI bundle).
   - Ship `dist/stan.system.md` alongside library artifacts.
@@ -97,8 +111,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Typedoc documents reflect engine‑only surfaces; CHANGELOG retained.
   - knip hints addressed; unused config entries pruned.
 
-* +- Core — config slimming (engine-only schema + unknown-key tolerance)
-* - Slimmed `src/stan/config/schema.ts` to validate only `stanPath`, `includes`, `excludes`, and `imports`; switched to `.passthrough()` to tolerate unknown keys (legacy CLI fields).
-* - Updated loaders/types to the minimal `ContextConfig` shape; removed CLI-facing guards/defaults from `src/stan/config/load.ts`.
-* - Adjusted tests to reflect the minimal shape and unknown-key tolerance; removed CLI-only warnPattern tests.
-* - Left the repository’s `stan.config.yml` unchanged for now (legacy CLI keys continue to parse under unknown-key tolerance).
+- Change of direction — namespaced config (stan-core/stan-cli)
+  - Adopted top‑level namespacing in `stan.config.*`: `stan-core` for engine, `stan-cli` for CLI. Backward compatibility is not a factor beyond keeping STAN functional during the brief transition.
+  - Core: strict loader for `stan-core` (no root passthrough); minimal schema only; error when missing section.
+  - CLI: strict loader for `stan-cli`; drop `x-stan-cli`/legacy acceptance after coordinated release.
+  - Tests and docs updated to reflect namespaced model; examples and init templates updated.
+  - Interop: posted `.stan/interop/stan-cli/20251011-000000Z-config-namespacing-switch.md` with loader drop‑in and release guidance.
+  - Follow‑through: remove transitional acceptance as soon as both packages publish namespaced loaders; communicate in release notes.
