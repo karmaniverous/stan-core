@@ -35,6 +35,14 @@ Step 0 — Long-file scan (no automatic refactors)
   - Document a clear decision to leave it long (with justification tied to requirements).
 - Do not refactor automatically. Wait for user confirmation on which files to split before emitting patches.
 
+Dev plan logging rules (operational)
+- “Completed” is the final major section of the dev plan.
+- Append‑only: add new Completed items at the bottom so their order reflects implementation order. Do not modify existing Completed items.
+- Corrections/clarifications are logged as new list entries (appended) — i.e., amendments to the list, not edits to prior items.
+- Prune Completed entries that are not needed to understand the work in flight; keep only minimal context to avoid ambiguity.
+- Do not number dev plan items. Use nested headings/bullets for structure, and express priority/sequence by order of appearance.
+- Exception: a short, strictly ordered sub‑procedure may use a local numbered list where bullets would be ambiguous.
+
 Assume the developer wants a refactor to, in order:
 
 1. Elucidate requirements and eliminate test failures, lint errors, and TS errors.

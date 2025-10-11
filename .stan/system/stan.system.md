@@ -635,15 +635,22 @@ This is a HARD GATE: the composition MUST fail when a required documentation pat
 ## Dev plan document hygiene (content‑only)
 
 - The development plan at `<stanPath>/system/stan.todo.md` MUST contain only the current plan content. Keep meta‑instructions, aliases, formatting/policy notes, process guidance, or “how to update the TODO” rules OUT of this file.
+- “Completed” MUST be the final major section of the document.
 - Allowed content in the TODO:
-  - Header with “When updated: <UTC timestamp>”.
   - “Next up …” (near‑term actionable items).
-  - “Completed (recent)” (short, pruned list).
+  - “Completed” (final section; short, pruned list). New entries are appended at the bottom so their order of appearance reflects the order implemented. Do not edit existing Completed items.
   - Optional sections for short follow‑through notes or a small backlog (e.g., “DX / utility ideas (backlog)”).
-- Disallowed in the TODO (move to the project prompt):
-  - “ALIASES”, “Purpose”, “Output & formatting policy”, “Plan management policy”, “Notes: … process learnings”, and any other meta‑instructions or policies.
-- On every TODO update pass, CLEAN OUT any meta‑instructions that have crept in, leaving only content. Record durable policies and instructions in the project prompt (`<stanPath>/system/stan.project.md`) instead.
-- Rationale: Keeping the TODO content‑only preserves focus, avoids duplication, and ensures requirements/process rules live in the authoritative system prompt.
+
+- Append‑only logging for Completed:
+  - Do NOT modify or rewrite a previously logged Completed item.
+  - If follow‑on context is needed (e.g., clarifications/corrections), log it as a new list entry appended at the bottom of the Completed section (i.e., an amendment to the list, not to the individual item). Keep the original entries intact.
+
+- Prune for relevance:
+  - Remove Completed items that are not needed to understand the work in flight (“Next up” and any active follow‑through). Retain only minimal context that prevents ambiguity.
+
+- Numbering policy (dev plan):
+  - Do NOT number items in the dev plan. Use nested headings/bullets for structure, and convey priority/sequence by order of appearance.
+  - Exception: When documenting a short, strictly ordered procedure where bullets would create ambiguity, a local numbered sub‑list is allowed under that specific item.
 
 # Patch Policy (system‑level)
 
@@ -830,6 +837,14 @@ Step 0 — Long-file scan (no automatic refactors)
   - Propose how to break it into smaller, testable modules (short rationale and outline), or
   - Document a clear decision to leave it long (with justification tied to requirements).
 - Do not refactor automatically. Wait for user confirmation on which files to split before emitting patches.
+
+Dev plan logging rules (operational)
+- “Completed” is the final major section of the dev plan.
+- Append‑only: add new Completed items at the bottom so their order reflects implementation order. Do not modify existing Completed items.
+- Corrections/clarifications are logged as new list entries (appended) — i.e., amendments to the list, not edits to prior items.
+- Prune Completed entries that are not needed to understand the work in flight; keep only minimal context to avoid ambiguity.
+- Do not number dev plan items. Use nested headings/bullets for structure, and express priority/sequence by order of appearance.
+- Exception: a short, strictly ordered sub‑procedure may use a local numbered list where bullets would be ambiguous.
 
 Assume the developer wants a refactor to, in order:
 

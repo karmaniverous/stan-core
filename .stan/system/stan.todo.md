@@ -1,7 +1,5 @@
 # STAN Development Plan
 
-When updated: 2025-10-10 (UTC)
-
 This plan tracks near‑term and follow‑through work for the stan‑core engine only. CLI/runner tasks are managed in the stan‑cli repository.
 
 ---
@@ -16,6 +14,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
+- System prompt — dev plan logging rules
+  - Completed is the final section; new entries are appended at the bottom (append‑only).
+  - No edits to existing Completed items; clarifications/corrections are logged as new list entries (amendments to the list).
+  - Prune Completed entries not needed to understand work in flight; keep minimal context only.
+  - No numbering in the dev plan (use nested bullets); a short, strictly ordered sub‑procedure may use a local numbered list when needed.
+
 - Interop (stan-cli) — core config slimming + CLI config extraction
   - Posted `.stan/interop/stan-cli/20251010-000000Z-core-config-slimming-and-cli-config.md`
     with the plan of attack and drop-in code:
