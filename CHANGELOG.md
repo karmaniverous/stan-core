@@ -2,9 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.2.0](https://github.com/karmaniverous/stan-core/compare/0.1.3...0.2.0)
+
+- docs(project): add Zod schema/type naming convention [`f37f7ff`](https://github.com/karmaniverous/stan-core/commit/f37f7ffd9096a5d8dcfa8b13ee14deb361f482e9)
+- docs(dev-plan): append-only Completed, no timestamp, no numbering; Completed last [`87e73d1`](https://github.com/karmaniverous/stan-core/commit/87e73d198089573219f56e8342ac49d5608f5b26)
+- chore(interop): post core-config slimming + CLI config extraction plan/code to stan-cli [`f33a448`](https://github.com/karmaniverous/stan-core/commit/f33a448ad82e4682a22118b02cfa8e1d79da9f24)
+
 #### [0.1.3](https://github.com/karmaniverous/stan-core/compare/0.1.1...0.1.3)
 
+> 9 October 2025
+
 - docs(system): clarify diagnostics and post‑patch listing [`faa23b2`](https://github.com/karmaniverous/stan-core/commit/faa23b2c7e7b7dc95e78e94bd1a2303af66e1f7c)
+- chore: release v0.1.3 [`9e77d7f`](https://github.com/karmaniverous/stan-core/commit/9e77d7f0e01f2ea28575f6f92581f8b1add8a535)
 - fixed system prompt generator & updated prompt [`349e1d4`](https://github.com/karmaniverous/stan-core/commit/349e1d4e8d5e9939935cc762cf8d99fa86d3591e)
 - docs(system): make diagnostics listings mandatory; remove legacy “optional on request” [`40ab4dc`](https://github.com/karmaniverous/stan-core/commit/40ab4dc50b272c96bf667eefbc978c46b539ce12)
 
