@@ -7,15 +7,17 @@ import { describe, expect, it } from 'vitest';
 import { ensureOutputDir, loadConfig } from '@/stan/config';
 
 const write = (p: string, c: string) => writeFile(p, c, 'utf8');
-describe('config loading (minimal engine fields + unknown-key tolerance)', () => {
+describe('config loading (namespaced stan-core)', () => {
   it('loads valid JSON config and tolerates extraneous keys', async () => {
     const cwd = await mkdtemp(path.join(tmpdir(), 'stan-json-'));
     const json = JSON.stringify(
       {
-        stanPath: 'stan',
-        // unknown/CLI-facing keys are tolerated and ignored by the engine
-        scripts: { test: 'npm run test' },
-        cliDefaults: { run: { sequential: true } },
+        'stan-core': {
+          stanPath: 'stan',
+          excludes: ['README.md'],
+        },
+        // foreign sections are ignored by the engine
+        'stan-cli': { scripts: { test: 'npm run test' } },
       },
       null,
       2,
@@ -24,8 +26,8 @@ describe('config loading (minimal engine fields + unknown-key tolerance)', () =>
 
     const cfg = await loadConfig(cwd);
     expect(cfg.stanPath).toBe('stan');
-    expect(cfg.includes).toEqual([]);
-    expect(cfg.excludes).toEqual([]);
+    expect(Array.isArray(cfg.includes)).toBe(true);
+    expect(cfg.excludes).toEqual(['README.md']);
 
     const out = await ensureOutputDir(cwd, cfg.stanPath);
     await mkdir(out, { recursive: true }); // idempotent
@@ -33,12 +35,7 @@ describe('config loading (minimal engine fields + unknown-key tolerance)', () =>
 
   it('loads valid YAML config (stan.config.yml)', async () => {
     const cwd = await mkdtemp(path.join(tmpdir(), 'stan-yml-'));
-    const yml = [
-      'stanPath: stan',
-      '# unknown key tolerated',
-      'scripts:',
-      '  test: npm run test',
-    ].join('\n');
+    const yml = ['stan-core:', '  stanPath: stan', '  includes: []'].join('\n');
     await write(path.join(cwd, 'stan.config.yml'), yml);
 
     const cfg = await loadConfig(cwd);

@@ -9,7 +9,7 @@ import { loadConfig, loadConfigSync, resolveStanPathSync } from '@/stan/config';
 
 const write = (p: string, s: string) => writeFile(p, s, 'utf8');
 
-describe('config.load (minimal shape + unknown-key tolerance)', () => {
+describe('config.load (namespaced stan-core + minimal shape)', () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -20,36 +20,42 @@ describe('config.load (minimal shape + unknown-key tolerance)', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it('unknown keys are tolerated and minimal fields are normalized', async () => {
+  it('loads stan-core block and normalizes minimal fields', async () => {
     const yml = [
-      'stanPath: out',
-      'scripts:',
-      '  a: echo a',
-      'cliDefaults:',
-      '  run:',
-      '    sequential: true',
+      'stan-core:',
+      '  stanPath: out',
+      '  excludes:',
+      '    - CHANGELOG.md',
     ].join('\n');
     await write(path.join(dir, 'stan.config.yml'), yml);
 
     const cfg = await loadConfig(dir);
     expect(cfg.stanPath).toBe('out');
     expect(cfg.includes).toEqual([]);
-    expect(cfg.excludes).toEqual([]);
+    expect(cfg.excludes).toEqual(['CHANGELOG.md']);
   });
 
   it('throws when stanPath is not a non-empty string', async () => {
-    const bad = ['stanPath: 0', 'scripts: {}'].join('\n');
+    const bad = ['stan-core:', '  stanPath: 0'].join('\n');
     await write(path.join(dir, 'stan.config.yml'), bad);
     await expect(loadConfig(dir)).rejects.toThrow(/stanPath.*non-empty/i);
   });
 
   it('loadConfigSync yields defaults for optional arrays when omitted', () => {
-    const yml = ['stanPath: out'].join('\n');
+    const yml = ['stan-core:', '  stanPath: out'].join('\n');
     const p = path.join(dir, 'stan.config.yml');
     writeFileSync(p, yml, 'utf8');
     const cfg = loadConfigSync(dir);
     expect(cfg.includes).toEqual([]);
     expect(cfg.excludes).toEqual([]);
+  });
+
+  it('errors when stan-core section is missing', async () => {
+    const yml = ['not-stan-core:', '  foo: 1'].join('\n');
+    await write(path.join(dir, 'stan.config.yml'), yml);
+    await expect(loadConfig(dir)).rejects.toThrow(
+      /missing "stan-core" section/i,
+    );
   });
 
   it('resolveStanPathSync falls back to default when no config exists', () => {

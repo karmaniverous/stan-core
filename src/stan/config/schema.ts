@@ -1,6 +1,6 @@
 /* src/stan/config/schema.ts
  * Minimal zod schema for stan.config.* (engine-only).
- * Tolerates unknown keys so legacy CLI fields remain compatible.
+ * Strict validation for keys inside the `stan-core` block.
  */
 import { z } from 'zod';
 
@@ -18,7 +18,7 @@ export const configSchema = z
     excludes: StrictStringArray,
     imports: importsSchema,
   })
-  // Allow unknown keys to keep legacy CLI fields harmless during transition.
-  .passthrough();
+  // Reject unknown keys inside the `stan-core` block.
+  .strict();
 
 export type Config = z.infer<typeof configSchema>;

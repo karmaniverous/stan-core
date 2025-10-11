@@ -26,7 +26,7 @@ const formatZodError = (e: unknown): string => {
     .join('\n');
 };
 
-/** Normalize imports: string -> [string]; arrays trimmed; invalid -> undefined. */
+/** Normalize imports: string -\> [string]; arrays trimmed; invalid -\> undefined. */
 const normalizeImports = (v: unknown): Record<string, string[]> | undefined => {
   if (!v || typeof v !== 'object') return undefined;
   const o = v as Record<string, unknown>;
@@ -46,18 +46,45 @@ const normalizeImports = (v: unknown): Record<string, string[]> | undefined => {
   return Object.keys(out).length ? out : undefined;
 };
 
-const parseFile = async (abs: string): Promise<ContextConfig> => {
-  const raw = await readFile(abs, 'utf8');
-  const cfgUnknown: unknown = abs.endsWith('.json')
-    ? (JSON.parse(raw) as unknown)
-    : (YAML.parse(raw) as unknown);
+const parseRoot = (
+  rawText: string,
+  isJson: boolean,
+): Record<string, unknown> => {
+  const rootUnknown: unknown = isJson
+    ? (JSON.parse(rawText) as unknown)
+    : (YAML.parse(rawText) as unknown);
+  const root =
+    rootUnknown && typeof rootUnknown === 'object'
+      ? (rootUnknown as Record<string, unknown>)
+      : {};
+  return root;
+};
 
-  let parsed: Config;
+const parseNode = (nodeUnknown: unknown): Config => {
+  if (!nodeUnknown || typeof nodeUnknown !== 'object') {
+    throw new Error('stan-core: missing or invalid "stan-core" section');
+  }
   try {
-    parsed = configSchema.parse(cfgUnknown);
+    return configSchema.parse(nodeUnknown as Record<string, unknown>);
   } catch (e) {
     throw new Error(formatZodError(e));
   }
+};
+
+const parseFile = async (
+  abs: string,
+  relHint?: string,
+): Promise<ContextConfig> => {
+  const rawText = await readFile(abs, 'utf8');
+  const root = parseRoot(rawText, abs.endsWith('.json'));
+  if (!Object.prototype.hasOwnProperty.call(root, 'stan-core')) {
+    const where = relHint ?? abs;
+    throw new Error(
+      `stan-core: missing "stan-core" section in ${where}. ` +
+        'Add a top-level "stan-core" object with stanPath/includes/excludes/imports.',
+    );
+  }
+  const parsed = parseNode(root['stan-core']);
 
   const importsNormalized = normalizeImports(parsed.imports);
   return {
@@ -77,22 +104,23 @@ const parseFile = async (abs: string): Promise<ContextConfig> => {
 export const loadConfigSync = (cwd: string): ContextConfig => {
   const p = findConfigPathSync(cwd);
   if (!p) throw new Error('stan config not found');
-  const raw = readFileSync(p, 'utf8');
-  const cfgUnknown: unknown = p.endsWith('.json')
-    ? (JSON.parse(raw) as unknown)
-    : (YAML.parse(raw) as unknown);
-  try {
-    const parsed = configSchema.parse(cfgUnknown);
-    const importsNormalized = normalizeImports(parsed.imports);
-    return {
-      stanPath: parsed.stanPath,
-      includes: parsed.includes ?? [],
-      excludes: parsed.excludes ?? [],
-      imports: importsNormalized,
-    };
-  } catch (e) {
-    throw new Error(formatZodError(e));
+  const rawText = readFileSync(p, 'utf8');
+  const root = parseRoot(rawText, p.endsWith('.json'));
+  if (!Object.prototype.hasOwnProperty.call(root, 'stan-core')) {
+    const rel = p;
+    throw new Error(
+      `stan-core: missing "stan-core" section in ${rel}. ` +
+        'Add a top-level "stan-core" object with stanPath/includes/excludes/imports.',
+    );
   }
+  const parsed = parseNode(root['stan-core']);
+  const importsNormalized = normalizeImports(parsed.imports);
+  return {
+    stanPath: parsed.stanPath,
+    includes: parsed.includes ?? [],
+    excludes: parsed.excludes ?? [],
+    imports: importsNormalized,
+  };
 };
 
 /**
@@ -104,7 +132,8 @@ export const loadConfigSync = (cwd: string): ContextConfig => {
 export const loadConfig = async (cwd: string): Promise<ContextConfig> => {
   const p = findConfigPathSync(cwd);
   if (!p) throw new Error('stan config not found');
-  return parseFile(p);
+  const rel = p.replace(/\\/g, '/');
+  return parseFile(p, rel);
 };
 
 /** Resolve stanPath from config or fall back to default (sync). */
