@@ -7,34 +7,26 @@ import { readFile } from 'node:fs/promises';
 import YAML from 'yaml';
 import { ZodError } from 'zod';
 
-import { DEFAULT_OPEN_COMMAND, DEFAULT_STAN_PATH } from './defaults';
+import { DEFAULT_STAN_PATH } from './defaults';
 import { findConfigPathSync } from './discover';
 import { type Config, configSchema } from './schema';
-import type { ContextConfig, ScriptMap } from './types';
+import type { ContextConfig } from './types';
 
 const formatZodError = (e: unknown): string => {
   if (!(e instanceof ZodError)) return String(e);
   return e.issues
     .map((i) => {
       const path = i.path.join('.') || '(root)';
-      // Friendly specialization for tests/UX.
       let msg = i.message;
       if (path === 'stanPath' && /Expected string/i.test(msg)) {
         msg = 'stanPath must be a non-empty string';
-      }
-      // Normalize scripts type mismatch to stable wording expected by tests.
-      // Zod may emit variants like:
-      //  - "Invalid input: expected record, received number"
-      //  - "Expected object, received number"
-      if (path === 'scripts' && /expected\s+(record|object)/i.test(msg)) {
-        msg = 'scripts must be an object';
       }
       return `${path}: ${msg}`;
     })
     .join('\n');
 };
 
-/** Normalize imports: string -\> [string]; arrays trimmed; invalid -\> undefined. */
+/** Normalize imports: string -> [string]; arrays trimmed; invalid -> undefined. */
 const normalizeImports = (v: unknown): Record<string, string[]> | undefined => {
   if (!v || typeof v !== 'object') return undefined;
   const o = v as Record<string, unknown>;
@@ -54,21 +46,12 @@ const normalizeImports = (v: unknown): Record<string, string[]> | undefined => {
   return Object.keys(out).length ? out : undefined;
 };
 
-const ensureNoReservedScriptKeys = (scripts: Record<string, unknown>): void => {
-  const bad = ['archive', 'init'].filter((k) =>
-    Object.prototype.hasOwnProperty.call(scripts ?? {}, k),
-  );
-  if (bad.length > 0) {
-    // Keep message stable for tests: /archive.*init.*not allowed/i
-    throw new Error(`scripts: keys "archive" and "init" not allowed`);
-  }
-};
-
 const parseFile = async (abs: string): Promise<ContextConfig> => {
   const raw = await readFile(abs, 'utf8');
   const cfgUnknown: unknown = abs.endsWith('.json')
     ? (JSON.parse(raw) as unknown)
     : (YAML.parse(raw) as unknown);
+
   let parsed: Config;
   try {
     parsed = configSchema.parse(cfgUnknown);
@@ -76,20 +59,12 @@ const parseFile = async (abs: string): Promise<ContextConfig> => {
     throw new Error(formatZodError(e));
   }
 
-  // Guard against reserved CLI script names.
-  ensureNoReservedScriptKeys(parsed.scripts ?? {});
-
   const importsNormalized = normalizeImports(parsed.imports);
   return {
     stanPath: parsed.stanPath,
-    scripts: parsed.scripts as ScriptMap,
     includes: parsed.includes ?? [],
     excludes: parsed.excludes ?? [],
     imports: importsNormalized,
-    maxUndos: parsed.maxUndos,
-    devMode: parsed.devMode,
-    patchOpenCommand: parsed.patchOpenCommand ?? DEFAULT_OPEN_COMMAND,
-    cliDefaults: parsed.cliDefaults,
   };
 };
 
@@ -108,21 +83,12 @@ export const loadConfigSync = (cwd: string): ContextConfig => {
     : (YAML.parse(raw) as unknown);
   try {
     const parsed = configSchema.parse(cfgUnknown);
-
-    // Guard against reserved CLI script names.
-    ensureNoReservedScriptKeys(parsed.scripts ?? {});
-
     const importsNormalized = normalizeImports(parsed.imports);
     return {
       stanPath: parsed.stanPath,
-      scripts: parsed.scripts as ScriptMap,
       includes: parsed.includes ?? [],
       excludes: parsed.excludes ?? [],
       imports: importsNormalized,
-      maxUndos: parsed.maxUndos,
-      devMode: parsed.devMode,
-      patchOpenCommand: parsed.patchOpenCommand ?? DEFAULT_OPEN_COMMAND,
-      cliDefaults: parsed.cliDefaults,
     };
   } catch (e) {
     throw new Error(formatZodError(e));

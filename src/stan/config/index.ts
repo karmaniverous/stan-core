@@ -10,12 +10,4 @@ export {
   resolveStanPathSync,
 } from './load';
 export { ensureOutputDir } from './output';
-export type {
-  CliDefaults,
-  CliDefaultsPatch,
-  CliDefaultsRun,
-  CliDefaultsSnap,
-  ContextConfig,
-  ScriptEntry,
-  ScriptMap,
-} from './types';
+export type { ContextConfig } from './types';

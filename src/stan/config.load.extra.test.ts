@@ -9,7 +9,7 @@ import { loadConfig, loadConfigSync, resolveStanPathSync } from '@/stan/config';
 
 const write = (p: string, s: string) => writeFile(p, s, 'utf8');
 
-describe('config.load (additional branch coverage)', () => {
+describe('config.load (minimal shape + unknown-key tolerance)', () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -20,27 +20,21 @@ describe('config.load (additional branch coverage)', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it('normalizes devMode (string truthy), patchOpenCommand default, and maxUndos from string', async () => {
+  it('unknown keys are tolerated and minimal fields are normalized', async () => {
     const yml = [
       'stanPath: out',
       'scripts:',
       '  a: echo a',
-      'maxUndos: "7"',
-      'devMode: "1"', // string truthy -> boolean true
-      // patchOpenCommand omitted -> falls back to DEFAULT_OPEN_COMMAND
+      'cliDefaults:',
+      '  run:',
+      '    sequential: true',
     ].join('\n');
     await write(path.join(dir, 'stan.config.yml'), yml);
 
     const cfg = await loadConfig(dir);
     expect(cfg.stanPath).toBe('out');
-    expect(cfg.scripts).toEqual({ a: 'echo a' });
-    expect(cfg.maxUndos).toBe(7);
-    expect(cfg.devMode).toBe(true);
-    // default from DEFAULT_OPEN_COMMAND ('code -g {file}')
-    expect(typeof cfg.patchOpenCommand).toBe('string');
-    expect(
-      cfg.patchOpenCommand && cfg.patchOpenCommand.includes('{file}'),
-    ).toBe(true);
+    expect(cfg.includes).toEqual([]);
+    expect(cfg.excludes).toEqual([]);
   });
 
   it('throws when stanPath is not a non-empty string', async () => {
@@ -49,22 +43,15 @@ describe('config.load (additional branch coverage)', () => {
     await expect(loadConfig(dir)).rejects.toThrow(/stanPath.*non-empty/i);
   });
 
-  it('throws when scripts is not an object', async () => {
-    const bad = ['stanPath: out', 'scripts: 42'].join('\n');
-    await write(path.join(dir, 'stan.config.yml'), bad);
-    await expect(loadConfig(dir)).rejects.toThrow(/scripts.*object/i);
-  });
-
-  it('loadConfigSync yields defaults for optional arrays and command when omitted', () => {
-    const yml = ['stanPath: out', 'scripts:', '  a: echo a'].join('\n');
+  it('loadConfigSync yields defaults for optional arrays when omitted', () => {
+    const yml = ['stanPath: out'].join('\n');
     const p = path.join(dir, 'stan.config.yml');
-    // sync writer to keep test concise
     writeFileSync(p, yml, 'utf8');
     const cfg = loadConfigSync(dir);
     expect(cfg.includes).toEqual([]);
     expect(cfg.excludes).toEqual([]);
-    expect(typeof cfg.patchOpenCommand).toBe('string');
   });
+
   it('resolveStanPathSync falls back to default when no config exists', () => {
     const stan = resolveStanPathSync(dir);
     expect(stan).toBe('.stan');
