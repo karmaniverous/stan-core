@@ -28,6 +28,25 @@ stan‑cli is the only place where process/TTY/clipboard/editor concerns are han
 - Combine mode (`-c/--combine`): include `<stanPath>/output` inside archives and remove on‑disk outputs after archiving (archives remain).
 - Always restore workspace invariants on exit (TTY handlers, raw mode, cursor).
 
+Script execution environment (required):
+
+- CWD: Spawn scripts with `cwd` set to the repo root containing the resolved `stan.config.*`.
+- Shell: Spawn with `shell: true` (platform default shell).
+- PATH augmentation (hard requirement):
+  - Before each script spawn, stan‑cli MUST prepend the following to the child’s PATH so repo dependencies are preferred and available without global installs:
+    - `<repoRoot>/node_modules/.bin`
+    - Each ancestor `<dir>/node_modules/.bin` walking upward to the filesystem root (nearest first, then parents) — this mimics npm’s script resolution in monorepos/workspaces.
+  - Cross‑platform:
+    - Use `path.delimiter` for concatenation (`:` on POSIX, `;` on Windows).
+    - Set the environment variable key as `PATH` (Node normalizes case‑insensitively on Windows).
+  - Stability:
+    - Do not rewrite or wrap user commands (no implicit `npm exec`/`npx`); simply provide PATH so binaries like `cross-env` resolve locally.
+    - If no `node_modules/.bin` directories exist (e.g., Yarn PnP), augmentation is a no‑op; scripts may still invoke via the package manager or nested npm scripts.
+  - Non‑goals:
+    - stan‑cli MUST NOT add user toolchains (e.g., `cross-env`) as runtime dependencies; resolution must rely on the target repo’s installation.
+  - Precedence:
+    - The augmented PATH MUST ensure local `.bin` entries take precedence over global binaries.
+
 NEW — System prompt source (required; hard‑guarded):
 
 - Flags: `-m, --prompt <value>` where `<value>` ∈ {'auto' | 'local' | 'core' | <path>}, default 'auto'.
@@ -216,16 +235,25 @@ All core calls MUST be deterministic and presentation‑free; stan‑cli is resp
 - Cancellation:
   - Live/no‑live parity: no archives on cancel; non‑zero exit.
   - Sequential gate prevents post‑cancel scheduling.
+- Script runner PATH:
+  - Child PATH MUST include `<repoRoot>/node_modules/.bin` (and ancestor `.bin` directories in nearest‑first order).
+  - Behavioral test with a stub binary in `node_modules/.bin` MUST execute successfully without global installs.
+  - When `.bin` folders are absent (e.g., PnP), augmentation is a no‑op.
 
 ---
 
 ## 9) Documentation & versioning
 
-- CLI help and docs MUST reflect the new `-m, --prompt` option, default resolution, plan header prompt line, and drift‑notice removal in `run` and `snap`.
+- CLI help and docs MUST reflect:
+  - `-m, --prompt` option and default resolution,
+  - Plan header `prompt:` line,
+  - Drift‑notice removal in `run` and `snap`,
+  - Script execution environment (PATH augmentation, CWD, shell).
 - Semantic versioning for the CLI package; changelog MUST call out:
   - New `--prompt` behavior,
   - Plan header prompt line,
   - Removal of run/snap drift messages,
-  - Diff now truthfully includes prompt changes (applies to both full and diff as described).
+  - Diff now truthfully includes prompt changes,
+  - Script runner PATH augmentation so repo devDeps resolve without globals.
 
 ---
