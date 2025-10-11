@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.3.0-0](https://github.com/karmaniverous/stan-core/compare/0.2.0...0.3.0-0)
+
+- core: slim config schema; tolerate unknown keys [`bc1c443`](https://github.com/karmaniverous/stan-core/commit/bc1c4433b6148c9e4365307ad11d185408f57314)
+- docs: adopt namespaced config (stan-core / stan-cli); update plan & interop [`e96d6f5`](https://github.com/karmaniverous/stan-core/commit/e96d6f551e4efd03ddf2e68336ee57dad869cff7)
+- stan run [`32c460b`](https://github.com/karmaniverous/stan-core/commit/32c460b06f3faa5a509020a7626b15034149b669)
+- core: adopt strict namespaced config (stan-core); drop CLI normalization [`b9ac2f8`](https://github.com/karmaniverous/stan-core/commit/b9ac2f8854dbb6541dbddaed5bbc4f03e15c3207)
+
 #### [0.2.0](https://github.com/karmaniverous/stan-core/compare/0.1.3...0.2.0)
+
+> 11 October 2025
 
 - docs(project): add Zod schema/type naming convention [`f37f7ff`](https://github.com/karmaniverous/stan-core/commit/f37f7ffd9096a5d8dcfa8b13ee14deb361f482e9)
 - docs(dev-plan): append-only Completed, no timestamp, no numbering; Completed last [`87e73d1`](https://github.com/karmaniverous/stan-core/commit/87e73d198089573219f56e8342ac49d5608f5b26)
 - chore(interop): post core-config slimming + CLI config extraction plan/code to stan-cli [`f33a448`](https://github.com/karmaniverous/stan-core/commit/f33a448ad82e4682a22118b02cfa8e1d79da9f24)
+- chore: release v0.2.0 [`bdacd03`](https://github.com/karmaniverous/stan-core/commit/bdacd03af51d97f50931d90fb59e4c494d9fd5e2)
 
 #### [0.1.3](https://github.com/karmaniverous/stan-core/compare/0.1.1...0.1.3)
 
