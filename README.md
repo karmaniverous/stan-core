@@ -1,7 +1,6 @@
 > Engine for STAN — programmatic archiving/diffing, patch application, config loading, file selection, and imports staging. No CLI/TTY concerns.
 
-# @karmaniverous/stan-core (engine)
-
+# @karmaniverous/stan-core (engine)
 [![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](./LICENSE) [Changelog](./CHANGELOG.md)
 
 This package exposes the STAN engine as a library:
@@ -10,11 +9,10 @@ This package exposes the STAN engine as a library:
 - Archiving: full archive.tar and diff archive.diff.tar (binary screening)
 - Patch engine: worktree‑first git apply cascade with jsdiff fallback
 - File Ops: safe mv/rm/rmdir/mkdirp block as “pre‑ops”
-- Config loading/validation (stan.config.yml|json)
+- Config loading/validation (top‑level `stan-core` in stan.config.yml|json)
 - Imports staging under <stanPath>/imports/<label>/…
 - Response‑format validator (optional)
-
-For the CLI and TTY runner, see @karmaniverous/stan-cli.
+For the CLI and TTY runner, see @karmaniverous/stan-cli.
 
 ## Install
 
@@ -90,17 +88,37 @@ if (!out.ok) {
 }
 ```
 
-Load and validate config (stan.config.yml|json), including cliDefaults mapping:
+Load and validate repo config (namespaced `stan-core` in stan.config.yml|json):
+
+YAML example:
+
+```yaml
+stan-core:
+  stanPath: .stan
+  includes: []
+  excludes:
+    - CHANGELOG.md
+  imports:
+    cli-docs:
+      - ../stan-cli/.stan/system/stan.requirements.md
+      - ../stan-cli/.stan/system/stan.todo.md
+```
+
+TypeScript:
 
 ```ts
 import { loadConfig } from '@karmaniverous/stan-core/stan/config';
+
 const cfg = await loadConfig(process.cwd());
-// cfg.stanPath, cfg.scripts, cfg.includes/excludes, cfg.cliDefaults, ...
+// cfg has the minimal engine shape:
+// {
+//   stanPath: string; includes?: string[]; excludes?: string[];
+//   imports?: Record<string, string[]>
+// }
 ```
 
 Stage external imports under <stanPath>/imports/<label>/… before archiving:
-
-```ts
+```ts
 import { prepareImports } from '@karmaniverous/stan-core/stan';
 await prepareImports({
   cwd: process.cwd(),
@@ -131,6 +149,10 @@ Top‑level (via `import '@karmaniverous/stan-core/stan'`):
 - Validation: `validateResponseMessage`
 
 See CHANGELOG for behavior changes. Typedoc site is generated from source.
+
+## Environment variables
+
+See ENVIRONMENT.md for a complete list of environment variable switches observed by the engine, tests, and release scripts.
 
 ## License
 

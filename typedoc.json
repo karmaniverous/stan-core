@@ -18,7 +18,7 @@
   "hostedBaseUrl": "https://docs.karmanivero.us/stan",
   "out": "./docs/",
   "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
-  "projectDocuments": ["./CHANGELOG.md"],
+  "projectDocuments": ["./CHANGELOG.md", "./ENVIRONMENT.md"],
   "navigationLinks": {
     "GitHub": "https://github.com/karmaniverous/stan-core"
   },
