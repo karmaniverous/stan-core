@@ -15,7 +15,7 @@ import { copyFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { ARCHIVE_PREV_TAR } from './archive/constants';
-import { makeTarFilter } from './archive/util';
+import { composeFilesWithOutput, makeTarFilter } from './archive/util';
 import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 
@@ -105,17 +105,13 @@ export const createArchive = async (
 
   if (includeOutputDir) {
     // Force-include <stanPath>/output and exclude <stanPath>/diff and archive files.
-    const filesToPack = Array.from(
-      new Set([...filesForArchive, `${stanPath.replace(/\\/g, '/')}/output`]),
-    );
-
     await tar.create(
       {
         file: archivePath,
         cwd,
         filter: makeTarFilter(stanPath),
       },
-      filesToPack,
+      composeFilesWithOutput(filesForArchive, stanPath),
     );
   } else {
     // No refactors directory is created anymore; no special-case filter needed for it.

@@ -8,10 +8,12 @@
  * - When writing to the repo (check=false), ensure parent directories exist for new or nested paths.
  */
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { applyPatch, parsePatch } from 'diff';
+
+import { ensureParentDir } from './util/fs';
 
 const stripAB = (p?: string | null): string | null => {
   if (!p) return null;
@@ -137,14 +139,14 @@ export const applyWithJsDiff = async (args: {
         const root =
           sandboxRoot ?? path.join(cwd, '.stan', 'patch', '.sandbox');
         const dest = path.resolve(root, rel);
-        await mkdir(path.dirname(dest), { recursive: true });
+        await ensureParentDir(dest);
         await writeFile(dest, finalBody, 'utf8');
       } else {
         // Ensure the parent directory exists for new files or nested paths.
         // This makes jsdiff fallback robust when creating files under e.g. "src/rrstack/describe/...".
         // (git apply can fail on /dev/null patches; jsdiff must not.)
         try {
-          await mkdir(path.dirname(abs), { recursive: true });
+          await ensureParentDir(abs);
         } catch {
           /* best-effort */
         }

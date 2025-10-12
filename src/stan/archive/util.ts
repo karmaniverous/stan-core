@@ -19,3 +19,15 @@ export const makeTarFilter = (stanPath: string) => {
   return (p: string): boolean =>
     !(isReservedWorkspacePath(base, p) || isOutputArchivePath(base, p));
 };
+
+/**
+ * Compose the file list for tar creation when including the output directory.
+ * Ensures <stanPath>/output is present once alongside the provided files.
+ */
+export const composeFilesWithOutput = (
+  files: string[],
+  stanPath: string,
+): string[] => {
+  const outDir = `${stanPath.replace(/\\/g, '/')}/output`;
+  return Array.from(new Set<string>([...files, outDir]));
+};

@@ -12,6 +12,13 @@ import path from 'node:path';
 
 import { ensureDir, move as moveAsync, pathExists, remove } from 'fs-extra';
 
+import {
+  normalizeRepoPath,
+  resolveWithin as resolveWithinRepo,
+} from '@/stan/path/repo';
+
+import { extractFileOpsBody } from './common/file-ops';
+
 export type FileOp =
   | { verb: 'mv'; src: string; dest: string }
   | { verb: 'rm'; src: string }
@@ -27,60 +34,15 @@ export type OpResult = {
   message?: string;
 };
 
-const toPosix = (p: string): string =>
-  p.replace(/\\/g, '/').replace(/^\.\/+/, '');
-
-const isAbsolutePosix = (p: string): boolean => /^[/\\]/.test(p);
-
-const normalizePosix = (p: string): string => {
-  // Normalize with posix semantics, then strip trailing slash (except root).
-  const norm = path.posix.normalize(toPosix(p));
-  return norm === '/' ? norm : norm.replace(/\/+$/, '');
-};
-
-/** Ensure a repo-relative path stays within repo root after resolution. */
-const resolveWithin = (
-  cwd: string,
-  rel: string,
-): { abs: string; ok: boolean } => {
-  const abs = path.resolve(cwd, rel);
-  // Hardened prefix check (realpath not needed for normalized, repo-relative inputs).
-  const root = path.resolve(cwd) + path.sep;
-  const ok = abs === path.resolve(cwd) || abs.startsWith(root);
-  return { abs, ok };
-};
-
-/**
- * Extract the unfenced body that follows "### File Ops" up to the next heading
- * (## or ###) or end of text. Leading blank lines after the heading are skipped.
- */
-const extractOpsBody = (source: string): { body: string } | null => {
-  const headingRe = /^###\s+File Ops\s*$/m;
-  const hm = headingRe.exec(source);
-  if (!hm) return null;
-  const afterIdx = (hm.index ?? 0) + hm[0].length;
-  const tail = source.slice(afterIdx);
-  const lines = tail.split(/\r?\n/);
-  // Skip leading blank lines
-  let i = 0;
-  while (i < lines.length && lines[i].trim() === '') i += 1;
-  const bodyLines: string[] = [];
-  for (; i < lines.length; i += 1) {
-    const l = lines[i];
-    if (/^#{2,3}\s+/.test(l)) break;
-    bodyLines.push(l);
-  }
-  return { body: bodyLines.join('\n').trimEnd() };
-};
-
 /** Parse the optional "### File Ops" fenced block from a reply body. */
 export const parseFileOpsBlock = (source: string): FileOpsPlan => {
   const ops: FileOp[] = [];
   const errors: string[] = [];
-  const extracted = extractOpsBody(source);
+  const body = extractFileOpsBody(source);
+  const extracted = body ? { body } : null;
   if (!extracted) return { ops, errors }; // no block present; treat as absent
-  const body = extracted.body;
-  const lines = body.split(/\r?\n/);
+  const bodyText = extracted.body;
+  const lines = bodyText.split(/\r?\n/);
   let lineNo = 0;
   for (const raw of lines) {
     lineNo += 1;
@@ -93,20 +55,14 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
       errors.push(`file-ops line ${lineNo.toString()}: ${msg}`);
     };
 
-    const needsOne = (ok: boolean) => {
+    const needsOne = (ok: boolean): void => {
       if (!ok) bad(`expected 1 path, got ${args.length.toString()}`);
     };
-    const needsTwo = (ok: boolean) => {
+    const needsTwo = (ok: boolean): void => {
       if (!ok) bad(`expected 2 paths, got ${args.length.toString()}`);
     };
 
-    const normSafe = (p?: string): string | null => {
-      if (!p || !p.trim()) return null;
-      const posix = normalizePosix(p);
-      if (!posix || isAbsolutePosix(posix)) return null;
-      if (posix.split('/').some((seg) => seg === '..')) return null;
-      return posix;
-    };
+    const normSafe = (p?: string) => normalizeRepoPath(p);
 
     switch (verbRaw) {
       case 'mv': {
@@ -161,8 +117,7 @@ export const executeFileOps = async (
 ): Promise<{ ok: boolean; results: OpResult[] }> => {
   const results: OpResult[] = [];
 
-  const within = (rel: string): { abs: string; ok: boolean } =>
-    resolveWithin(cwd, rel);
+  const within = (rel: string) => resolveWithinRepo(cwd, rel);
 
   for (const op of ops) {
     const res: OpResult = {

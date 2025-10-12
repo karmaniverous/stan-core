@@ -3,6 +3,8 @@
  *
  * Also validates optional "### File Ops" pre-ops block (verbs/arity/path rules).
  *
+ * Also validates optional "### File Ops" pre-ops block (verbs/arity/path rules).
+ *
  * Checks (initial):
  * - One Patch per file.
  * - Each Patch block contains exactly one "diff --git a/<path> b/<path>" header.
@@ -37,13 +39,10 @@ const H_PATCH = /^###\s+Patch:\s+(.+?)\s*$/m;
 const H_FULL = /^###\s+Full Listing:\s+(.+?)\s*$/m;
 const H_COMMIT = /^##\s+Commit Message\s*$/m;
 const H_ANY = /^##\s+.*$|^###\s+.*$/m;
+
 // File Ops heading and helpers
-const H_FILE_OPS = /^###\s+File Ops\s*$/m;
-const isAbsolutePosix = (p: string): boolean => /^[/\\]/.test(p);
-const normalizePosix = (p: string): string => {
-  const norm = (toPosix(p) || '').split('/').filter(Boolean).join('/');
-  return norm.replace(/\/+$/, '');
-};
+import { extractFileOpsBody } from '@/stan/patch/common/file-ops';
+import { normalizeRepoPath } from '@/stan/path/repo';
 
 /** Find all headings and slice blocks up to the next heading or end. */
 const extractBlocks = (text: string): Block[] => {
@@ -126,26 +125,6 @@ const isCommitLast = (text: string): boolean => {
   return after.length === 0;
 };
 
-/** Extract unfenced File Ops body: lines after "### File Ops" up to next heading or EOF. */
-const extractFileOpsBody = (text: string): string | null => {
-  const hm = H_FILE_OPS.exec(text);
-  if (!hm) return null;
-  const afterIdx = (hm.index ?? 0) + hm[0].length;
-  const tail = text.slice(afterIdx);
-  const lines = tail.split(/\r?\n/);
-  // Skip leading blank lines after heading
-  let i = 0;
-  while (i < lines.length && lines[i].trim() === '') i += 1;
-  const out: string[] = [];
-  for (; i < lines.length; i += 1) {
-    const l = lines[i];
-    if (/^#{2,3}\s+/.test(l)) break;
-    out.push(l);
-  }
-  const body = out.join('\n').trimEnd();
-  return body.length ? body : null;
-};
-
 /** Validate optional "### File Ops" fenced block. Pushes errors into `errors`. */
 const validateFileOpsBlock = (text: string, errors: string[]): void => {
   const body = extractFileOpsBody(text);
@@ -160,17 +139,7 @@ const validateFileOpsBlock = (text: string, errors: string[]): void => {
     const args = parts.slice(1);
     const where = `File Ops line ${(i + 1).toString()}`;
     const bad = (msg: string) => errors.push(`${where}: ${msg}`);
-    const normSafe = (p?: string): string | null => {
-      if (!p || !p.trim()) return null;
-      // Compute raw POSIX form first and reject absolute paths before normalization,
-      // since normalization previously stripped leading "/" and could misclassify.
-      const raw = toPosix(p.trim());
-      if (isAbsolutePosix(raw)) return null;
-      const posix = normalizePosix(raw);
-      if (!posix) return null;
-      if (posix.split('/').some((seg) => seg === '..')) return null;
-      return posix;
-    };
+    const normSafe = (p?: string): string | null => normalizeRepoPath(p);
     if (!/^(mv|rm|rmdir|mkdirp)$/.test(verb)) {
       bad(`unknown verb "${verb}"`);
       continue;

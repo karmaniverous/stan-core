@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { makeTarFilter } from './archive/util';
+import { composeFilesWithOutput, makeTarFilter } from './archive/util';
 import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 type TarLike = {
@@ -160,17 +160,13 @@ export const createArchiveDiff = async ({
   const diffPath = join(outDir, `${baseName}.diff.tar`);
   const tar = (await import('tar')) as unknown as TarLike;
   if (includeOutputDirInDiff) {
-    const files = Array.from(
-      new Set([...changed, `${stanPath.replace(/\\/g, '/')}/output`]),
-    );
-
     await tar.create(
       {
         file: diffPath,
         cwd,
         filter: makeTarFilter(stanPath),
       },
-      files,
+      composeFilesWithOutput(changed, stanPath),
     );
   } else if (changed.length === 0) {
     const sentinel = sentinelPathFor(diffDir);
