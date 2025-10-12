@@ -10,7 +10,7 @@ import { ensureDir } from 'fs-extra';
 
 const headerFor = (stanPath: string): string =>
   `<!-- GENERATED: assembled from ${stanPath}/system/parts; edit parts and run \`npm run gen:system\` -->\n`;
-const toLF = (s: string) => s.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+import { toLF } from '@/stan/text/eol';
 
 export type AssembleResult =
   | { target: string; action: 'written' }

@@ -4,61 +4,11 @@
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
-import YAML from 'yaml';
-import { ZodError } from 'zod';
-
+import { formatZodError, normalizeImports, parseRoot } from './common';
 import { DEFAULT_STAN_PATH } from './defaults';
 import { findConfigPathSync } from './discover';
 import { type Config, configSchema } from './schema';
 import type { ContextConfig } from './types';
-
-const formatZodError = (e: unknown): string => {
-  if (!(e instanceof ZodError)) return String(e);
-  return e.issues
-    .map((i) => {
-      const path = i.path.join('.') || '(root)';
-      let msg = i.message;
-      if (path === 'stanPath' && /Expected string/i.test(msg)) {
-        msg = 'stanPath must be a non-empty string';
-      }
-      return `${path}: ${msg}`;
-    })
-    .join('\n');
-};
-
-/** Normalize imports: string -\> [string]; arrays trimmed; invalid -\> undefined. */
-const normalizeImports = (v: unknown): Record<string, string[]> | undefined => {
-  if (!v || typeof v !== 'object') return undefined;
-  const o = v as Record<string, unknown>;
-  const out: Record<string, string[]> = {};
-  for (const k of Object.keys(o)) {
-    const raw = o[k];
-    if (typeof raw === 'string') {
-      const s = raw.trim();
-      if (s) out[k] = [s];
-    } else if (Array.isArray(raw)) {
-      const arr = raw
-        .map((x) => (typeof x === 'string' ? x.trim() : ''))
-        .filter((s) => s.length > 0);
-      if (arr.length) out[k] = arr;
-    }
-  }
-  return Object.keys(out).length ? out : undefined;
-};
-
-const parseRoot = (
-  rawText: string,
-  isJson: boolean,
-): Record<string, unknown> => {
-  const rootUnknown: unknown = isJson
-    ? (JSON.parse(rawText) as unknown)
-    : (YAML.parse(rawText) as unknown);
-  const root =
-    rootUnknown && typeof rootUnknown === 'object'
-      ? (rootUnknown as Record<string, unknown>)
-      : {};
-  return root;
-};
 
 const parseNode = (nodeUnknown: unknown): Config => {
   if (!nodeUnknown || typeof nodeUnknown !== 'object') {

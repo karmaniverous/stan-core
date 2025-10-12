@@ -3,8 +3,6 @@
  *
  * Also validates optional "### File Ops" pre-ops block (verbs/arity/path rules).
  *
- * Also validates optional "### File Ops" pre-ops block (verbs/arity/path rules).
- *
  * Checks (initial):
  * - One Patch per file.
  * - Each Patch block contains exactly one "diff --git a/<path> b/<path>" header.
@@ -33,7 +31,7 @@ export type ValidationResult = {
   warnings: string[];
 };
 
-const toPosix = (p: string): string => p.replace(/\\/g, '/');
+import { toPosix } from '@/stan/path/repo';
 
 const H_PATCH = /^###\s+Patch:\s+(.+?)\s*$/m;
 const H_FULL = /^###\s+Full Listing:\s+(.+?)\s*$/m;

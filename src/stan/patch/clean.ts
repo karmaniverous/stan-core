@@ -1,21 +1,6 @@
-const ZERO_WIDTH_RE = /[\u200B-\u200D\uFEFF]/g;
+import { ensureFinalLF } from '@/stan/text/eol';
 
-const stripZeroWidthAndNormalize = (s: string): string => {
-  const noZW = s.replace(ZERO_WIDTH_RE, '');
-  const lf = noZW.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  return lf.endsWith('\n') ? lf : lf + '\n';
-};
-
-const ensureFinalNewline = (s: string): string =>
-  s.endsWith('\n') ? s : s + '\n';
-
-const looksLikeUnifiedDiff = (t: string): boolean => {
-  if (/^diff --git /m.test(t)) return true;
-  if (/^---\s+(?:a\/|\S)/m.test(t) && /^\+\+\+\s+(?:b\/|\S)/m.test(t))
-    return true;
-  if (/^@@\s+-\d+(?:,\d+)?\s+\+\d+(?:,\d+)?\s+@@/m.test(t)) return true;
-  return false;
-};
+import { extractFirstUnifiedDiff, normalizePatchText } from './common/diff';
 
 const unwrapChatWrappers = (text: string): string => {
   const lines = text.split(/\r?\n/);
@@ -47,33 +32,6 @@ const unwrapChatWrappers = (text: string): string => {
   if (isStarBegin(first) && isStarEnd(last)) return unwrapIf(true);
   return text;
 };
-const extractFencedUnifiedDiff = (text: string): string | null => {
-  const lines = text.split('\n');
-  for (let i = 0; i < lines.length; i += 1) {
-    const open = lines[i];
-    const m = open.match(/^`{3,}.*$/);
-    if (!m) continue;
-    const tickCount = (open.match(/^`+/) ?? [''])[0].length;
-    for (let j = i + 1; j < lines.length; j += 1) {
-      if (new RegExp(`^\\\`${'{'}${tickCount}{'}'}\\s*$`).test(lines[j])) {
-        const inner = lines.slice(i + 1, j).join('\n');
-        if (looksLikeUnifiedDiff(inner)) return inner;
-        i = j;
-        break;
-      }
-    }
-  }
-  return null;
-};
-
-const extractRawUnifiedDiff = (text: string): string | null => {
-  let idx = text.search(/^diff --git /m);
-  if (idx < 0) idx = text.search(/^---\s+(?:a\/|\S)/m);
-  if (idx < 0) return null;
-  const body = text.slice(idx);
-  const trimmed = body.replace(/\n`{3,}\s*$/m, '\n');
-  return trimmed;
-};
 
 /**
  * Detect and clean a patch payload from clipboard/file/argument.
@@ -82,16 +40,12 @@ const extractRawUnifiedDiff = (text: string): string | null => {
  * - Normalizes EOL to LF, strips zero-width, and ensures a trailing newline.
  */
 export const detectAndCleanPatch = (input: string): string => {
-  const pre = stripZeroWidthAndNormalize(input.trim());
+  const pre = normalizePatchText(input.trim());
   const maybeUnwrapped = unwrapChatWrappers(pre);
-  const normalized = stripZeroWidthAndNormalize(maybeUnwrapped);
+  const normalized = normalizePatchText(maybeUnwrapped);
 
-  const fenced = extractFencedUnifiedDiff(normalized);
-  if (fenced)
-    return ensureFinalNewline(stripZeroWidthAndNormalize(fenced).trimEnd());
+  const first = extractFirstUnifiedDiff(normalized);
+  if (first) return ensureFinalLF(normalizePatchText(first).trimEnd());
 
-  const raw = extractRawUnifiedDiff(normalized);
-  if (raw) return ensureFinalNewline(stripZeroWidthAndNormalize(raw).trimEnd());
-
-  return ensureFinalNewline(normalized);
+  return ensureFinalLF(normalized);
 };

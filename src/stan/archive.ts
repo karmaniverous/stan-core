@@ -15,7 +15,11 @@ import { copyFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { ARCHIVE_PREV_TAR } from './archive/constants';
-import { composeFilesWithOutput, makeTarFilter } from './archive/util';
+import {
+  composeFilesWithOutput,
+  makeTarFilter,
+  surfaceArchiveWarnings,
+} from './archive/util';
 import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 
@@ -95,11 +99,7 @@ export const createArchive = async (
   const { textFiles, warningsBody } = await classifyForArchive(cwd, files);
   const filesForArchive = textFiles;
 
-  // Surface warnings via optional callback (no console I/O in core)
-  const trimmed = (warningsBody ?? '').trim();
-  if (trimmed && trimmed !== 'No archive warnings.') {
-    options.onArchiveWarnings?.(trimmed);
-  }
+  surfaceArchiveWarnings(warningsBody, options.onArchiveWarnings);
 
   const tar = (await import('tar')) as unknown as TarLike;
 

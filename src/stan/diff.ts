@@ -10,7 +10,11 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import { composeFilesWithOutput, makeTarFilter } from './archive/util';
+import {
+  composeFilesWithOutput,
+  makeTarFilter,
+  surfaceArchiveWarnings,
+} from './archive/util';
 import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 type TarLike = {
@@ -151,11 +155,7 @@ export const createArchiveDiff = async ({
   const { textFiles, warningsBody } = await classifyForArchive(cwd, changedRaw);
   const changed = textFiles;
 
-  // Surface warnings via optional callback (no console I/O in core)
-  const trimmed = (warningsBody ?? '').trim();
-  if (trimmed && trimmed !== 'No archive warnings.') {
-    onArchiveWarnings?.(trimmed);
-  }
+  surfaceArchiveWarnings(warningsBody, onArchiveWarnings);
 
   const diffPath = join(outDir, `${baseName}.diff.tar`);
   const tar = (await import('tar')) as unknown as TarLike;

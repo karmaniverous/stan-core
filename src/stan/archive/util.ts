@@ -1,6 +1,7 @@
 /* src/stan/archive/util.ts
  * Shared helpers for archive/diff creation.
  */
+
 import {
   isOutputArchivePath,
   isReservedWorkspacePath,
@@ -30,4 +31,13 @@ export const composeFilesWithOutput = (
 ): string[] => {
   const outDir = `${stanPath.replace(/\\/g, '/')}/output`;
   return Array.from(new Set<string>([...files, outDir]));
+};
+
+/** Surface archive classifier warnings via optional callback (engine remains silent). */
+export const surfaceArchiveWarnings = (
+  body: string | undefined,
+  on?: (text: string) => void,
+): void => {
+  const trimmed = (body ?? '').trim();
+  if (trimmed && trimmed !== 'No archive warnings.') on?.(trimmed);
 };
