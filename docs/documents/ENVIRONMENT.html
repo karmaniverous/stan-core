@@ -1,0 +1,75 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>ENVIRONMENT | @karmaniverous/stan-core</title><meta name="description" content="Documentation for @karmaniverous/stan-core"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="../index.html" class="title">@karmaniverous/stan-core</a><div id="tsd-toolbar-links"><a href="https://github.com/karmaniverous/stan-core">GitHub</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"><li><a href="" aria-current="page">ENVIRONMENT</a></li></ul></div><div class="tsd-panel tsd-typography"><h1 id="environment-variables--stancore-engine" class="tsd-anchor-link">Environment variables — stan‑core (engine)<a href="#environment-variables--stancore-engine" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1><p>This page enumerates environment variables recognized by the stan‑core library (runtime), as well as test/dev and release‑time variables used in this repository. The engine itself is presentation‑free; it only observes a minimal set of switches for debugging.</p>
+<p>Notes</p>
+<ul>
+<li>Scope labels indicate where the variable is honored: runtime (library), tests/dev (local), or release (maintainers).</li>
+<li>Unless stated otherwise, variables are optional.</li>
+</ul>
+<h2 id="runtime-library" class="tsd-anchor-link">Runtime (library)<a href="#runtime-library" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><h3 id="stan_debug" class="tsd-anchor-link">STAN_DEBUG<a href="#stan_debug" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Scope: runtime (library)</li>
+<li>Values:
+<ul>
+<li><code>1</code> — enable debug output during patch application (git apply attempts).</li>
+<li>any other value or unset — disabled (default).</li>
+</ul>
+</li>
+<li>Effect:
+<ul>
+<li>When <code>applyPatchPipeline</code> falls through to the git path, stan‑core calls an internal helper (<code>runGitApply</code>). If <code>STAN_DEBUG=1</code>, the child process streams (stdout/stderr) for each <code>git apply</code> attempt are forwarded to the current process streams as they occur.</li>
+<li>On failed attempts, concise failure lines are printed (e.g., “stan: git apply failed for … (exit N)”).</li>
+<li>No other library surfaces emit console I/O; this flag is intended strictly for local diagnostics while developing or investigating patch application issues.</li>
+</ul>
+</li>
+<li>Example:</li>
+</ul>
+<pre><code class="bash"><span class="hl-5">STAN_DEBUG</span><span class="hl-1">=</span><span class="hl-2">1</span><span class="hl-1"> </span><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-2">./scripts/apply.js</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="tests--development-repository" class="tsd-anchor-link">Tests / Development (repository)<a href="#tests--development-repository" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>These variables are used by the repository’s test harness or local tooling and are not read by the published library in normal use.</p>
+<h3 id="stan_test_real_tar" class="tsd-anchor-link">STAN_TEST_REAL_TAR<a href="#stan_test_real_tar" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Scope: tests/dev (local only)</li>
+<li>Values:
+<ul>
+<li><code>1</code> — opt out of the test‑time tar module mock.</li>
+<li>unset or other — keep the default tar mock.</li>
+</ul>
+</li>
+<li>Effect:
+<ul>
+<li>The test bootstrap (<code>src/test/mock-tar.ts</code>) globally mocks the <code>tar</code> module to avoid creating real archives in unit tests. Setting <code>STAN_TEST_REAL_TAR=1</code> disables this mock for ad‑hoc local runs that intentionally exercise real archiving.</li>
+</ul>
+</li>
+<li>Example:</li>
+</ul>
+<pre><code class="bash"><span class="hl-5">STAN_TEST_REAL_TAR</span><span class="hl-1">=</span><span class="hl-2">1</span><span class="hl-1"> </span><span class="hl-0">vitest</span><span class="hl-1"> </span><span class="hl-2">run</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="release--maintainers" class="tsd-anchor-link">Release / Maintainers<a href="#release--maintainers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>These variables are used by project maintenance scripts in this repository and are not consumed by the library at runtime.</p>
+<h3 id="github_token" class="tsd-anchor-link">GITHUB_TOKEN<a href="#github_token" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Scope: release (maintainers)</li>
+<li>Values:
+<ul>
+<li>A GitHub Personal Access Token with permissions sufficient for creating releases (used by release‑it).</li>
+</ul>
+</li>
+<li>Effect:
+<ul>
+<li>The <code>npm run release</code> script uses <code>dotenvx</code> to load <code>.env.local</code> and pass <code>GITHUB_TOKEN</code> to release tooling. This is for maintainers publishing new versions; end‑users of the library do not need it.</li>
+</ul>
+</li>
+<li>Setup:
+<ul>
+<li>Copy <code>.env.local.template</code> to <code>.env.local</code> and set <code>GITHUB_TOKEN=&lt;your-token&gt;</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="clionly-variables-reference" class="tsd-anchor-link">CLI‑only variables (reference)<a href="#clionly-variables-reference" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>The following switches are used by stan‑cli (the separate CLI/runner) and are listed here for awareness. They are NOT consumed by the stan‑core library:</p>
+<ul>
+<li><code>STAN_BORING</code>, <code>NO_COLOR</code>, <code>FORCE_COLOR</code> — affect CLI presentation (unstyled tokens / color control).</li>
+<li>Other CLI‑specific toggles are documented in the stan‑cli repository.</li>
+</ul>
+<h2 id="summary" class="tsd-anchor-link">Summary<a href="#summary" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li>stan‑core’s only runtime switch is <code>STAN_DEBUG</code> for patch pipeline diagnostics.</li>
+<li>Test and release variables (<code>STAN_TEST_REAL_TAR</code>, <code>GITHUB_TOKEN</code>) are repository‑local and not part of the public API surface.</li>
+<li>CLI‑presentation variables are out of scope for the engine; see stan‑cli.</li>
+</ul>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#environment-variables--stancore-engine"><span>Environment variables — stan‑core (engine)</span></a><ul><li><a href="#runtime-library"><span>Runtime (library)</span></a></li><li><ul><li><a href="#stan_debug"><span>STAN_<wbr/>DEBUG</span></a></li></ul></li><li><a href="#tests--development-repository"><span>Tests / <wbr/>Development (repository)</span></a></li><li><ul><li><a href="#stan_test_real_tar"><span>STAN_<wbr/>TEST_<wbr/>REAL_<wbr/>TAR</span></a></li></ul></li><li><a href="#release--maintainers"><span>Release / <wbr/>Maintainers</span></a></li><li><ul><li><a href="#github_token"><span>GITHUB_<wbr/>TOKEN</span></a></li></ul></li><li><a href="#clionly-variables-reference"><span>CLI‑only variables (reference)</span></a></li><li><a href="#summary"><span>Summary</span></a></li></ul></div></details></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/karmaniverous/stan-core" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="../modules.html">@karmaniverous/stan-core</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>

@@ -2,9 +2,22 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.3.0](https://github.com/karmaniverous/stan-core/compare/0.3.0-0...0.3.0)
+
+- chore: prune resolved interop notes after CLI namespacing [`548b472`](https://github.com/karmaniverous/stan-core/commit/548b472d09bec72cc6252b6028d7bd6541e75b12)
+- refactor: DRY set 2 — shared diff/EOL/config helpers; small consolidations [`d1ab11f`](https://github.com/karmaniverous/stan-core/commit/d1ab11f623d2897ea8fd006ae13e46196ef7a9e9)
+- refactor: DRY helpers for file-ops, repo paths, jsdiff writes, and archive composition [`21220a1`](https://github.com/karmaniverous/stan-core/commit/21220a1a77e6c838a66c6fcd2cf6645347b6d95d)
+- docs(core): align docs to namespaced config; add ENV guide [`05c7e07`](https://github.com/karmaniverous/stan-core/commit/05c7e0715bfdfc0e13f36f36513eb8d4fc431853)
+- chore(plan): update Next up for post-namespacing follow-through [`fd04a1c`](https://github.com/karmaniverous/stan-core/commit/fd04a1c0867d165e62456395b2d44fd59cbee4b2)
+- docs(todo): prune Completed to recent, high-signal entries [`8acf295`](https://github.com/karmaniverous/stan-core/commit/8acf2952f40809d885f697fa07dfedb31191f4c8)
+- docs(build): eliminate Typedoc warning by exporting AttemptCapture [`baf06d7`](https://github.com/karmaniverous/stan-core/commit/baf06d737f8676c6d3220c2ef4dafd4e41db05a7)
+
 #### [0.3.0-0](https://github.com/karmaniverous/stan-core/compare/0.2.0...0.3.0-0)
 
+> 11 October 2025
+
 - core: slim config schema; tolerate unknown keys [`bc1c443`](https://github.com/karmaniverous/stan-core/commit/bc1c4433b6148c9e4365307ad11d185408f57314)
+- chore: release v0.3.0-0 [`62b0d99`](https://github.com/karmaniverous/stan-core/commit/62b0d99db92a875558db718b04abf1c26eacf328)
 - docs: adopt namespaced config (stan-core / stan-cli); update plan & interop [`e96d6f5`](https://github.com/karmaniverous/stan-core/commit/e96d6f551e4efd03ddf2e68336ee57dad869cff7)
 - stan run [`32c460b`](https://github.com/karmaniverous/stan-core/commit/32c460b06f3faa5a509020a7626b15034149b669)
 - core: adopt strict namespaced config (stan-core); drop CLI normalization [`b9ac2f8`](https://github.com/karmaniverous/stan-core/commit/b9ac2f8854dbb6541dbddaed5bbc4f03e15c3207)
