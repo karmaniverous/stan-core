@@ -8,6 +8,12 @@ This plan tracks near‑term and follow‑through work for the stan‑cli packag
 
 ## Next up (priority order)
 
+- Interop — implement prompt resolution helper + tests per stan‑core note
+  - Add resolveCorePromptPath with primary core helper + createRequire fallback (space‑safe).
+  - Unit tests: local present; core fallback; fallback path with spaces; plan‑only `prompt: core`.
+  - Optional: guarded STAN_DEBUG line printing chosen source/path.
+  - Follow‑up: prune interop once merged and remove imports of stale core interop threads.
+
 - Changelog / release notes
   - Document: prompt include‑on‑change behavior, DRY barrel removal, dynamic TTY detection, PATH augmentation note.
   - Cut next patch release once docs are updated.
