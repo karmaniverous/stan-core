@@ -1,26 +1,28 @@
-cliDefaults:
-  run:
-    plan: false
-    sequential: true
-imports:
-  stan-cli:
-    - ../stan-cli/.stan/system/stan.requirements.md
-    - ../stan-cli/.stan/system/stan.todo.md
-    - ../stan-cli/.stan/interop/stan-core/**
-excludes:
-  - "*.local"
-  - assets
-  - CHANGELOG.md
-  - docs
-  - diagrams/**
-  - package-lock.json
-scripts:
-  typecheck: npm run typecheck
-  lint: npm run lint:fix
-  test: npm run test -- --no-color
-  build: npm run build
-  docs: npm run docs -- --emit none
-  knip: npm run knip
-patchOpenCommand: code -g {file}
-stanPath: .stan
-includes: []
+stan-core:
+  stanPath: .stan
+  includes: []
+  excludes:
+    - "*.local"
+    - assets
+    - CHANGELOG.md
+    - docs
+    - diagrams/**
+    - package-lock.json
+  imports:
+    stan-cli:
+      - ../stan-cli/.stan/system/stan.requirements.md
+      - ../stan-cli/.stan/system/stan.todo.md
+      - ../stan-cli/.stan/interop/stan-core/**
+stan-cli:
+  scripts:
+    typecheck: npm run typecheck
+    lint: npm run lint:fix
+    test: npm run test -- --no-color
+    build: npm run build
+    docs: npm run docs -- --emit none
+    knip: npm run knip
+  cliDefaults:
+    run:
+      plan: false
+      sequential: true
+  patchOpenCommand: code -g {file}

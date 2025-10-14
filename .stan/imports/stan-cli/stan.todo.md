@@ -1,6 +1,6 @@
 # STAN Development Plan
 
-When updated: 2025-10-12 (UTC)
+When updated: 2025-10-13 (UTC)
 
 This plan tracks near‑term and follow‑through work for the stan‑cli package (CLI and runner). The stan‑core split is complete; engine work is tracked in the stan‑core repository.
 
@@ -8,19 +8,27 @@ This plan tracks near‑term and follow‑through work for the stan‑cli packag
 
 ## Next up (priority order)
 
-3. Deprecation staging for config ingestion
-   - Phase 1: keep legacy extractor + loader fallback; emit debugFallback notices when used; changelog guidance to run “stan init”.
-   - Phase 2: require STAN_ACCEPT_LEGACY=1 for legacy; otherwise fail early with a concise message (“Run ‘stan init’ to migrate config.”).
-   - Phase 3: strict stan-cli only (remove legacy acceptance).
+- Changelog / release notes
+  - Document: prompt include‑on‑change behavior, DRY barrel removal, dynamic TTY detection, PATH augmentation note.
+  - Cut next patch release once docs are updated.
 
-4. Docs & help updates
-   - Configuration: namespaced layout only; “Migration” appendix → “run stan init”.
-   - Getting Started/CLI Usage: namespaced examples; note prompt flag and PATH augmentation (already covered).
-   - Init help: mention migration and .bak/--dry-run.
+- Deprecation staging for config ingestion
+  - Phase 1: keep legacy extractor + loader fallback; emit debugFallback notices when used; changelog guidance to run “stan init”.
+  - Phase 2: require STAN_ACCEPT_LEGACY=1 for legacy; otherwise fail early with a concise message (“Run ‘stan init’ to migrate config.”).
+  - Phase 3: strict stan-cli only (remove legacy acceptance).
 
-5. Silent fallback audit (narrowed to config/migration scope)
-   - Ensure debugFallback is used on: legacy engine extraction; legacy CLI loader fallback; DEFAULT_STAN_PATH resolution.
-   - Tests assert no debug output unless STAN_DEBUG=1 (behavior unchanged otherwise).
+- Docs & help updates
+  - Configuration: namespaced layout only; “Migration” appendix → “run stan init”.
+  - Getting Started/CLI Usage: namespaced examples; note prompt flag and PATH augmentation (already covered).
+  - Init help: mention migration and .bak/--dry-run.
+
+- Silent fallback audit (narrowed to config/migration scope)
+  - Ensure debugFallback is used on: legacy engine extraction; legacy CLI loader fallback; DEFAULT_STAN_PATH resolution.
+  - Tests assert no debug output unless STAN_DEBUG=1 (behavior unchanged otherwise).
+
+- Test follow‑through
+  - Add small parity checks for include‑on‑change on Windows/POSIX (core|path sources).
+  - Consider a quick unit around top‑level index exports to guard against accidental re‑introduction of barrel‑of‑barrel.
 
 ---
 
@@ -64,6 +72,18 @@ This plan tracks near‑term and follow‑through work for the stan‑cli packag
 
 ## Completed (recent)
 
+- DRY — version helper uses shared docs-meta reader
+  - Replaced ad-hoc `.docs.meta.json` parsing in `src/stan/version.ts` with `readDocsMeta(...)` from `src/stan/system/docs-meta.ts` to centralize access and types.
+
+- DRY — archive helpers consolidated
+  - Extracted shared helpers to `src/stan/run/archive/util.ts`:
+    - `stageImports()` (best‑effort wrapper around prepareImports),
+    - `cleanupOutputsAfterCombine()` and `cleanupPatchDirAfterArchive()`.
+  - Refactored callers in:
+    - `src/stan/run/archive.ts`,
+    - `src/stan/run/session/archive-stage.ts`.
+  - Behavior unchanged; reduces duplication and centralizes best‑effort handling.
+
 - Run — emit legacy engine notice once per action
   - Kept a single `run.action:engine-legacy` debugFallback emission in the run preAction hook; removed duplicate notices from the loader and run action.
   - Prevents duplicate logs while preserving the required test signal under `STAN_DEBUG=1`.
@@ -84,7 +104,7 @@ This plan tracks near‑term and follow‑through work for the stan‑cli packag
   - `.bak` is still written on migration; dry‑run remains non‑interactive and side‑effect free.
 
 - Run — early legacy engine-config debugFallback
-  - Added a `preAction` hook on the run subcommand to emit `run.action:engine-legacy` under `STAN_DEBUG=1` whenever the config lacks a top‑level `stan-core` node.
+  - Added a `preAction` hook on the run subcommand to emit `run.action:engine-legacy` under `STAN_DEBUG=1` whenever the config lacks a top-level `stan-core` node.
   - Keeps the existing action‑time check; guarantees the notice is present alongside the CLI‑config legacy notice.
 
 - Decomposed session orchestrator (directory + index.ts)
@@ -102,44 +122,6 @@ This plan tracks near‑term and follow‑through work for the stan‑cli packag
   - Requirements now codify namespaced ingestion, transitional legacy engine‑config extraction, and staged deprecation.
   - Ready to ask stan-core to prune resolved interop notes; remove our import of core interop files after core prunes them.
 
-### Completed (recent)
-
-- Init/service decomposition (finish) and namespaced migration helper
-  - Added src/stan/init/service/migrate.ts and rewired performInitService to use it.
-  - Removed legacy src/stan/init/service.ts to eliminate duplication and TS7053.
-  - Fixed unsafe error handling in service/index.ts catch blocks (lint clean).
-  - Updated init behavior tests to the namespaced model (stan-core/stan-cli); removed assumptions about legacy top‑level cliDefaults/scripts and root key order.
-  - Kept unknown root keys intact and avoided re‑adding legacy keys when namespaces exist; migration remains idempotent and writes a .bak in force/confirmed paths.
-
-  - Post‑fix: init/service now avoids writing legacy root keys when stan-core/stan-cli nodes exist.
-    - Interactive and --force branches write engine keys to stan-core and CLI keys to stan-cli.
-    - Root duplication of scripts/stanPath/includes/excludes/patchOpenCommand eliminated.
-    - Snapshot selection derives includes/excludes from stan-core when present; stanPath resolution prefers stan-core.
-    - Tests refined to assert absence of root keys using root-anchored regexes only (no false positives for nested keys).
-
-- Init/service decomposition (helpers; no new subdir)
-  - Extracted shared helpers to src/stan/init/service/helpers.ts (isObj/hasOwn/ensureNsNode/ensureKey/setKey).
-  - Extracted resolveEffectiveStanPath to stanpath.ts and includes/excludes resolver to selection.ts.
-  - Cleaned index.ts to import helpers and removed unused type imports.
-  - No new folder was created; files live alongside index.ts per directive.
-
-- Init — dry-run + .bak + idempotency
-  - Added `--dry-run` to `stan init` (no writes; plan-only output); guarded service writes (config/.gitignore/docs meta/snapshot).
-  - Added assertion that a `.bak` is written on migration (YAML path) and a test for idempotency (already namespaced config is a no-op).
-
-- Transitional legacy engine-config extraction (test)
-  - Added a test that a legacy-only config (root engine keys; no `stan-core`) triggers the debugFallback extraction path in `stan run -p` under `STAN_DEBUG=1`.
-  - Keeps the loop green during release sequencing while exercising the synthesis code-path.
-
-- Runner — stabilize sequential cancel gate
-  - Ensured output files are created up front by moving the output stream open before spawn in `run-one.ts`. This guarantees `<key>.txt` exists even when cancellation occurs immediately after spawn, fixing the failing gate test.
-
-- Docs — namespaced configuration
-  - Updated the Configuration guide to show the namespaced layout exclusively and adjusted section headings (`stan-core` / `stan-cli`).
-
-- Interop — request to core
-  - Posted `.stan/interop/stan-core/20251012-000000Z-cli-namespacing-adopted.md` asking core to prune resolved interop notes so we can remove imports of core interop threads from this repo and keep archives lean.
-
 - Run — import debugFallback to restore debug notice path and fix typecheck/lint
   - Added `import { debugFallback } from '@/stan/util/debug'` in `src/cli/stan/run/action.ts`.
   - Resolves TS2304 (“Cannot find name 'debugFallback'”) and associated lint errors.
@@ -148,3 +130,84 @@ This plan tracks near‑term and follow‑through work for the stan‑cli packag
 - Patch — use engine DEFAULT_OPEN_COMMAND (DRY)
   - Updated `src/stan/patch/service.ts` to import `DEFAULT_OPEN_COMMAND` from `@karmaniverous/stan-core`.
   - Removes dependency on the deleted local defaults module and fixes module‑resolution failures in tests.
+
+- Run — guarantee early legacy-engine debugFallback once per action
+  - Added an early check in `src/cli/stan/run/action.ts` to emit `run.action:engine-legacy` when the config lacks a top-level `stan-core`, guarded to avoid duplicates with the later synthesis path.
+  - Ensures the expected debug signal is present under `STAN_DEBUG=1` for the transitional legacy extraction test.
+  - Keeps the emission to a single notice per action by tracking a local guard.
+
+- Run — honor legacy includes/excludes in archive phase
+  - Extended `RunnerConfig` to optionally carry `includes`/`excludes`/`imports`.
+  - In `run/action.ts`, populated these fields from the resolved engine `ContextConfig` (synthesized from legacy root keys when needed).
+  - The archive phase now receives selection settings and respects legacy excludes without requiring a top‑level `stan-core` block.
+  - No behavior change for namespaced configs; legacy paths only.
+
+- Run/CLI config — guarantee engine-legacy notice in legacy CLI fallback
+  - When the CLI loader falls back to legacy top-level keys (no `stan-cli`), also emit the `run.action:engine-legacy` debugFallback when `stan-core` is absent. This ensures the transitional test sees the expected label even if ordering causes the early run-action notice to be missed.
+  - Non-legacy, namespaced configs unaffected.
+
+- Init — preserve‑scripts prompt during legacy upgrade
+  - Seeded interactive defaults for `stan init` from the migrated config and CLI loader instead of engine loader (which fails pre‑migration).
+  - Ensures the “Preserve existing scripts?” confirm appears when upgrading legacy configs, and that existing `stan-cli.scripts` are retained when preserved.
+  - Reused the resolved `stanPath` from the UI defaults for downstream steps.
+
+- Tests — fix false‑positive root‑level scripts check in init migration test
+  - Tightened regex to match only a root‑level `scripts:` line, avoiding nested matches under `stan-cli`.
+
+- Run — include‑on‑change for ephemeral system prompt (quiet diffs on steady state)
+  - For `--prompt core|<path>`, compare the effective prompt hash against the baseline recorded at snap.
+  - When changed, inject before diff so the prompt appears exactly once in archive.diff.tar; otherwise create the diff first without injection and inject only for the full archive. Always restore original bytes afterward (no persistent overwrite).
+
+- Snap — record effective prompt identity for baseline
+  - Compute the effective prompt (cliDefaults.run.prompt | auto), hash its bytes, and update `.stan/system/.docs.meta.json` with `prompt: { source, hash, path? }` (best‑effort; preserves unknown keys).
+  - New helpers: `src/stan/util/hash.ts`, `src/stan/system/docs-meta.ts`.
+
+- DRY — unify CLI command headers
+  - Added `src/cli/stan/header.ts` to centralize BORING/TTY-aware header printing.
+  - Updated:
+    - `src/cli/stan/run/action.ts`,
+    - `src/cli/stan/snap.ts`,
+    - `src/cli/stan/patch.ts` to use the shared helper (removed local isBoring/header duplication).
+
+- DRY — centralized STAN workspace paths
+  - Added `src/stan/paths.ts` (`stanDirs(cwd, stanPath)`) to compute common paths: system/output/diff/patch and the system prompt file.
+  - Refactored:
+    - `src/stan/run/archive.ts`
+    - `src/stan/run/session/archive-stage.ts` to use it.
+
+- Typedoc — include ScriptMap in docs
+  - Re‑exported `ScriptMap` from the library entry so Typedoc includes the referenced type used by `RunnerConfig.scripts`, eliminating the prior warning.
+
+- Tests — small unit coverage
+  - Added header unit tests for BORING/TTY branches (`src/cli/stan/header.test.ts`).
+  - Added a focused test for `stanDirs` path helper (`src/stan/paths.test.ts`).
+
+- Docs — Getting Started
+  - Noted PATH augmentation for child scripts so repo‑local binaries resolve without globals.
+
+- Tests — stabilize header test and fix lint
+  - Cleared NO_COLOR/FORCE_COLOR alongside STAN_BORING to exercise styled TTY branch.
+  - Replaced unsafe String(...) usage with safe argument joining to satisfy @typescript-eslint/no-base-to-string.
+
+- Typedoc — include ScriptEntry
+  - Re‑exported `ScriptEntry` in `src/index.ts` to resolve the reference warning from `ScriptMap`.
+
+- Tests — fix styled TTY header branch by making TTY detection dynamic
+  - Updated `src/stan/util/color.ts` so `isBoring()` computes TTY on each call instead of capturing it at module import. This allows tests to toggle TTY and ensures runtime honors current TTY and env flags consistently.
+
+  - DRY — remove redundant barrels and realign imports
+  - Deleted `src/stan/index.ts` (barrel-of-barrel under top-level index), `src/stan/run/exec/index.ts` (unused exec barrel), and `src/stan/run/live/types.ts` (re-export-only types).
+  - Updated imports to reference canonical sources directly:
+    - Top-level `src/index.ts` now exports from `./stan/help` and `./stan/run` directly, and consolidates type re-exports (`ScriptMap`, `ScriptEntry`).
+    - Live renderer/util/frame import `RowMeta`/`ScriptState` from `@/stan/run/types` instead of the removed `live/types` indirection.
+
+- Docs — Migration note and typedoc wiring
+  - Added docs-src/migration.md describing the namespaced layout and how to migrate via `stan init` (with .bak and `--dry-run`).
+  - Registered the page in typedoc.json and linked it from README.
+
+- Docs — CLI plan/prompt and init flags
+  - Clarified that the run plan header includes a `prompt:` line in CLI docs.
+  - Added init migration notes (.bak, `--dry-run`) to Getting Started.
+
+- Run — plan-only prints resolved prompt
+  - Updated `stan run -p` path to resolve the system prompt and include a `prompt:` line in the printed plan (core/local/path/auto). Falls back to the base plan if resolution fails. Commit Message
