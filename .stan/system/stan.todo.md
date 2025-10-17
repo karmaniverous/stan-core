@@ -21,6 +21,28 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Introduce shared `writeStanConfigYaml/Json` and `withMockTarCapture` helpers.
   - Adopt incrementally in a few suites.
 
+- Facet overlays (anchors channel in selection)
+  - Core surfaces:
+    - Extend `filterFiles`, `createArchive`, `createArchiveDiff`, and `writeArchiveSnapshot` with optional `anchors?: string[]`.
+    - Implement re‑inclusion after excludes and `.gitignore`, with reserved denials and binary screening still enforced.
+  - Tests:
+    - Anchors re‑include over excludes and `.gitignore`.
+    - Anchors are blocked by reserved denials; binaries remain excluded.
+    - Empty `anchors` preserves current behavior.
+    - Path normalization (POSIX) parity across Windows/POSIX.
+  - Docs:
+    - Update Typedoc on selection surfaces (parameter + precedence).
+    - Update README “Selection precedence” with includes/excludes/anchors + reserved denials note.
+  - (Optional) Helper:
+    - Export `makeGlobMatcher(patterns: string[]): (rel: string) => boolean` to help CLI preview plan details with engine‑parity semantics.
+  - Acceptance criteria:
+    - All new tests pass (unit coverage for anchors and reserved precedence).
+    - Typedoc site builds without warnings; parameters documented.
+    - No change in selection when `anchors` is omitted/empty.
+    - Archives/diff behavior unchanged except where anchors are supplied.
+    - Back‑compat maintained for existing consumers not using anchors.
+
+
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during CLI alignment.
   - Keep modules ≤ 300 LOC.
