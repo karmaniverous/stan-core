@@ -52,11 +52,39 @@ export type CreateArchiveOptions = {
   excludes?: string[];
   /** Optional callback for archive classifier warnings (engine remains silent by default). */
   onArchiveWarnings?: (text: string) => void;
-  /** High‑precedence re‑includes (subject to reserved denials and output exclusion). */
+  /**
+   * High‑precedence re‑includes (subject to reserved denials and output exclusion).
+   * Anchors re-include paths even when excluded by `.gitignore` or `excludes`,
+   * but they never override reserved workspace denials:
+   * - `<stanPath>/diff/**`, `<stanPath>/patch/**`
+   * - `<stanPath>/output/{archive.tar,archive.diff.tar,archive.warnings.txt}`
+   * - `.git/**`
+   *
+   * @example
+   * ```ts
+   * // Force-include README.md even if repo excludes would drop it:
+   * await createArchive(cwd, '.stan', {
+   *   includes: [],
+   *   excludes: ['README.md'],
+   *   anchors: ['README.md'],
+   * });
+   * ```
+   */
   anchors?: string[];
 };
 
-/** Create `stanPath/output/archive.tar` (or custom file name) from the repo root. */
+/**
+ * Create `stanPath/output/archive.tar` (or custom file name) from the repo root.
+ *
+ * @example
+ * ```ts
+ * const tarPath = await createArchive(process.cwd(), '.stan', {
+ *   includeOutputDir: false,
+ *   excludes: ['**\/.tsbuild/**'],
+ *   anchors: ['README.md', 'docs/index.md'], // re-include anchors
+ * });
+ * ```
+ */
 export const createArchive = async (
   cwd: string,
   stanPath: string,

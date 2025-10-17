@@ -59,6 +59,17 @@ const sentinelPathFor = (diffDir: string): string =>
  *   - includes: Allow‑list globs (overrides excludes).
  *   - excludes: Deny‑list globs.
  *   - anchors: High‑precedence re‑includes (subject to reserved/output).
+ *
+ * @example
+ * ```ts
+ * // Seed snapshot using anchors to keep README.md even when excluded:
+ * await writeArchiveSnapshot({
+ *   cwd: process.cwd(),
+ *   stanPath: '.stan',
+ *   excludes: ['README.md'],
+ *   anchors: ['README.md'],
+ * });
+ * ```
  * @returns Absolute path to the `.archive.snapshot.json` file.
  */
 export const writeArchiveSnapshot = async ({
@@ -111,6 +122,19 @@ export const writeArchiveSnapshot = async ({
  *   - updateSnapshot: Controls when the snapshot file is replaced.
  *   - includeOutputDirInDiff: When true, include `stanPath/output` in the diff.
  * @returns `{ diffPath }` absolute path to the diff archive.
+ *
+ * @example
+ * ```ts
+ * // Diff archive with anchors to retain docs/overview.md:
+ * const { diffPath } = await createArchiveDiff({
+ *   cwd: process.cwd(),
+ *   stanPath: '.stan',
+ *   baseName: 'archive',
+ *   excludes: ['docs/**'],
+ *   anchors: ['docs/overview.md'],
+ *   updateSnapshot: 'createIfMissing',
+ * });
+ * ```
  */
 export const createArchiveDiff = async ({
   cwd,

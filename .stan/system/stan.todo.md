@@ -141,3 +141,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - No production behavior changes; improves test clarity and reduces duplication.
 
   - Follow‑through: completed helper adoption for the above suites in this change set.
+
+- Docs — add Typedoc examples for anchors parameter
+  - Added @example snippets to:
+    - `createArchive` (src/stan/archive.ts)
+    - `writeArchiveSnapshot` and `createArchiveDiff` (src/stan/diff.ts)
+    - `filterFiles` options (src/stan/fs.ts)
+  - Clarifies anchor precedence and usage; code behavior unchanged.

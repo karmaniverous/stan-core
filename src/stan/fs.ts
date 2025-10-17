@@ -96,7 +96,21 @@ export type FilterOptions = {
   includeOutputDir: boolean;
   includes?: string[];
   excludes?: string[];
-  /** High‑precedence re‑includes (subject to reserved denials and output exclusion). */
+  /**
+   * High‑precedence re‑includes (subject to reserved denials and output exclusion).
+   *
+   * @example
+   * ```ts
+   * const files = await listFiles(cwd);
+   * const filtered = await filterFiles(files, {
+   *   cwd,
+   *   stanPath: '.stan',
+   *   includeOutputDir: false,
+   *   excludes: ['README.md'],
+   *   anchors: ['README.md'], // bring README.md back
+   * });
+   * ```
+   */
   anchors?: string[];
 };
 
