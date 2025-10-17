@@ -30,9 +30,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ## Completed (recent)
 
 - Interop (stan-cli) — prompt resolution tests & fallback
-  - Posted `.stan/interop/stan-cli/20251013-170500Z-prompt-resolution-tests.md`
-    proposing a robust `resolveCorePromptPath` helper, unit tests for local/core
-    selection (including fallback with spaces), and a plan-only integration test.
+  - Posted `.stan/interop/stan-cli/20251013-170500Z-prompt-resolution-tests.md` proposing a robust `resolveCorePromptPath` helper, unit tests for local/core selection (including fallback with spaces), and a plan-only integration test.
+
 ---
 
 ## Completed (recent)
@@ -79,3 +78,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Tests — packaged prompt resolution independent of cwd
   - Added `src/stan/module.cwd.test.ts` to assert `getPackagedSystemPromptPath` returns the packaged prompt path even when `process.cwd()` is unrelated to the module root (mirrors global CLI → nested core geometry).
+
+- Tests — deflake packaged prompt cwd test
+  - Consolidated the cwd-resilience check into `src/stan/module.test.ts` and removed the standalone `src/stan/module.cwd.test.ts` to avoid cross-file parallel interference on `dist/stan.system.md`.
+  - Ensures the two related assertions run sequentially within one spec, eliminating the race.
