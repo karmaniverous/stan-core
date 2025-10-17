@@ -96,6 +96,8 @@ export type FilterOptions = {
   includeOutputDir: boolean;
   includes?: string[];
   excludes?: string[];
+  /** High‑precedence re‑includes (subject to reserved denials and output exclusion). */
+  anchors?: string[];
 };
 
 /**
@@ -113,6 +115,10 @@ export type FilterOptions = {
  *     excludes always win).
  *   - Reserved exclusions still apply: `stanPath/diff` is always excluded;
  *     `stanPath/output` is excluded when `includeOutputDir` is false.
+ * - `anchors` (high‑precedence re‑includes) — ADDITIVE with higher precedence:
+ *   - When provided, matched files are ADDED after excludes and `.gitignore`,
+ *     but anchors DO NOT override reserved denials (`diff/patch`) and DO NOT
+ *     include `stanPath/output` when `includeOutputDir` is false.
  *
  * Paths are compared using POSIX separators.
  *
@@ -128,6 +134,7 @@ export const filterFiles = async (
     includeOutputDir,
     includes = [],
     excludes = [],
+    anchors = [],
   }: FilterOptions,
 ): Promise<string[]> => {
   const stanRel = stanPath.replace(/\\/g, '/');
@@ -173,12 +180,43 @@ export const filterFiles = async (
     for (const f of files) if (allowMatchers.some((m) => m(f))) inUnion.add(f);
     // Excludes take precedence over includes: drop anything matching user excludes.
     const excludesMatchers: Matcher[] = excludes.map(toMatcher);
-    return files.filter(
-      (f) =>
-        inUnion.has(f) &&
-        !reserved.some((m) => m(f)) &&
-        !excludesMatchers.some((m) => m(f)),
+
+    // Filter after excludes and reserved
+    const afterExcludes = new Set<string>(
+      files.filter(
+        (f) =>
+          inUnion.has(f) &&
+          !reserved.some((m) => m(f)) &&
+          !excludesMatchers.some((m) => m(f)),
+      ),
     );
+
+    // Anchors override excludes/.gitignore (but not reserved/output exclusion)
+    if (anchors.length > 0) {
+      const anchorMatchers: Matcher[] = anchors.map(toMatcher);
+      for (const f of files) {
+        const blocked =
+          isReservedWorkspacePath(stanRel, f) ||
+          (!includeOutputDir && isUnder(`${stanRel}/output`, f));
+        if (!blocked && anchorMatchers.some((m) => m(f))) afterExcludes.add(f);
+      }
+    }
+
+    // Preserve original order
+    return files.filter((f) => afterExcludes.has(f));
+  }
+
+  // No includes supplied — apply anchors on top of base
+  if (anchors.length > 0) {
+    const anchorMatchers: Matcher[] = anchors.map(toMatcher);
+    const out = new Set<string>(base);
+    for (const f of files) {
+      const blocked =
+        isReservedWorkspacePath(stanRel, f) ||
+        (!includeOutputDir && isUnder(`${stanRel}/output`, f));
+      if (!blocked && anchorMatchers.some((m) => m(f))) out.add(f);
+    }
+    return files.filter((f) => out.has(f));
   }
 
   return base;

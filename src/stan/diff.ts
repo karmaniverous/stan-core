@@ -58,6 +58,7 @@ const sentinelPathFor = (diffDir: string): string =>
  *   - stanPath: STAN workspace folder.
  *   - includes: Allow‑list globs (overrides excludes).
  *   - excludes: Deny‑list globs.
+ *   - anchors: High‑precedence re‑includes (subject to reserved/output).
  * @returns Absolute path to the `.archive.snapshot.json` file.
  */
 export const writeArchiveSnapshot = async ({
@@ -65,11 +66,13 @@ export const writeArchiveSnapshot = async ({
   stanPath,
   includes,
   excludes,
+  anchors,
 }: {
   cwd: string;
   stanPath: string;
   includes?: string[];
   excludes?: string[];
+  anchors?: string[];
 }): Promise<string> => {
   const { diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -80,6 +83,7 @@ export const writeArchiveSnapshot = async ({
     includeOutputDir: false,
     includes: includes ?? [],
     excludes: excludes ?? [],
+    anchors: anchors ?? [],
   });
 
   const current = await computeCurrentHashes(cwd, filtered);
@@ -103,6 +107,7 @@ export const writeArchiveSnapshot = async ({
  *   - baseName: Base archive name (e.g., `archive` -\> `archive.diff.tar`).
  *   - includes: Allow‑list globs (overrides excludes).
  *   - excludes: Deny‑list globs.
+ *   - anchors: High‑precedence re‑includes (subject to reserved/output).
  *   - updateSnapshot: Controls when the snapshot file is replaced.
  *   - includeOutputDirInDiff: When true, include `stanPath/output` in the diff.
  * @returns `{ diffPath }` absolute path to the diff archive.
@@ -115,6 +120,7 @@ export const createArchiveDiff = async ({
   excludes,
   updateSnapshot = 'createIfMissing',
   includeOutputDirInDiff = false,
+  anchors,
   onArchiveWarnings,
 }: {
   cwd: string;
@@ -124,6 +130,7 @@ export const createArchiveDiff = async ({
   excludes?: string[];
   updateSnapshot?: SnapshotUpdateMode;
   includeOutputDirInDiff?: boolean;
+  anchors?: string[];
   onArchiveWarnings?: (text: string) => void;
 }): Promise<{ diffPath: string }> => {
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
@@ -135,6 +142,7 @@ export const createArchiveDiff = async ({
     includeOutputDir: false,
     includes: includes ?? [],
     excludes: excludes ?? [],
+    anchors: anchors ?? [],
   });
 
   const current = await computeCurrentHashes(cwd, filtered);

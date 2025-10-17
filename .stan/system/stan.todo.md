@@ -42,7 +42,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - Archives/diff behavior unchanged except where anchors are supplied.
     - Back‑compat maintained for existing consumers not using anchors.
 
-
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during CLI alignment.
   - Keep modules ≤ 300 LOC.
@@ -116,7 +115,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ## Completed (recent)
 
 - Interop (stan-cli) — overlay archive metadata contract
-  - Posted `.stan/interop/stan-cli/20251017-173000Z-overlay-metadata-contract.md`
-    specifying CLI responsibility and the JSON shape/semantics for the `overlay`
-    block in `<stanPath>/system/.docs.meta.json`. Aligns plan output with the
-    archived, machine-readable view used by the last run.
+  - Posted `.stan/interop/stan-cli/20251017-173000Z-overlay-metadata-contract.md` specifying CLI responsibility and the JSON shape/semantics for the `overlay` block in `<stanPath>/system/.docs.meta.json`. Aligns plan output with the archived, machine-readable view used by the last run.
+
+- Core — implemented anchors channel in selection surfaces
+  - `filterFiles` accepts `anchors?: string[]` and re‑includes matches after excludes/.gitignore while respecting reserved denials (`.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`) and output exclusion when `includeOutputDir=false`.
+  - `createArchive`, `createArchiveDiff`, and `writeArchiveSnapshot` accept/propagate `anchors` to ensure consistent selection across full, diff, and snapshot.
+  - Tests:
+    - Re‑inclusion over excludes and `.gitignore` validated.
+    - Anchors blocked by reserved paths and output exclusion validated.
+  - Behavior is backward‑compatible when `anchors` is omitted/empty; archives remain unchanged unless anchors are provided.

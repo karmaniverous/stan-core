@@ -52,6 +52,8 @@ export type CreateArchiveOptions = {
   excludes?: string[];
   /** Optional callback for archive classifier warnings (engine remains silent by default). */
   onArchiveWarnings?: (text: string) => void;
+  /** High‑precedence re‑includes (subject to reserved denials and output exclusion). */
+  anchors?: string[];
 };
 
 /** Create `stanPath/output/archive.tar` (or custom file name) from the repo root. */
@@ -65,6 +67,7 @@ export const createArchive = async (
     fileName: rawFileName,
     includes = [],
     excludes = [],
+    anchors = [],
   } = options;
 
   let fileName = rawFileName ?? 'archive.tar';
@@ -79,6 +82,7 @@ export const createArchive = async (
     includeOutputDir,
     includes,
     excludes,
+    anchors,
   });
 
   const archivePath = resolve(outDir, fileName);
