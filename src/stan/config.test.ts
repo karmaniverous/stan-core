@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 
 import { ensureOutputDir, loadConfig } from '@/stan/config';
 
+import { writeStanConfigYaml } from '../test/helpers';
+
 const write = (p: string, c: string) => writeFile(p, c, 'utf8');
 describe('config loading (namespaced stan-core)', () => {
   it('loads valid JSON config and tolerates extraneous keys', async () => {
@@ -35,8 +37,7 @@ describe('config loading (namespaced stan-core)', () => {
 
   it('loads valid YAML config (stan.config.yml)', async () => {
     const cwd = await mkdtemp(path.join(tmpdir(), 'stan-yml-'));
-    const yml = ['stan-core:', '  stanPath: stan', '  includes: []'].join('\n');
-    await write(path.join(cwd, 'stan.config.yml'), yml);
+    await writeStanConfigYaml(cwd, { stanPath: 'stan', includes: [] });
 
     const cfg = await loadConfig(cwd);
     expect(cfg.stanPath).toBe('stan');

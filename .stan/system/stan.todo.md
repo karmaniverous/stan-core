@@ -131,3 +131,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Resolved ReferenceError in archive/diff suites by avoiding closure capture inside a hoisted vi.mock factory.
   - Introduced a hoisted `state.body` and updated the mock to write that content; the helper now sets `state.body` per suite.
   - Restores passing behavior for archive/diff tests that rely on the tar mock writing deterministic output.
+
+- Tests — adopt writeStanConfigYaml in config suites
+  - Replaced ad‑hoc config materialization with `writeStanConfigYaml` in:
+    - `src/stan/config.discover.test.ts`
+    - `src/stan/config.load.extra.test.ts` (valid YAML case)
+    - `src/stan/config.test.ts` (YAML case)
+  - Negative‑path tests (unknown keys/missing section) remain manual to assert error behavior.
+  - No production behavior changes; improves test clarity and reduces duplication.
+
+  - Follow‑through: completed helper adoption for the above suites in this change set.
