@@ -6,41 +6,14 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Docs (namespaced model only)
-  - Update README and examples to show the namespaced `stan-core`/`stan-cli` layout exclusively.
-  - Add a brief migration note pointing users to “stan init” (CLI).
-
-- Config tests (strict engine loader)
-  - Add a unit test that rejects unknown keys inside `stan-core` (negative case).
-  - Add a JSON-path variant of the missing-section error.
-
-- Typedoc (zero warnings)
-  - Resolve the remaining AttemptCapture warning by exporting the type or adjusting the reference.
-
-- DRY test scaffolding
-  - Introduce shared `writeStanConfigYaml/Json` and `withMockTarCapture` helpers.
-  - Adopt incrementally in a few suites.
-
-- Facet overlays (anchors channel in selection)
-  - Core surfaces:
-    - Extend `filterFiles`, `createArchive`, `createArchiveDiff`, and `writeArchiveSnapshot` with optional `anchors?: string[]`.
-    - Implement re‑inclusion after excludes and `.gitignore`, with reserved denials and binary screening still enforced.
-  - Tests:
-    - Anchors re‑include over excludes and `.gitignore`.
-    - Anchors are blocked by reserved denials; binaries remain excluded.
-    - Empty `anchors` preserves current behavior.
-    - Path normalization (POSIX) parity across Windows/POSIX.
-  - Docs:
-    - Update Typedoc on selection surfaces (parameter + precedence).
-    - Update README “Selection precedence” with includes/excludes/anchors + reserved denials note.
-  - (Optional) Helper:
-    - Export `makeGlobMatcher(patterns: string[]): (rel: string) => boolean` to help CLI preview plan details with engine‑parity semantics.
+- DRY helpers adoption (tests)
+  - Adopt `writeStanConfigYaml/Json` and `withMockTarCapture` across remaining suites
+    to reduce duplication and improve test clarity.
+  - Do this incrementally (archive/diff first), keeping changes localized to test code.
   - Acceptance criteria:
-    - All new tests pass (unit coverage for anchors and reserved precedence).
-    - Typedoc site builds without warnings; parameters documented.
-    - No change in selection when `anchors` is omitted/empty.
-    - Archives/diff behavior unchanged except where anchors are supplied.
-    - Back‑compat maintained for existing consumers not using anchors.
+    - No change in production behavior.
+    - Suites that adopt helpers should have simpler setup with equal or better coverage.
+    - CI runtime does not regress.
 
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during CLI alignment.
