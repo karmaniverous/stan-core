@@ -1,6 +1,5 @@
-// src/test/helpers.ts
-import { rm } from 'node:fs/promises';
-import { writeFile } from 'node:fs/promises';
+/* src/test/helpers.ts */
+import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { vi } from 'vitest';
@@ -104,9 +103,11 @@ export type TarCall = {
  * Install a tar.create mock and capture calls.
  * IMPORTANT: call at top-level before importing modules under test that import 'tar'.
  * Returns a capture object with `.calls` array; by default writes 'TAR' to the output file.
+ *
+ * Uses vi.hoisted() so that the capture survives Vitest's mock hoisting.
  */
 export const withMockTarCapture = (writeBody = 'TAR'): { calls: TarCall[] } => {
-  const calls: TarCall[] = [];
+  const state = vi.hoisted(() => ({ calls: [] as TarCall[] }));
   vi.mock('tar', () => ({
     __esModule: true,
     default: undefined,
@@ -118,7 +119,7 @@ export const withMockTarCapture = (writeBody = 'TAR'): { calls: TarCall[] } => {
       },
       files: string[],
     ) => {
-      calls.push({
+      state.calls.push({
         file: opts.file,
         cwd: opts.cwd,
         filter: opts.filter,
@@ -127,5 +128,5 @@ export const withMockTarCapture = (writeBody = 'TAR'): { calls: TarCall[] } => {
       await writeFile(opts.file, writeBody, 'utf8');
     },
   }));
-  return { calls };
+  return state;
 };
