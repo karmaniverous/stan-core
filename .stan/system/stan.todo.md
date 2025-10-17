@@ -138,3 +138,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - Verifies that unknown keys inside the top‑level `stan-core` block are rejected by the strict Zod schema.
     - Confirms that the “missing stan-core section” error for JSON includes the path `stan.config.json` in the message (friendly diagnostics).
   - Keeps strictness scoped to `stan-core`; unknown keys outside `stan-core` remain tolerated by the engine.
+
+- DRY test scaffolding — helpers
+  - Added `writeStanConfigYaml/Json` utilities in `src/test/helpers.ts` for concise, namespaced config materialization in tests.
+  - Added `withMockTarCapture` to centralize `tar.create` mocking and call capture for archive/diff tests.
+  - Adoption plan:
+    - Migrate existing suites incrementally to use these helpers (starting with archive/diff suites).
+    - Keep changes local to test code; no production behavior changes.

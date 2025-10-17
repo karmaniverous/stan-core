@@ -1,5 +1,10 @@
 // src/test/helpers.ts
 import { rm } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
+
+import { vi } from 'vitest';
+import YAML from 'yaml';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -28,4 +33,99 @@ export const rmDirWithRetries = async (
     }
   }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+};
+
+/**
+ * Write a namespaced YAML config with a stan-core block.
+ * Example:
+ *   await writeStanConfigYaml(cwd, \{ stanPath: '.stan', includes: [], excludes: [] \});
+ */
+export const writeStanConfigYaml = async (
+  cwd: string,
+  core: Partial<{
+    stanPath: string;
+    includes: string[];
+    excludes: string[];
+    imports: Record<string, string[]>;
+  }> = {},
+  fileName = 'stan.config.yml',
+): Promise<string> => {
+  const body = YAML.stringify({
+    'stan-core': {
+      stanPath: core.stanPath ?? '.stan',
+      includes: core.includes ?? [],
+      excludes: core.excludes ?? [],
+      ...(core.imports ? { imports: core.imports } : {}),
+    },
+  });
+  const p = path.join(cwd, fileName);
+  await writeFile(p, body, 'utf8');
+  return p;
+};
+
+/**
+ * Write a namespaced JSON config with a stan-core block.
+ */
+export const writeStanConfigJson = async (
+  cwd: string,
+  core: Partial<{
+    stanPath: string;
+    includes: string[];
+    excludes: string[];
+    imports: Record<string, string[]>;
+  }> = {},
+  fileName = 'stan.config.json',
+): Promise<string> => {
+  const body = JSON.stringify(
+    {
+      'stan-core': {
+        stanPath: core.stanPath ?? '.stan',
+        includes: core.includes ?? [],
+        excludes: core.excludes ?? [],
+        ...(core.imports ? { imports: core.imports } : {}),
+      },
+    },
+    null,
+    2,
+  );
+  const p = path.join(cwd, fileName);
+  await writeFile(p, body, 'utf8');
+  return p;
+};
+
+export type TarCall = {
+  file: string;
+  cwd?: string;
+  filter?: (p: string, s: unknown) => boolean;
+  files: string[];
+};
+
+/**
+ * Install a tar.create mock and capture calls.
+ * IMPORTANT: call at top-level before importing modules under test that import 'tar'.
+ * Returns a capture object with `.calls` array; by default writes 'TAR' to the output file.
+ */
+export const withMockTarCapture = (writeBody = 'TAR'): { calls: TarCall[] } => {
+  const calls: TarCall[] = [];
+  vi.mock('tar', () => ({
+    __esModule: true,
+    default: undefined,
+    create: async (
+      opts: {
+        file: string;
+        cwd?: string;
+        filter?: (p: string, s: unknown) => boolean;
+      },
+      files: string[],
+    ) => {
+      calls.push({
+        file: opts.file,
+        cwd: opts.cwd,
+        filter: opts.filter,
+        files,
+      });
+      await writeFile(opts.file, writeBody, 'utf8');
+    },
+  }));
+  return { calls };
 };

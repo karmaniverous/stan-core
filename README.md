@@ -178,6 +178,15 @@ APIs that accept anchors:
 
 See ENVIRONMENT.md for a complete list of environment variable switches observed by the engine, tests, and release scripts.
 
+## Migration (legacy configs)
+
+This engine expects a top‑level, namespaced `stan-core` block in `stan.config.yml|json`.
+If your repository still uses legacy, flat keys at the root, migrate with the CLI:
+
+```bash
+stan init  # offers to refactor legacy → namespaced; supports --dry-run and backups
+```
+
 ## License
 
 BSD‑3‑Clause
