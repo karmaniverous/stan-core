@@ -107,7 +107,12 @@ export type TarCall = {
  * Uses vi.hoisted() so that the capture survives Vitest's mock hoisting.
  */
 export const withMockTarCapture = (writeBody = 'TAR'): { calls: TarCall[] } => {
-  const state = vi.hoisted(() => ({ calls: [] as TarCall[] }));
+  // Use a hoisted state so the vi.mock factory (also hoisted) can access
+  // stable references. Include a .body field to control the written content.
+  const state = vi.hoisted(() => ({ calls: [] as TarCall[], body: 'TAR' }));
+  // Allow callers to override the default body for this suite.
+  state.body = writeBody;
+
   vi.mock('tar', () => ({
     __esModule: true,
     default: undefined,
@@ -125,7 +130,9 @@ export const withMockTarCapture = (writeBody = 'TAR'): { calls: TarCall[] } => {
         filter: opts.filter,
         files,
       });
-      await writeFile(opts.file, writeBody, 'utf8');
+      // Write the configured body; cannot capture local variables due to
+      // hoisting, so read from hoisted state instead.
+      await writeFile(opts.file, state.body, 'utf8');
     },
   }));
   return state;

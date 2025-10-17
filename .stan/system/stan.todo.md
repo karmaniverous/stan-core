@@ -126,3 +126,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - `src/stan/run.combine.archive.behavior.test.ts`
     - `src/stan/diff.classifier.behavior.test.ts`
   - No production behavior changes; keeps test setup concise and uniform.
+
+- Tests — fix tar mock hoisting in withMockTarCapture
+  - Resolved ReferenceError in archive/diff suites by avoiding closure capture inside a hoisted vi.mock factory.
+  - Introduced a hoisted `state.body` and updated the mock to write that content; the helper now sets `state.body` per suite.
+  - Restores passing behavior for archive/diff tests that rely on the tar mock writing deterministic output.
