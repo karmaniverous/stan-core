@@ -82,3 +82,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Tests — deflake packaged prompt cwd test
   - Consolidated the cwd-resilience check into `src/stan/module.test.ts` and removed the standalone `src/stan/module.cwd.test.ts` to avoid cross-file parallel interference on `dist/stan.system.md`.
   - Ensures the two related assertions run sequentially within one spec, eliminating the race.
+
+- Interop (stan-cli) — facet overlay feedback
+  - Posted `.stan/interop/stan-cli/20251017-170900Z-facet-overlay-response.md` with core feedback.
+  - Proposed a minimal engine hook: add `anchors?: string[]` (high-precedence allowlist) to core selection surfaces so anchors re-include over repo/overlay excludes while still respecting reserved denials.
+  - Optional helper: export a small glob matcher to let CLI preview plan details with engine-parity semantics (nice-to-have).
+  - Leaves overlay ownership in CLI; core remains presentation-free.
