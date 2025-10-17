@@ -132,3 +132,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Notes:
     - Helper is optional for consumers; CLI can use it to preview plan details without re‑implementing matcher semantics.
     - No behavior change to selection unless callers opt in to anchors; back‑compat preserved.
+
+- Config tests — strict engine loader follow‑through
+  - Added `src/stan/config.strict-schema.test.ts`:
+    - Verifies that unknown keys inside the top‑level `stan-core` block are rejected by the strict Zod schema.
+    - Confirms that the “missing stan-core section” error for JSON includes the path `stan.config.json` in the message (friendly diagnostics).
+  - Keeps strictness scoped to `stan-core`; unknown keys outside `stan-core` remain tolerated by the engine.
