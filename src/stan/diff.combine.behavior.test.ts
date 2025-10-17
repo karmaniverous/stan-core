@@ -4,35 +4,11 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { withMockTarCapture } from '../test/helpers';
 import { createArchive } from './archive';
 import { createArchiveDiff } from './diff';
-
-type TarCall = {
-  file: string;
-  cwd?: string;
-  filter?: (p: string, s: unknown) => boolean;
-  files: string[];
-};
-
-const calls: TarCall[] = [];
-
-// Mock tar.create to capture the file list and filter
-vi.mock('tar', () => ({
-  default: undefined,
-  create: async (
-    opts: {
-      file: string;
-      cwd?: string;
-      filter?: (p: string, s: unknown) => boolean;
-    },
-    files: string[],
-  ) => {
-    calls.push({ file: opts.file, cwd: opts.cwd, filter: opts.filter, files });
-    // Write recognizable content to the "archive"
-    const { writeFile } = await import('node:fs/promises');
-    await writeFile(opts.file, 'TAR', 'utf8');
-  },
-}));
+const { calls } = withMockTarCapture('TAR');
+type TarCall = (typeof calls)[number];
 
 describe('combine archiving behavior (outputs inside archives)', () => {
   let dir: string;

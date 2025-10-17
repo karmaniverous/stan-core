@@ -7,8 +7,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ## Next up (priority order)
 
 - DRY helpers adoption (tests)
-  - Adopt `writeStanConfigYaml/Json` and `withMockTarCapture` across remaining suites
-    to reduce duplication and improve test clarity.
+  - Adopt `writeStanConfigYaml/Json` and `withMockTarCapture` across remaining suites to reduce duplication and improve test clarity.
   - Do this incrementally (archive/diff first), keeping changes localized to test code.
   - Acceptance criteria:
     - No change in production behavior.
@@ -118,3 +117,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Adoption plan:
     - Migrate existing suites incrementally to use these helpers (starting with archive/diff suites).
     - Keep changes local to test code; no production behavior changes.
+
+- Tests — adopt shared tar capture helper in archive/diff suites
+  - Replaced ad‑hoc vi.mock('tar') blocks with the shared `withMockTarCapture` in:
+    - `src/stan/archive.test.ts`
+    - `src/stan/archive.classifier.behavior.test.ts`
+    - `src/stan/diff.combine.behavior.test.ts`
+    - `src/stan/run.combine.archive.behavior.test.ts`
+    - `src/stan/diff.classifier.behavior.test.ts`
+  - No production behavior changes; keeps test setup concise and uniform.

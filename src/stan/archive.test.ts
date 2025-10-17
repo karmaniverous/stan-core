@@ -5,13 +5,8 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('tar', () => ({
-  default: undefined,
-  create: async ({ file }: { file: string }, _files: string[]) => {
-    // Simulate a tarball by writing a recognizable body
-    await writeFile(file, 'TAR', 'utf8');
-  },
-}));
+import { withMockTarCapture } from '../test/helpers';
+void withMockTarCapture('TAR');
 
 import { createArchive } from './archive';
 
