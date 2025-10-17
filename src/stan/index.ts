@@ -11,6 +11,7 @@ export * from './patch';
 export type { ImportsMap } from './imports/stage';
 export { prepareImports } from './imports/stage';
 // Prompt helpers (packaged path, dev assembly)
+export { makeGlobMatcher } from './fs/match';
 export { getPackagedSystemPromptPath } from './module';
 export type { AssembleResult } from './system/assemble';
 export { assembleSystemMonolith } from './system/assemble';

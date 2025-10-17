@@ -124,3 +124,11 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - Re‑inclusion over excludes and `.gitignore` validated.
     - Anchors blocked by reserved paths and output exclusion validated.
   - Behavior is backward‑compatible when `anchors` is omitted/empty; archives remain unchanged unless anchors are provided.
+
+- Core — helper + docs for facets overlay
+  - Exported `makeGlobMatcher(patterns: string[]): (rel: string) => boolean` in `src/stan/fs/match.ts` and re-exported via the public barrel.
+  - Tests: `src/stan/fs.match.test.ts` asserting prefix/glob/dotfile and normalization semantics (engine-parity).
+  - README updated with a concise “Selection precedence and anchors” section covering includes/excludes/anchors and reserved denials.
+  - Notes:
+    - Helper is optional for consumers; CLI can use it to preview plan details without re‑implementing matcher semantics.
+    - No behavior change to selection unless callers opt in to anchors; back‑compat preserved.

@@ -1,6 +1,7 @@
 > Engine for STAN — programmatic archiving/diffing, patch application, config loading, file selection, and imports staging. No CLI/TTY concerns.
 
-# @karmaniverous/stan-core (engine)
+# @karmaniverous/stan-core (engine)
+
 [![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](./LICENSE) [Changelog](./CHANGELOG.md)
 
 This package exposes the STAN engine as a library:
@@ -12,7 +13,8 @@ This package exposes the STAN engine as a library:
 - Config loading/validation (top‑level `stan-core` in stan.config.yml|json)
 - Imports staging under <stanPath>/imports/<label>/…
 - Response‑format validator (optional)
-For the CLI and TTY runner, see @karmaniverous/stan-cli.
+
+For the CLI and TTY runner, see @karmaniverous/stan-cli.
 
 ## Install
 
@@ -60,11 +62,13 @@ import {
 const cwd = process.cwd();
 
 // File Ops (pre‑ops) example
-const plan = parseFileOpsBlock([
-  '### File Ops',
-  'mkdirp src/new/dir',
-  'mv src/old.txt src/new/dir/new.txt',
-].join('\n'));
+const plan = parseFileOpsBlock(
+  [
+    '### File Ops',
+    'mkdirp src/new/dir',
+    'mv src/old.txt src/new/dir/new.txt',
+  ].join('\n'),
+);
 if (plan.errors.length) throw new Error(plan.errors.join('\n'));
 await executeFileOps(cwd, plan.ops, false);
 
@@ -118,7 +122,8 @@ const cfg = await loadConfig(process.cwd());
 ```
 
 Stage external imports under <stanPath>/imports/<label>/… before archiving:
-```ts
+
+```ts
 import { prepareImports } from '@karmaniverous/stan-core/stan';
 await prepareImports({
   cwd: process.cwd(),
@@ -150,10 +155,29 @@ Top‑level (via `import '@karmaniverous/stan-core/stan'`):
 
 See CHANGELOG for behavior changes. Typedoc site is generated from source.
 
+## Selection precedence and anchors
+
+Core file selection applies in this order:
+
+- Reserved denials always win and cannot be overridden:
+  - `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`,
+  - archive outputs under `<stanPath>/output/…`,
+  - binary screening during archive classification.
+- `includes` override `.gitignore` (but not `excludes`).
+- `excludes` override `includes`.
+- `anchors` (optional) re‑include paths after excludes and `.gitignore`, subject to reserved denials and binary screening.
+
+APIs that accept anchors:
+
+- `filterFiles(files, { …, anchors?: string[] })`
+- `createArchive(cwd, stanPath, { …, anchors?: string[] })`
+- `createArchiveDiff({ …, anchors?: string[] })`
+- `writeArchiveSnapshot({ …, anchors?: string[] })`
+
 ## Environment variables
 
 See ENVIRONMENT.md for a complete list of environment variable switches observed by the engine, tests, and release scripts.
 
 ## License
 
-BSD‑3‑Clause
+BSD‑3‑Clause
