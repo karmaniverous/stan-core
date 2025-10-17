@@ -88,3 +88,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Proposed a minimal engine hook: add `anchors?: string[]` (high-precedence allowlist) to core selection surfaces so anchors re-include over repo/overlay excludes while still respecting reserved denials.
   - Optional helper: export a small glob matcher to let CLI preview plan details with engine-parity semantics (nice-to-have).
   - Leaves overlay ownership in CLI; core remains presentation-free.
+
+---
+
+## Completed (recent)
+
+- Interop (stan-cli) — overlay archive metadata contract
+  - Posted `.stan/interop/stan-cli/20251017-173000Z-overlay-metadata-contract.md`
+    specifying CLI responsibility and the JSON shape/semantics for the `overlay`
+    block in `<stanPath>/system/.docs.meta.json`. Aligns plan output with the
+    archived, machine-readable view used by the last run.
