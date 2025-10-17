@@ -2,9 +2,33 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.0](https://github.com/karmaniverous/stan-core/compare/0.3.0...0.4.0)
+
+- test(core): deflake packaged prompt cwd resolution by consolidating tests [`deaab6c`](https://github.com/karmaniverous/stan-core/commit/deaab6c1254ff863488e5034b754c43a3d0abd8d)
+- test(prompt): assert packaged prompt resolution independent of cwd [`4ab3d26`](https://github.com/karmaniverous/stan-core/commit/4ab3d26867d33b1d76adaa725d04bb989beeb4e1)
+- feat(core/docs): export makeGlobMatcher helper and document selection precedence [`4f5081e`](https://github.com/karmaniverous/stan-core/commit/4f5081efa319d8478caecfc9c857ed464a9bbdaa)
+- interop(core↔cli): facet overlay response + minimal anchors hook proposal [`6242e01`](https://github.com/karmaniverous/stan-core/commit/6242e016463492f3f9978c5b8e724d96a7679583)
+- interop cleanup [`7d46592`](https://github.com/karmaniverous/stan-core/commit/7d465928e5d9e589e0db5c525c2328e59b8d9e16)
+- feat(core): add anchors channel to selection surfaces + tests [`dd71f1f`](https://github.com/karmaniverous/stan-core/commit/dd71f1fabb2a456d898fae6315acbe75166a5b62)
+- test: adopt shared tar capture helper across archive/diff suites [`5c6135e`](https://github.com/karmaniverous/stan-core/commit/5c6135e6941d6442e158983aa066ea5ac590f0e1)
+- docs: prune and update dev plan (DRY complete) [`3d5e026`](https://github.com/karmaniverous/stan-core/commit/3d5e0268efddf90afaaee755b297a5ec24b630c8)
+- interop(cli): archive overlay metadata contract [`2ccc600`](https://github.com/karmaniverous/stan-core/commit/2ccc6005bc0c8a3134a90252c4dbd82282044538)
+- test(helpers,docs): add shared config/tar helpers and migration note [`e01c5d0`](https://github.com/karmaniverous/stan-core/commit/e01c5d0cdd31cd5d609f651f07a5808a475602bd)
+- docs(core): facets overlay guidance + anchors channel in requirements and plan [`07d8d2a`](https://github.com/karmaniverous/stan-core/commit/07d8d2a99dff16b90816445b029c63332f5e0ec3)
+- docs(test): add Typedoc examples for anchors and finish DRY follow‑through [`2f03db6`](https://github.com/karmaniverous/stan-core/commit/2f03db64f1cc5ca1dac7980ee8f8d3c97e62b1c3)
+- test(config): strict stan-core schema and JSON-path error diagnostics [`81f98d0`](https://github.com/karmaniverous/stan-core/commit/81f98d06e593492c34b8658e40468a97a3c0b89d)
+- chore(plan): prune completed Next up items and add helper adoption follow‑through [`5bb53bf`](https://github.com/karmaniverous/stan-core/commit/5bb53bf5eb6ee435b156061758e6ff197128090c)
+- test: adopt config helpers in discovery/load suites [`a987dd1`](https://github.com/karmaniverous/stan-core/commit/a987dd1260f7fcae09b877bb38bc217f743994d5)
+- test: fix tar mock hoisting in withMockTarCapture [`1c31dad`](https://github.com/karmaniverous/stan-core/commit/1c31dadad18eac086fa6fb6ab67bc237efef34df)
+- test(helpers): fix tar mock hoisting via vi.hoisted() to resolve “calls is not defined” [`63bbb16`](https://github.com/karmaniverous/stan-core/commit/63bbb166ebff1cbc5e2fde334e752244190dae34)
+- reordered dependencies [`630c041`](https://github.com/karmaniverous/stan-core/commit/630c04155c0a45f2aa6b45b532accd2f48b8adad)
+
 #### [0.3.0](https://github.com/karmaniverous/stan-core/compare/0.3.0-0...0.3.0)
 
+> 12 October 2025
+
 - chore: prune resolved interop notes after CLI namespacing [`548b472`](https://github.com/karmaniverous/stan-core/commit/548b472d09bec72cc6252b6028d7bd6541e75b12)
+- chore: release v0.3.0 [`5f58467`](https://github.com/karmaniverous/stan-core/commit/5f584678e5201c470e6b077727e0f40c9e6f8535)
 - refactor: DRY set 2 — shared diff/EOL/config helpers; small consolidations [`d1ab11f`](https://github.com/karmaniverous/stan-core/commit/d1ab11f623d2897ea8fd006ae13e46196ef7a9e9)
 - refactor: DRY helpers for file-ops, repo paths, jsdiff writes, and archive composition [`21220a1`](https://github.com/karmaniverous/stan-core/commit/21220a1a77e6c838a66c6fcd2cf6645347b6d95d)
 - docs(core): align docs to namespaced config; add ENV guide [`05c7e07`](https://github.com/karmaniverous/stan-core/commit/05c7e0715bfdfc0e13f36f36513eb8d4fc431853)
