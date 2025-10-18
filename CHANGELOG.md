@@ -2,11 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.1](https://github.com/karmaniverous/stan-core/compare/0.4.0...0.4.1)
+
+- interop [`b62f184`](https://github.com/karmaniverous/stan-core/commit/b62f1840b320e1753f6eae95993078ef9670b79e)
+- docs: add facet‑aware editing guard to system prompt [`ae3eee3`](https://github.com/karmaniverous/stan-core/commit/ae3eee3ef17a43f1abcee0ac90cbce02a686cb70)
+
 #### [0.4.0](https://github.com/karmaniverous/stan-core/compare/0.3.0...0.4.0)
+
+> 17 October 2025
 
 - test(core): deflake packaged prompt cwd resolution by consolidating tests [`deaab6c`](https://github.com/karmaniverous/stan-core/commit/deaab6c1254ff863488e5034b754c43a3d0abd8d)
 - test(prompt): assert packaged prompt resolution independent of cwd [`4ab3d26`](https://github.com/karmaniverous/stan-core/commit/4ab3d26867d33b1d76adaa725d04bb989beeb4e1)
 - feat(core/docs): export makeGlobMatcher helper and document selection precedence [`4f5081e`](https://github.com/karmaniverous/stan-core/commit/4f5081efa319d8478caecfc9c857ed464a9bbdaa)
+- chore: release v0.4.0 [`75e15aa`](https://github.com/karmaniverous/stan-core/commit/75e15aa66c52b7503509ccbab94e45971dbdc555)
 - interop(core↔cli): facet overlay response + minimal anchors hook proposal [`6242e01`](https://github.com/karmaniverous/stan-core/commit/6242e016463492f3f9978c5b8e724d96a7679583)
 - interop cleanup [`7d46592`](https://github.com/karmaniverous/stan-core/commit/7d465928e5d9e589e0db5c525c2328e59b8d9e16)
 - feat(core): add anchors channel to selection surfaces + tests [`dd71f1f`](https://github.com/karmaniverous/stan-core/commit/dd71f1fabb2a456d898fae6315acbe75166a5b62)
