@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.2](https://github.com/karmaniverous/stan-core/compare/0.4.1...0.4.2)
+
+- docs: add stanPath write‑time discipline to system prompt [`2aae47e`](https://github.com/karmaniverous/stan-core/commit/2aae47ed80eadaa3c1475f5a6bc078e94a76f5bc)
+- docs: enforce dev plan “Completed” append-only with pre-send validation [`f56c4a4`](https://github.com/karmaniverous/stan-core/commit/f56c4a43588228d9d858d1f4394d7f757cf619fe)
+
 #### [0.4.1](https://github.com/karmaniverous/stan-core/compare/0.4.0...0.4.1)
 
+> 18 October 2025
+
 - interop [`b62f184`](https://github.com/karmaniverous/stan-core/commit/b62f1840b320e1753f6eae95993078ef9670b79e)
+- chore: release v0.4.1 [`ecc8c6a`](https://github.com/karmaniverous/stan-core/commit/ecc8c6a827f9b2cad29adb4362ec87b8242b60f6)
 - docs: add facet‑aware editing guard to system prompt [`ae3eee3`](https://github.com/karmaniverous/stan-core/commit/ae3eee3ef17a43f1abcee0ac90cbce02a686cb70)
 
 #### [0.4.0](https://github.com/karmaniverous/stan-core/compare/0.3.0...0.4.0)
