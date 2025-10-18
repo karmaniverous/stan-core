@@ -48,6 +48,16 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - `filterFiles` accepts `anchors?: string[]` and re‑includes matches after excludes/.gitignore while respecting reserved denials (`.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`) and output exclusion when `includeOutputDir=false`.
   - `createArchive`, `createArchiveDiff`, and `writeArchiveSnapshot` accept and propagate `anchors` to ensure consistent selection across full, diff, and snapshot.
 
+- System — stanPath discipline (prompt update)
+  - Added a new system part that requires resolving `stanPath` from repo config
+    or observed layout before composing patches.
+  - Hard rules:
+    - Always write under the resolved workspace (`/<stanPath>/…`).
+    - Never leave `<stanPath>` as a literal in patch targets.
+    - Reject mismatched `stan/…` vs `.stan/…` prefixes at pre‑send validation.
+  - Purpose: eliminate misdirected writes to `stan/` when the repo uses `.stan/`
+    (or vice‑versa); keep patch paths POSIX repo‑relative.
+
 - System — facet‑aware editing guard (prompt update)
   - Added a new system part describing a two‑turn cadence when a target lies under an inactive facet:
     - Turn N: enable the facet (state patch) and log intent; no content patch for hidden targets.

@@ -801,6 +801,57 @@ diff --git a/new/path/to/file/a.ts b/new/path/to/file/a.ts
 - When attaching artifacts for chat, prefer attaching `<stanPath>/output/archive.tar` (and `<stanPath>/output/archive.diff.tar` when present). If `--combine` was not used, you may also attach the text outputs individually.
 - Important: Inside any attached archive, contextual files are located in the directory matching the `stanPath` key from `stan.config.*` (default `.stan`). The bootloader resolves this automatically.
 
+# Facet overlay (selective views with anchors)
+
+This repository supports “facets” — named, selective views over the codebase designed to keep archives small while preserving global context via small anchor documents.
+
+Files (under `<stanPath>/system/`)
+- `facet.meta.json` (durable): facet definitions — name → `{ exclude: string[]; include: string[] }`. The `include` list contains anchor files (e.g., README/index docs) that must always be included to preserve breadcrumbs.
+- `facet.state.json` (ephemeral, should always exist): facet activation for the next run — name → `boolean` (`true` = active/no drop; `false` = inactive/apply excludes). Keys mirror `facet.meta.json`.
+
+Overlay status for the last run
+- The CLI writes a machine‑readable summary to `<stanPath>/system/.docs.meta.json` in a top‑level `overlay` block that records:
+  - `enabled`: whether the overlay was applied this run,
+  - per‑run overrides (`activated`/`deactivated`),
+  - the final `effective` map used for selection,
+  - optional `autosuspended` facets (requested inactive but kept due to missing anchors),
+  - optional `anchorsKept` (paths force‑included as anchors).
+- Always read this block when present; treat selection deltas that follow overlay updates as view changes (not code churn).
+
+Assistant obligations (every turn)
+1) Read facet files first:
+   - Load `facet.meta.json`, `facet.state.json`, and (when present) `.docs.meta.json.overlay`.
+   - Treat large selection changes after overlay edits as view expansion.
+2) Design the view (facets & anchors):
+   - Propose or refine facet definitions in `facet.meta.json` to carve large areas safely behind small anchors (READMEs, indices, curated summaries).
+   - Keep anchor docs useful and current: when code changes public surfaces or invariants, update the relevant anchor docs in the same change set.
+   - Do not deactivate a facet unless at least one suitable anchor exists under the area being hidden. If anchors are missing, add them (and record their paths under `include`) before deactivation.
+3) Set the view (next run):
+   - Toggle `facet.state.json` (`true`/`false`) to declare the intended default activation for the next run. This is the assistant’s declarative control of perspective across turns.
+4) Response format:
+   - Use plain unified diffs to update `facet.meta.json`, anchor docs, and `facet.state.json`. Summarize rationale in the commit message.
+
+Effective activation for a run (informational)
+- A facet is effectively active this run if the overlay is enabled and it resolves `true` after applying CLI precedence:
+  - `-f` overrides (forces active) > `facet.state.json[name] === true` > `-F` overrides (forces inactive) > default active for facets missing in state.
+- If the overlay is disabled (`--no-facets` or naked `-F`), the state still expresses the next‑run default but does not affect the current run’s selection.
+
+Selection precedence (toolchain‑wide; informational)
+- Reserved denials always win; anchors cannot override:
+  - `.git/**`
+  - `<stanPath>/diff/**`
+  - `<stanPath>/patch/**`
+  - `<stanPath>/output/archive.tar`, `<stanPath>/output/archive.diff.tar` (and future archive outputs)
+  - Binary screening (classifier) remains in effect.
+- Precedence across includes/excludes/anchors:
+  - `includes` override `.gitignore` (but not `excludes`).
+  - `excludes` override `includes`.
+  - `anchors` (from facet meta) override both `excludes` and `.gitignore` (subject to reserved denials and binary screening).
+
+Notes
+- Facet files and overlay metadata are included in archives so the assistant can reason about the current view and evolve it. These files do not change Response Format or patch cadence.
+- Keep facets small and purposeful; prefer a few well‑placed anchors over broad patterns.
+
 # Facet‑aware editing guard (think beyond the next turn)
 
 Purpose
@@ -849,6 +900,51 @@ Notes
 - The goal is two‑turn cadence for hidden targets:
   - Turn N: enable the facet + log intent.
   - Turn N+1: deliver the content edits once the target is present in archives.
+
+# stanPath discipline (write‑time guardrails)
+
+Purpose
+
+- Ensure all assistant‑emitted patches and file operations target the correct STAN workspace directory for this repository (the configured `stanPath`).
+- Prevent common errors where patches are written to `stan/…` when the repo uses `.stan/…` (or vice‑versa), or where the literal placeholder `<stanPath>` appears in patch paths.
+
+Resolve stanPath first (required)
+
+1. Read `stan.config.yml|yaml|json` and extract `stan-core.stanPath`:
+   - The value MUST be a non‑empty string; when present, treat it as authoritative.
+2. If the config is not present in the archive, derive from observed layout:
+   - Prefer the workspace directory that actually exists in the attached artifacts (e.g., `.stan/system/…`).
+   - If both `.stan/…` and `stan/…` appear (unusual), prefer the one that contains `system/stan.system.md` or `system/` docs.
+3. Fallback default (last resort): `.stan`.
+
+Write‑time rules (hard)
+
+- Always use the resolved `stanPath` for all repo‑relative targets under the STAN workspace:
+  - `/<stanPath>/system/**`
+  - `/<stanPath>/diff/**`
+  - `/<stanPath>/output/**`
+  - `/<stanPath>/patch/**`
+  - Any other STAN paths (imports, dist, etc.).
+- Never write to `stan/…` unless `stanPath === "stan"`.
+- Never write to `.stan/…` unless `stanPath === ".stan"`.
+- Never leave the literal placeholder `<stanPath>` in any patch path or File Ops argument. Compute concrete POSIX repo‑relative paths before emitting.
+
+Pre‑send validation (assistant‑side check)
+
+- Fail composition if any Patch path contains the literal `<stanPath>`.
+- Fail composition if any Patch path refers to `stan/…` when `stanPath === ".stan"`, or `.stan/…` when `stanPath === "stan"`.
+- Paths MUST be POSIX (forward slashes) and repo‑relative.
+
+Input clarity (optional)
+
+- In “Input Data Changes” or the first relevant section of a reply, it is acceptable (not required) to echo the resolved `stanPath` for this run, e.g., “stanPath resolved: `.stan`”. This helps reviewers spot a mismatch early.
+
+Notes
+
+- These rules apply only to assistant‑emitted content (patches and file ops). The bootloader’s read‑side fallbacks (e.g., probing `.stan` then `stan`) exist for compatibility with older archives and do not affect write‑time discipline.
+- The rules compose with other guards:
+  - Reserved denials remain in effect (e.g., do not place content under `/<stanPath>/diff/**`, `/<stanPath>/patch/**`, or archive outputs in `/<stanPath>/output/**`).
+  - The facet‑aware editing guard still applies: do not propose edits under an inactive facet this run; enable the facet first and emit patches next turn.
 
 # Default Task (when files are provided with no extra prompt)
 
