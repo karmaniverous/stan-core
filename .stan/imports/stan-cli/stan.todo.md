@@ -2,10 +2,108 @@
 
 ## Next up (priority order)
 
+## 10) Facet overlay (CLI owner)
+
+Provide an optional, binary overlay that shrinks the full archive selection for steady threads while preserving a safe escape hatch to a complete baseline. The CLI owns overlay composition; the engine remains authoritative for selection semantics and reserved denials.
+
+### Current status
+
+- CLI flags are wired and active (renamed):
+  - `-f/--facets [names...]` (overlay ON; naked = all active), `-F/--no-facets [names...]` (overlay ON with listed facets deactivated; naked = overlay OFF).
+- Overlay composition implemented (`computeFacetOverlay`) and plumbed to the runner:
+  - `excludesOverlay` merged into engine `excludes`.
+  - `anchorsOverlay` passed to core (subject to reserved denials and binary screening).
+- Plan shows a “Facet view” with overlay status, inactive/auto‑suspended facets, and anchors kept count.
+- Docs metadata now persists overlay state to `.stan/system/.docs.meta.json`.
+
+### Remaining work (near term)
+
+- Tests:
+  - Unit: overlay derivation (activate/deactivate precedence), anchors vs excludes precedence, ramp‑up safety auto‑suspend, facet view plan lines.
+  - Integration: flag matrix (variadics + naked forms), metadata persisted, anchors honored by core, reserved denials never re‑included.
+- Docs:
+  - CLI usage: document overlay flags/semantics and show “Facet view” in plan.
+  - Configuration: document `facet.meta.json`/`facet.state.json`, precedence rules, ramp‑up safety note.
+
+Files (included in archives; lives under `<stanPath>/system/`)
+
+- `facet.meta.json` (durable, versioned in git): map of facet name to:
+  - `exclude: string[]` — subtrees to drop when the facet is inactive and overlay is enabled.
+  - `include: string[]` — “anchors” that must always be kept (e.g., docs indices, READMEs). Anchors re‑include even when excluded by `.gitignore` or repo/overlay excludes, subject to reserved denials and binary screening.
+- `facet.state.json` (ephemeral, gitignored): map of facet name to boolean:
+  - `true` = active (no drop),
+  - `false` = inactive (drop its `exclude` globs when overlay is enabled),
+  - facet missing in state ⇒ treated as active by default.
+
+Flags (run only)
+
+- `--facets` / `--no-facets` — enable/disable overlay.
+- `-f [names...]` — overlay ON; set listed facets active for this run only. Naked `-f` ⇒ overlay ON; treat all facets active (no hiding).
+- `-F [names...]` — overlay ON; set listed facets inactive for this run only. Naked `-F` ⇒ same as `--no-facets` (ignore overlay).
+- If a facet appears in both `-f` and `-F`, `-f` wins (safer include).
+- Defaults:
+  - Built‑in default: overlay OFF.
+  - `cliDefaults.run.facets: boolean` MAY set the overlay default; flags override.
+
+Composition (CLI)
+
+1. Determine inactive facets for the run (precedence: per‑run overrides > `facet.state.json` > default active).
+2. Build overlay sets:
+   - `excludesOverlay = ∪(exclude[] of all inactive facets)`,
+   - `anchorsOverlay = ∪(include[] of all facets)` (always included).
+3. Ramp‑up safety: if a facet is inactive but no anchor exists under its excluded subtree(s), **do not hide it** for this run (auto‑suspend the drop) and print a concise plan warning:
+   - `stan: facet "<name>": no anchors found; kept code this run. Add an anchor in facet.meta.json include and re-run.`
+4. Pass to engine alongside repo selection:
+   - `includes: repo includes`,
+   - `excludes: repo excludes ∪ excludesOverlay`,
+   - `anchors: anchorsOverlay`.
+
+Engine interaction and precedence (documented behavior)
+
+- CLI passes `anchors` to:
+  - `createArchive(cwd, stanPath, { includes?, excludes?, anchors? })`,
+  - `createArchiveDiff({ ..., includes?, excludes?, anchors?, ... })`,
+  - `writeArchiveSnapshot({ ..., includes?, excludes?, anchors? })`.
+- Precedence:
+  - `includes` override `.gitignore` (not `excludes`),
+  - `excludes` override `includes`,
+  - `anchors` override both `.gitignore` and `excludes`, subject to reserved denials:
+    - `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`,
+    - `<stanPath>/output/{archive.tar,archive.diff.tar,archive.warnings.txt}`,
+    - binary screening still applies.
+
+Plan output (TTY/non‑TTY)
+
+- When overlay is enabled, print a “Facet view” section:
+  - overlay: on/off,
+  - inactive facets and their excluded roots,
+  - anchors kept (count or short list),
+  - any auto‑suspended facets,
+  - per‑run overrides in effect.
+
+Overlay metadata (for assistants)
+
+- Each run, augment `<stanPath>/system/.docs.meta.json` with:
+  - `overlay.enabled: boolean`,
+  - `overlay.activated: string[]`,
+  - `overlay.deactivated: string[]`,
+  - `overlay.effective: Record<string, boolean>`,
+  - `overlay.autosuspended: string[]`,
+  - `overlay.anchorsKept: Record<string, number>` (count‑per‑facet; avoid large metadata).
+- Ensure metadata is included in both full and diff archives.
+
+Testing (representative)
+
+- Flags: `--facets/--no-facets`, `-f/-F` (variadics and naked forms), conflict resolution (`-f` wins).
+- Overlay composition and ramp‑up safety.
+- Anchors propagate to engine; reserved denials never overridden by anchors.
+- Overlay metadata written and present in archives.
+- Plan shows “Facet view” accurately.
+
 - Deprecation staging for config ingestion
   - Phase 1: keep legacy extractor + loader fallback; emit debugFallback notices when used; changelog guidance to run “stan init”.
   - Phase 2: require STAN_ACCEPT_LEGACY=1 for legacy; otherwise fail early with a concise message (“Run ‘stan init’ to migrate config.”).
-  - Phase 3: strict stan‑cli only (remove legacy acceptance).
+  - Phase 3: strict stan‑cli only (remove legacy acceptance). [plan later]
 
 - Docs & help updates
   - Configuration: namespaced layout only; “Migration” appendix → “run stan init”.
@@ -34,17 +132,32 @@
 ## Acceptance criteria (near‑term)
 
 - Config swing:
-  - stan init migrates legacy → namespaced; backup + dry‑run supported. [PENDING]
-  - Legacy engine keys honored via synthesized ContextConfig during transition; debugFallback notice only. [PENDING]
-  - Deprecation phases implemented (env‑gated, then strict). [PENDING]
+  - stan init migrates legacy → namespaced; backup + dry‑run supported. [DONE]
+  - Legacy engine keys honored via synthesized ContextConfig during transition; debugFallback notice only. [DONE]
+  - Deprecation phases implemented (env‑gated, then strict). [IN PROGRESS]
 - Tests/docs:
-  - Migration tests (YAML/JSON/mixed; idempotent; backups; dry‑run). [PENDING]
-  - Transitional extraction tests (legacy excludes/includes honored). [PENDING]
-  - Docs updated (namespaced examples; migration appendix; init help). [PENDING]
+  - Migration tests (YAML/JSON/mixed; idempotent; backups; dry‑run). [DONE]
+  - Transitional extraction tests (legacy excludes/includes honored). [DONE]
+  - Docs updated (namespaced examples; migration appendix; init help). [DONE]
 
 ---
 
 ## Completed (recent)
+
+- Legacy config acceptance — Phase‑2 env gate
+  - Implemented env gate for legacy shapes: loaders now require STAN_ACCEPT_LEGACY=1 (or “true”) to accept legacy config keys; otherwise they fail early with concise “run stan init” guidance.
+  - Defaulted STAN_ACCEPT_LEGACY=1 in test setup to preserve transitional behavior; tests may override to assert failure paths.
+  - Follow‑through: strict removal planned in Phase‑3.
+
+- Tests — ensure env gate is effective during CLI construction
+  - Set STAN_ACCEPT_LEGACY at module load time in src/test/setup.ts so Phase‑2 legacy acceptance is active even when CLI is constructed during test module import.
+  - Removed the redundant set inside beforeEach.
+
+- CLI — rename facet flags and align semantics/docs
+  - Replaced `--facets/--no-facets` + `--facets-activate/--facets-deactivate` with:
+    - `-f, --facets [names...]` (overlay ON; naked = all active)
+    - `-F, --no-facets [names...]` (overlay ON with names deactivated; naked = overlay OFF)
+  - Updated action logic and help/docs accordingly; cliDefaults.run.facets remains the overlay default.
 
 - CI speed — shorten matrix durations
   - Reduced the dummy wait script in cancellation matrix tests from 10s to 2s and shortened teardown settle. This cuts per-case wall clock while preserving coverage across live/no‑live × mode × signal × archive.
@@ -59,3 +172,26 @@
 
 - PATH augmentation test fix
   - Fixed src/runner/run/exec.envpath.test.ts by importing `rm` from `node:fs/promises` for the “no-node_modules” scenario. This resolves the typecheck error (TS2304: Cannot find name 'rm'), clears the lint error on that line, and makes the failing test pass.
+
+- Facet overlay — scaffolding and plumbing
+  - Added overlay reader/composer module (src/runner/overlay/facets.ts).
+  - Added run flags: `--facets/--no-facets`, `-f/-F`, and `cliDefaults.run.facets` default.
+  - Compute overlay before plan; pass `excludesOverlay` and `anchorsOverlay` to core via RunnerConfig; inject facet view in plan.
+  - Extended docs metadata with `overlay.*` (enabled, overrides, effective, autosuspended, anchorsKept counts).
+
+- Facet overlay — initial carve‑off
+  - Added .stan/system/facet.meta.json and facet.state.json with facets: ci (.github/**), vscode (.vscode/**), docs (docs-src/\*\*). Each facet keeps a local anchor to satisfy ramp‑up safety. Defaults are inactive to reduce baseline archive size while preserving breadcrumbs.
+
+- Facet overlay — major carve‑off
+  - Added tests facet excluding '**/\*.test.ts', 'src/test/**', 'src/test-support/\*\*'; anchors keep a breadcrumb under each excluded root ('README.md', 'src/test/setup.ts', 'src/test-support/run.ts').
+  - Added live-ui facet excluding 'src/anchored-writer/**', 'src/runner/run/live/**', 'src/runner/run/progress/**', 'src/runner/run/presentation/**', 'src/runner/run/ui/\*\*'; anchors keep each subtree’s barrel ('.../index.ts').
+
+- Facet overlay — additional carve‑off
+  - Added patch facet excluding 'src/runner/patch/\*\*' (anchor: 'src/runner/patch/service.ts').
+  - Added snap facet excluding 'src/runner/snap/\*\*' (anchor: 'src/runner/snap/index.ts').
+  - Added init facet excluding 'src/runner/init/\*\*' (anchor: 'src/runner/init/index.ts').
+
+- Interop — facet‑aware editing guard (proposal to stan‑core)
+  - Authored `.stan/interop/stan-core/20251018-000501Z-facet-aware-editing-guard.md` describing a system‑prompt change that requires enabling a facet before editing/creating files under it.
+  - Identifies the system‑prompt sections that encouraged edits without facet gating (documentation cadence, always‑on checks, response format), and proposes a concrete guard/algorithm using `.docs.meta.json` `facet.meta.json`.
+  - Optional enhancement: enrich `.docs.meta.json` with `overlay.facetRoots` to simplify assistant path‑to‑facet mapping.
