@@ -643,7 +643,8 @@ This is a HARD GATE: the composition MUST fail when a required documentation pat
 
 - Append‑only logging for Completed:
   - Do NOT modify or rewrite a previously logged Completed item.
-  - If follow‑on context is needed (e.g., clarifications/corrections), log it as a new list entry appended at the bottom of the Completed section (i.e., an amendment to the list, not to the individual item). Keep the original entries intact.
+  - If follow‑on context is needed (e.g., clarifications/corrections), log it as a new list entry appended at the bottom of the Completed section (i.e., an amendment to the list, not edits to prior items). Keep the original entries intact.
+  - These rules are enforced by pre‑send validation (see Response Format). A composition that edits prior Completed entries MUST fail and be re‑emitted as an end‑append only change.
 
 - Prune for relevance:
   - Remove Completed items that are not needed to understand the work in flight (“Next up” and any active follow‑through). Retain only minimal context that prevents ambiguity.
@@ -1171,6 +1172,13 @@ Before sending a reply, verify all of the following:
    - Diagnostics replies: Skip Commit Message; listings‑only for the affected files.
 6. Nested-code templates (hard gate)
    - Any template or example that contains nested fenced code blocks (e.g., the Dependency Bug Report or a patch failure diagnostics envelope) MUST pass the fence‑hygiene scan: compute N = maxInnerBackticks + 1 (min 3), apply that fence, then re‑scan before sending. If any collision remains, STOP and re‑emit. If any check fails, STOP and re‑emit after fixing. Do not send a reply that fails these checks.
+7. Dev plan “Completed” (append‑only; last)
+   - If `.stan/system/stan.todo.md` is patched:
+     - “Completed” is still the final major section of the document.
+     - Only new lines were appended at the end of “Completed”; no existing lines above the append point were modified or re‑ordered.
+     - Corrections/clarifications, if any, are logged as a new one‑line “Amendment:” entry appended at the bottom (the original entries remain intact).
+     - Lists remain unnumbered.
+   - Violations fail composition.
 
 ## Patch policy reference
 
@@ -1179,6 +1187,14 @@ Follow the canonical rules in “Patch Policy” (see earlier section). The Resp
 Optional Full Listings — Normal replies only: when explicitly requested by the user in a non‑diagnostics turn, include Full Listings for the relevant files; otherwise omit listings by default.
 Diagnostics replies (after patch‑failure envelopes) MUST provide Full, post‑patch listings as described above (no patches, union across envelopes, no commit message).
 Skip listings for deletions.
+
+Dev plan Completed enforcement (pre‑send)
+- If `<stanPath>/system/stan.todo.md` is patched in this turn, enforce late‑append semantics for the “Completed” section:
+  - “Completed” MUST remain the final major section of the document.
+  - Only append new lines at the end of “Completed”. Do NOT modify existing lines above the final append point (no edits, no insertions, no re‑ordering).
+  - If a correction/clarification is needed for a prior item, append a new one‑line “Amendment:” entry at the bottom instead of editing the original item.
+  - Lists remain unnumbered.
+  - Violations MUST fail composition; re‑emit with an end‑append only change.
 
 ## File Ops (optional pre‑ops; structural changes)
 

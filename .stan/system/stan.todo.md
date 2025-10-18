@@ -49,17 +49,22 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - `createArchive`, `createArchiveDiff`, and `writeArchiveSnapshot` accept and propagate `anchors` to ensure consistent selection across full, diff, and snapshot.
 
 - System — stanPath discipline (prompt update)
-  - Added a new system part that requires resolving `stanPath` from repo config
-    or observed layout before composing patches.
+  - Added a new system part that requires resolving `stanPath` from repo config or observed layout before composing patches.
   - Hard rules:
     - Always write under the resolved workspace (`/<stanPath>/…`).
     - Never leave `<stanPath>` as a literal in patch targets.
     - Reject mismatched `stan/…` vs `.stan/…` prefixes at pre‑send validation.
-  - Purpose: eliminate misdirected writes to `stan/` when the repo uses `.stan/`
-    (or vice‑versa); keep patch paths POSIX repo‑relative.
+  - Purpose: eliminate misdirected writes to `stan/` when the repo uses `.stan/` (or vice‑versa); keep patch paths POSIX repo‑relative.
 
 - System — facet‑aware editing guard (prompt update)
   - Added a new system part describing a two‑turn cadence when a target lies under an inactive facet:
     - Turn N: enable the facet (state patch) and log intent; no content patch for hidden targets.
     - Turn N+1: emit the actual edits after re‑run with `-f <facet>` (or `-F` to disable overlay).
   - Clarifies allowed mixing (other visible patches OK; anchors OK) and reiterates reserved denials.
+
+- System — dev plan “Completed” enforcement (pre‑send validator)
+  - Response Format now includes a hard pre‑send check that:
+    - keeps “Completed” as the final major section,
+    - allows only end‑append changes (no edits/insertions/re‑ordering of existing items),
+    - requires corrections as a new “Amendment:” entry appended at the bottom.
+  - Purpose: preserve append‑only history and prevent accidental churn in prior Completed items.
