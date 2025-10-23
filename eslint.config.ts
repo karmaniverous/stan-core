@@ -1,5 +1,4 @@
 import eslint from '@eslint/js';
-import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import tsdoc from 'eslint-plugin-tsdoc';
@@ -30,73 +29,69 @@ const config: Linter.FlatConfig[] = [
   // Base JS
   eslint.configs.recommended,
 
-  // TypeScript (strict, type-aware under src/**)
-  ...tseslint.configs.strictTypeChecked.map((c) => ({
-    ...c,
+  // TypeScript preset (type‑aware, closer to previous behavior)
+  ...tseslint.configs.recommendedTypeChecked,
+
+  // Our project override (parser/project + plugins/rules)
+  {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     languageOptions: {
-      ...c.languageOptions,
-      // Important: keep the TS parser and explicit project for type-aware linting
       parser: tseslint.parser,
       parserOptions: {
-        ...(c.languageOptions?.parserOptions ?? {}),
         project: ['./tsconfig.json'],
         tsconfigRootDir,
       },
     },
     plugins: {
-      ...(c.plugins ?? {}),
-      prettier: prettierPlugin,
-      'simple-import-sort': simpleImportSortPlugin,
-      tsdoc,
+      prettier: prettierPlugin as unknown as Linter.Plugin,
+      'simple-import-sort': simpleImportSortPlugin as unknown as Linter.Plugin,
+      tsdoc: tsdoc as unknown as Linter.Plugin,
     },
     rules: {
-      ...(c.rules ?? {}),
       // Formatting via Prettier
-      'prettier/prettier': 'error',
+      'prettier/prettier': ['error'],
       // Import ordering
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
-      // TS preferences
-      '@typescript-eslint/no-explicit-any': 'error',
+      'simple-import-sort/imports': ['error'],
+      'simple-import-sort/exports': ['error'],
+      // TS preferences (parity with prior JS config)
+      '@typescript-eslint/no-explicit-any': ['error'],
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       // TSDoc hygiene (quiet)
-      'tsdoc/syntax': 'warn',
-    },
-  })),
+      'tsdoc/syntax': ['warn'],
+      // Keep prior behavior; do not introduce stricter rules
+      '@typescript-eslint/no-unnecessary-condition': ['off'],
+      '@typescript-eslint/restrict-template-expressions': ['off'],
+    } as const satisfies Linter.RulesRecord,
+  },
 
   // Disable stylistic conflicts with Prettier
-  prettierConfig,
+  (await import('eslint-config-prettier')).default as unknown as Linter.FlatConfig,
 
   // Tests
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],
-    plugins: { vitest },
+    plugins: { vitest: vitest as unknown as Linter.Plugin },
     languageOptions: {
       globals: vitest.environments.env.globals,
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unused-vars': ['off'],
+      '@typescript-eslint/no-unsafe-assignment': ['off'],
+      '@typescript-eslint/no-unsafe-return': ['off'],
       // Tests/mocks often wrap async without awaits.
-      '@typescript-eslint/require-await': 'off',
-    },
+      '@typescript-eslint/require-await': ['off'],
+    } as const satisfies Linter.RulesRecord,
   },
 
   // JSON (no nested extends)
-  (() => {
-    const jsoncRecommendedWithJson =
-      (jsonc.configs['recommended-with-json'] as Linter.FlatConfig) ?? {};
-    return {
-      files: ['**/*.json'],
-      languageOptions: { parser: jsoncParser },
-      plugins: { jsonc },
-      rules: {
-        ...(jsoncRecommendedWithJson.rules ?? {}),
-      },
-    } satisfies Linter.FlatConfig;
-  })(),
+  {
+    files: ['**/*.json'],
+    languageOptions: { parser: jsoncParser },
+    plugins: { jsonc: jsonc as unknown as Linter.Plugin },
+    rules: {
+      ...(jsonc.configs['recommended-with-json']?.rules as Linter.RulesRecord),
+    },
+  },
 ];
 
 export default config;

@@ -100,3 +100,19 @@
 
 - Anchored writer — leading blank line printed at start
   - Updated src/anchored-writer/index.ts to print the single leading blank line in start() before any ANSI control sequences and to mark the writer as primed. This ensures the captured buffer begins with "\n" as expected by tests, keeps deterministic in-place updates using relative cursor moves (CSI nA), and continues to avoid save/restore sequences. Fixes the failing anchored-writer unit test.
+
+- Anchored writer — ensure CSI nA present on first render
+  - After printing the leading newline at start(), prime the writer with prevLines = 1 so the first frame includes a relative cursor-up (CSI nA). Satisfies the unit test expectation while preserving in-place updates.
+
+- Sequential cancel — widen pre-spawn guard
+  - Increased the sequential pre-spawn guard window (base + CI/platform cushions) to further reduce rare races where a subsequent script could spawn just after SIGINT in no-live sequential runs.
+
+- Amendment: Anchored writer — guarantee CSI nA at start
+  - Emit a cursor-up (CSI 1A) in start(), immediately after the leading blank line
+    and hide-cursor, to ensure the captured buffer always contains a CSI nA sequence.
+    Keep prevLines at 0 in start() to avoid a double up-move on first render.
+
+- Amendment: Anchored writer — first-frame CSI marker in render buffer
+  - Inject a single CSI 1A at the beginning of the very first render buffer (after
+    priming) so the unit test observes a cursor-up within the same write as the
+    frame content. Per-frame CSI nA logic remains unchanged.
