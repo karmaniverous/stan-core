@@ -105,6 +105,9 @@ Plan rendering (TTY and non‑TTY):
   - `mode`, `output`, `prompt`, `scripts`, `archive`, `combine`, `keep output dir`, `live`, and hang thresholds.
 - Plan only (`-p`): prints plan and exits with no side effects.
 
+- Cancellation & restart rules (hard):
+  - Cancel or restart MUST prevent scheduling any new scripts and MUST terminate active scripts immediately. The archive phase MUST be skipped when cancelled or restarting. No `archive.tar` or `archive.diff.tar` may be produced after cancellation. Sequential runs MUST NOT start “next” scripts after cancel; restarts MUST re‑queue a fresh session promptly.
+
 ### 2.2 Patch (discuss & apply)
 
 - Source of patch data (precedence):
@@ -120,7 +123,7 @@ Plan rendering (TTY and non‑TTY):
   - Place rejects under `<stanPath>/patch/rejects/<UTC>/` when applicable.
 - Diagnostics:
   - Compose compact envelope(s) with declared target paths, attempt summaries, and jsdiff reasons (if any); copy to clipboard best‑effort.
-  - On diagnostics replies from the user, the assistant must produce Full, post‑patch listings only for the affected files (no diffs), no commit message (assistant‑side rule).
+  - On diagnostics replies from the user, the assistant must produce Full, post‑patch listings only for the affected files (no patches), no commit message (assistant‑side rule).
 - Editor:
   - Open modified file on success (non‑check) using `patchOpenCommand` (default `code -g {file}`), best‑effort/detached.
 
@@ -141,6 +144,11 @@ Plan rendering (TTY and non‑TTY):
 - Ensure `.gitignore` entries for `<stanPath>/{output,diff,dist,patch}/`.
 - Write docs metadata `<stanPath>/system/.docs.meta.json` with the installed CLI version (best‑effort). Do not install a prompt monolith here.
 - Seed diff snapshot when missing (best‑effort).
+- New‑repo default layout:
+  - When no `stan.config.*` exists, `stan init` MUST create a namespaced configuration by default:
+    - `stan-core`: engine keys (stanPath/includes/excludes/imports).
+    - `stan-cli`: CLI keys (scripts/cliDefaults/patchOpenCommand/maxUndos/devMode).
+  - Migration behavior remains unchanged for existing legacy configs (writes `.bak`, preserves unknown root keys, idempotent).
 
 ### 2.5 Interactions with stan‑core (explicit dependencies)
 
@@ -154,7 +162,7 @@ stan‑cli composes the following stan‑core surfaces (representative):
   - `createArchive(cwd, stanPath, options)` → `archive.tar`
   - `createArchiveDiff({ cwd, stanPath, baseName, includes, excludes, updateSnapshot, includeOutputDirInDiff })` → `{ diffPath }`
   - `writeArchiveSnapshot({ cwd, stanPath, includes, excludes })`
-  - `prepareImports({ cwd, stanPath, map })` (stages imports under `<stanPath>/imports/<label>/...`)
+  - `prepareImports({ cwd, stanPath, map: imports })` (stages imports under `<stanPath>/imports/<label>/...`)
 
 - Prompt helpers:
   - `getPackagedSystemPromptPath()` to locate packaged baseline (`dist/stan.system.md`).
@@ -166,51 +174,6 @@ stan‑cli composes the following stan‑core surfaces (representative):
   - `CORE_VERSION` (for banners/compat checks in the CLI).
 
 All core calls MUST be deterministic and presentation‑free; stan‑cli is responsible for user‑visible logs and UI.
-
-### 2.6 Configuration ingestion & migration (namespaced; transitional legacy support)
-
-Canonical layout (effective now)
-
-- Top‑level namespacing in stan.config.\*:
-  - stan-core: engine keys (required by the engine)
-    - stanPath: string
-    - includes?: string[]
-    - excludes?: string[]
-    - imports?: Record<string, string|string[]>
-  - stan-cli: CLI keys (required by the CLI)
-    - scripts: Record<string, string | { script: string; warnPattern?: string }>
-    - cliDefaults: phase‑scoped defaults (run/patch/snap) and root defaults (debug, boring)
-    - patchOpenCommand?: string
-    - maxUndos?: number
-    - devMode?: boolean
-
-Loaders and responsibility
-
-- stan-core (engine) loads stan-core strictly and errors early when missing (friendly message).
-- stan-cli (CLI) loads stan-cli and MUST NOT rely on engine loaders for CLI keys.
-
-Transitional legacy behavior (temporary)
-
-- Legacy = engine/CLI keys at the config root (pre‑namespacing).
-- stan run/snap MUST continue to honor legacy engine keys for a short transition window:
-  - If engine loader fails due to missing “stan-core”, stan-cli SHALL synthesize a ContextConfig by reading stanPath/includes/excludes/imports from legacy root keys and pass that to engine APIs (ensureOutputDir, createArchive\*, writeArchiveSnapshot, …).
-  - Log a concise, opt‑in debugFallback notice when the legacy extractor is used (under STAN_DEBUG=1).
-- stan init MUST detect legacy and offer to refactor to the namespaced layout:
-  - Migrate only known keys to stan-core/stan-cli.
-  - Preserve unknown keys at the root.
-  - Keep file format/filename; write a .bak before rewriting; support --dry-run.
-  - Idempotent: do nothing when already namespaced.
-
-Deprecation timeline (CLI)
-
-- Phase 1 (migration lands): keep legacy extractor + loader fallback; emit debugFallback notices when used; recommend “stan init” to migrate.
-- Phase 2: place legacy acceptance behind an env switch (e.g., STAN_ACCEPT_LEGACY=1). Without it, print a clear, early error instructing the user to run “stan init”.
-- Phase 3: remove legacy acceptance entirely; stan-cli requires top‑level stan-cli; stan-core requires top‑level stan-core (already strict).
-
-Docs & UX
-
-- Examples and Getting Started show the namespaced layout exclusively; legacy appears only in a short “Migration” appendix pointing to “stan init”.
-- Error messages for missing namespaces are concise and actionable (“Run ‘stan init’ to migrate your config.”).
 
 ---
 
@@ -236,7 +199,7 @@ stan‑cli composes the following stan‑core surfaces (representative):
   - `createArchive(cwd, stanPath, options)` → `archive.tar`
   - `createArchiveDiff({ cwd, stanPath, baseName, includes, excludes, updateSnapshot, includeOutputDirInDiff })` → `{ diffPath }`
   - `writeArchiveSnapshot({ cwd, stanPath, includes, excludes })`
-  - `prepareImports({ cwd, stanPath, map })` (stages imports under `<stanPath>/imports/<label>/...`)
+  - `prepareImports({ cwd, stanPath, map: imports })` (stages imports under `<stanPath>/imports/<label>/...`)
 - Prompt helpers:
   - `getPackagedSystemPromptPath()` to locate packaged baseline (`dist/stan.system.md`).
 - Patch engine:
@@ -256,153 +219,287 @@ All core calls MUST be deterministic and presentation‑free; stan‑cli is resp
   - Root defaults: `cliDefaults.debug`, `cliDefaults.boring`.
 - Plan header MUST reflect the effective values (including the resolved `prompt`).
 
+- Advanced per‑script warnings (CLI):
+  - Each script entry MAY include:
+    - `warnPattern: string` — a single regex source used to flag `[WARN]` when matched across the combined stdout/stderr (and persisted output).
+    - `warnPatternFlags: string` — optional JS regex flags to apply when compiling `warnPattern` (full JavaScript flag set is accepted; invalid or duplicate flags are rejected).
+  - The CLI MUST NOT add implicit flags (e.g., MUST NOT force `/i`); flags are exactly as provided.
+  - Build script default warnings policy:
+    - Ignore `@rollup/plugin-typescript` informational line: “outputToFilesystem option is defaulting to true”.
+    - Ignore zod circular dependency warnings that originate under `node_modules/zod/...`.
+    - Other rollup warnings still flag `[WARN]`.
+
 ---
 
 ## 6) Presentation & logs
 
 - Live UI (TTY):
   - Single table with flush‑left alignment; stable header, summary, and hint.
-  - Keys: ‘q’ (cancel), ‘r’ (restart current session only; scripts re‑queued).
+  - Keys: ‘q’ (cancel), ‘r’ (restart (when onRestart provided)).
+  - Restart responsiveness:
+    - Restart should restart as close to instantly as possible. The runner MUST cancel/kill all tracked child processes immediately (no grace), stop scheduling further work, and re‑queue the session without creating archives or allowing a “current step” to finish.
+  - Archive late‑cancel guard:
+    - The archive phase MUST check cancellation just before starting and MUST NOT create archives if cancellation/restart was requested.
   - No alt‑screen by default; cursor hidden during updates; restored on stop.
 - Logger (non‑TTY):
   - Concise per‑event lines with BORING tokens (`[WAIT]`, `[RUN]`, `[OK]`, `[FAIL]`, …).
 - BORING detection:
   - Honor `STAN_BORING=1` (and `NO_COLOR=1`, `FORCE_COLOR=0`); always print stable, unstyled tokens under BORING/non‑TTY.
 
----
+Assistant guidance
 
-## 7) Error handling & guardrails
+- When emitting patches, respect house style; do not rewrap narrative Markdown outside the allowed contexts.
+- Opportunistic repair is allowed for local sections you are already modifying (e.g., unwrap manually wrapped paragraphs), but avoid repo‑wide reflows as part of unrelated changes.
 
-- System prompt resolution error (run):
-  - stan‑cli MUST fail early (no scripts/archives) when `--prompt` cannot be resolved.
-  - One concise error line with helpful guidance (e.g., suggest `--prompt core`).
-  - Non‑zero exit code (best‑effort).
-- Archive restore:
-  - If stan‑cli changed `<stanPath>/system/stan.system.md` to present the chosen prompt, it MUST restore previous state after both full and diff phases (or on error).
-- Cancellation:
-  - SIGINT parity for live/no‑live; archives skipped on cancel path.
-  - Sequential scheduler gate MUST prevent new spawns after cancel.
-- Stability:
-  - Avoid gratuitous rewrites of the system prompt (compare bytes before writing) to prevent spurious diffs.
+# CRITICAL: Layout
 
----
+- stanPath (default: `.stan`) is the root for STAN operational assets:
+  - `/<stanPath>/system`: prompts & docs
+    - `stan.system.md` — repo‑agnostic monolith (read‑only; assembled from parts)
+    - `stan.project.md` — project‑specific prompt/policies that augment the system prompt (not for requirements)
+    - `stan.requirements.md` — project requirements (desired end‑state). Maintained by STAN; developers MAY edit directly, but shouldn’t have to. Created on demand when needed (not by `stan init`).
+  - `/<stanPath>/output`: script outputs and `archive.tar`/`archive.diff.tar`
+  - /<stanPath>/diff: diff snapshot state (`.archive.snapshot.json`, `archive.prev.tar`, `.stan_no_changes`)
+  - `/<stanPath>/dist`: dev build (e.g., for npm script `stan:build`)
+  - `/<stanPath>/patch`: canonical patch workspace (see Patch Policy)
+- Config key is `stanPath`.
+- Bootloader note: A minimal bootloader may be present at `/<stanPath>/system/stan.bootloader.md` to help assistants locate `stan.system.md` in attached artifacts; once `stan.system.md` is loaded, the bootloader has no further role.
 
-## 8) Testing (representative coverage)
+# CRITICAL: Patch Coverage
 
-- Option parsing & plan:
-  - `-m/--prompt` present; Commander help shows `(default: auto)` (or config default).
-  - Plan includes `prompt:` line (or is suppressed by `-P`).
-- Resolution/injection/restore:
-  - `--prompt local` with present file: proceeds; no rewrite when identical.
-  - `--prompt local` missing: fails early; no artifacts.
-  - `--prompt core`: proceeds; if we injected, restore afterward.
-  - `--prompt auto`: prefers local; then core; failure when neither.
-  - `--prompt <path>`: proceeds; restore afterward.
-- Diff visibility:
-  - If prompt changes vs snapshot, `archive.diff.tar` includes it; if unchanged, it does not.
-- Removal of drift hints:
-  - No “drift” or “docs changed” prints in `run` or `snap`.
-- Cancellation:
-  - Live/no‑live parity: no archives on cancel; non‑zero exit.
-  - Sequential gate prevents post‑cancel scheduling.
-- Script runner PATH:
-  - Child PATH MUST include `<repoRoot>/node_modules/.bin` (and ancestor `.bin` directories in nearest‑first order).
-  - Behavioral test with a stub binary in `node_modules/.bin` MUST execute successfully without global installs.
-  - When `.bin` folders are absent (e.g., PnP), augmentation is a no‑op.
+- Every created, updated, or deleted file MUST be accompanied by a valid, plain unified diff patch in this chat. No exceptions.
+- Patches must target the exact files you show as full listings; patch coverage must match one‑for‑one with the set of changed files.
+- Never emit base64; always provide plain unified diffs.
+- Do not combine changes for multiple files in a single unified diff payload. Emit a separate Patch block per file (see Response Format).
 
----
+## One‑patch‑per‑file (hard rule + validator)
 
-## 9) Documentation & versioning
+- HARD RULE: For N changed files, produce exactly N Patch blocks — one Patch fence per file. Never aggregate multiple files into one unified diff block.
+- Validators MUST fail the message composition if they detect:
+  - A single Patch block that includes more than one “diff --git” file header, or
+  - Any Patch block whose headers reference paths from more than one file.
+- When such a violation is detected, STOP and recompose with one Patch block per file.
 
-- CLI help and docs MUST reflect:
-  - `-m, --prompt` option and default resolution,
-  - Plan header `prompt:` line,
-  - Drift‑notice removal in `run` and `snap`,
-  - Script execution environment (PATH augmentation, CWD, shell).
-- Semantic versioning for the CLI package; changelog MUST call out:
-  - New `--prompt` behavior,
-  - Plan header prompt line,
-  - Removal of run/snap drift messages,
-  - Diff now truthfully includes prompt changes,
-  - Script runner PATH augmentation so repo devDeps resolve without globals.
+# Cross‑thread handoff (self‑identifying code block)
 
----
+Purpose
 
-## 10) Facet overlay (CLI owner)
+- When the user asks for a “handoff” (or any request that effectively means “give me a handoff”), output a single, self‑contained code block they can paste into the first message of a fresh chat so STAN can resume with full context.
+- The handoff is for the assistant (STAN) in the next thread — do not include instructions aimed at the user (e.g., what to attach). Keep it concise and deterministic.
 
-Provide an optional, binary overlay that shrinks the full archive selection for steady threads while preserving a safe escape hatch to a complete baseline. The CLI owns overlay composition; the engine remains authoritative for selection semantics and reserved denials.
+Triggering (override normal Response Format)
 
-Files (included in archives; lives under `<stanPath>/system/`)
+- Only trigger when the user explicitly asks you to produce a new handoff (e.g., “handoff”, “generate a new handoff”, “handoff for next thread”), or when their request unambiguously reduces to “give me a new handoff.”
+- First‑message guard (HARD): If this is the first user message of a thread, you MUST NOT emit a new handoff. Treat the message as startup input (even if it mentions “handoff” in prose); proceed with normal startup under the system prompt. Only later in the thread may the user request a new handoff.
+- Non‑trigger (HARD GUARD): If the user message contains a previously generated handoff (recognizable by a title line that begins with “Handoff — ”, with or without code fences, possibly surrounded by additional user instructions before/after), treat it as input data for this thread, not as a request to generate another handoff. In this case:
+  - Do not emit a new handoff.
+  - Parse and use the pasted handoff to verify the project signature and proceed with normal startup.
+  - Only generate a new handoff if the user explicitly asks for one after that.
+- When the user both includes a pasted handoff and mentions “handoff” in prose, require explicit intent to create a new one (e.g., “generate a new handoff now”, “make a new handoff for the next thread”). Otherwise, treat it as a non‑trigger and proceed with startup.
 
-- `facet.meta.json` (durable, versioned in git): map of facet name to:
-  - `exclude: string[]` — subtrees to drop when the facet is inactive and overlay is enabled.
-  - `include: string[]` — “anchors” that must always be kept (e.g., docs indices, READMEs). Anchors re‑include even when excluded by `.gitignore` or repo/overlay excludes, subject to reserved denials and binary screening.
-- `facet.state.json` (ephemeral, gitignored): map of facet name to boolean:
-  - `true` = active (no drop),
-  - `false` = inactive (drop its `exclude` globs when overlay is enabled),
-  - facet missing in state ⇒ treated as active by default.
+Robust recognition and anti‑duplication guard
 
-Flags (run only)
+- Recognize a pasted handoff by scanning the user message for a line whose first non‑blank characters begin with “Handoff — ” (a title line), regardless of whether it is within a code block. Additional user instructions may appear before or after the handoff.
+- Treat a pasted handoff in the first message of a thread as authoritative input to resume work; do not mirror it back with a new handoff.
+- Only emit a handoff when:
+  1. the user explicitly requested one and
+  2. it is not the first user message in the thread, and
+  3. no pre‑existing handoff is present in the user’s message (or the user explicitly says “generate a new handoff now”).
 
-- `--facets` / `--no-facets` — enable/disable overlay.
-- `-f [names...]` — overlay ON; set listed facets active for this run only. Naked `-f` ⇒ overlay ON; treat all facets active (no hiding).
-- `-F [names...]` — overlay ON; set listed facets inactive for this run only. Naked `-F` ⇒ same as `--no-facets` (ignore overlay).
-- If a facet appears in both `-f` and `-F`, `-f` wins (safer include).
-- Defaults:
-  - Built‑in default: overlay OFF.
-  - `cliDefaults.run.facets: boolean` MAY set the overlay default; flags override.
+Pre‑send validator (handoff)
 
-Composition (CLI)
+- If your reply contains a handoff block:
+  - Verify that the user explicitly requested a new handoff.
+  - Verify that this is not the first user message in the thread.
+  - Verify that the user’s message did not contain a prior handoff (title line “Handoff — …”) unless they explicitly asked for a new one.
+  - If any check fails, suppress the handoff and proceed with normal startup.
 
-1. Determine inactive facets for the run (precedence: per‑run overrides > `facet.state.json` > default active).
-2. Build overlay sets:
-   - `excludesOverlay = ∪(exclude[] of all inactive facets)`,
-   - `anchorsOverlay = ∪(include[] of all facets)` (always included).
-3. Ramp‑up safety: if a facet is inactive but no anchor exists under its excluded subtree(s), **do not hide it** for this run (auto‑suspend the drop) and print a concise plan warning:
-   - `stan: facet "<name>": no anchors found; kept code this run. Add an anchor in facet.meta.json include and re-run.`
-4. Pass to engine alongside repo selection:
-   - `includes: repo includes`,
-   - `excludes: repo excludes ∪ excludesOverlay`,
-   - `anchors: anchorsOverlay`.
+Required structure (headings and order)
 
-Engine interaction and precedence (documented behavior)
+- Title line (first line inside the fence):
+  - “Handoff — <project> for next thread”
+  - Prefer the package.json “name” (e.g., “@org/pkg”) or another obvious repo identifier.
+- Sections (in this order):
+  1. Project signature (for mismatch guard)
+     - package.json name
+     - stanPath
+     - Node version range or current (if known)
+     - Primary docs location (e.g., “<stanPath>/system/”)
+  2. Reasoning
+     - Short bullets that capture current thinking, constraints/assumptions, and active decisions. The goal is to put the next session back on the same track; keep it factual and brief (no chain‑of‑thought).
+  3. Unpersisted tasks
+     - Short bullets for tasks that have been identified but intentionally not yet written to stan.todo.md or stan.project.md (tentative, thread‑scoped). Each item should be a single line.
 
-- CLI passes `anchors` to:
-  - `createArchive(cwd, stanPath, { includes?, excludes?, anchors? })`,
-  - `createArchiveDiff({ ..., includes?, excludes?, anchors?, ... })`,
-  - `writeArchiveSnapshot({ ..., includes?, excludes?, anchors? })`.
-- Precedence:
-  - `includes` override `.gitignore` (not `excludes`),
-  - `excludes` override `includes`,
-  - `anchors` override both `.gitignore` and `excludes`, subject to reserved denials:
-    - `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`,
-    - `<stanPath>/output/{archive.tar,archive.diff.tar,archive.warnings.txt}`,
-    - binary screening still applies.
+Notes
 
-Plan output (TTY/non‑TTY)
+- Do not repeat content that already lives in stan.todo.md or stan.project.md.
+- The handoff policy is repo‑agnostic. Its content is for the next session’s assistant; avoid user‑facing checklists or instructions.
+- Recognition rule (for non‑trigger): A “prior handoff” is any segment whose first non‑blank line begins with “Handoff — ” (with or without code fences). Its presence alone must not cause you to generate a new handoff.
+- This must never loop: do not respond to a pasted handoff with another handoff.
 
-- When overlay is enabled, print a “Facet view” section:
-  - overlay: on/off,
-  - inactive facets and their excluded roots,
-  - anchors kept (count or short list),
-  - any auto‑suspended facets,
-  - per‑run overrides in effect.
+# Always‑on prompt checks (assistant loop)
 
-Overlay metadata (for assistants)
+On every turn, perform these checks and act accordingly:
 
-- Each run, augment `<stanPath>/system/.docs.meta.json` with:
-  - `overlay.enabled: boolean`,
-  - `overlay.activated: string[]`,
-  - `overlay.deactivated: string[]`,
-  - `overlay.effective: Record<string, boolean>`,
-  - `overlay.autosuspended: string[]`,
-  - `overlay.anchorsKept: Record<string, number>` (count‑per‑facet; avoid large metadata).
-- Ensure metadata is included in both full and diff archives.
+- System behavior improvements:
+  - Do not edit `<stanPath>/system/stan.system.md`; propose durable behavior changes in `<stanPath>/system/stan.project.md` instead.
+  - Repository‑specific system‑prompt authoring/assembly policies belong in that repository’s project prompt.
 
-Testing (representative)
+- Project prompt promotion:
+  - When a durable, repo‑specific rule or decision emerges during work, propose a patch to `<stanPath>/system/stan.project.md` to memorialize it for future contributors.
 
-- Flags: `--facets/--no-facets`, `-f/-F` (variadics and naked forms), conflict resolution (`-f` wins).
-- Overlay composition and ramp‑up safety.
-- Anchors propagate to engine; reserved denials never overridden by anchors.
-- Overlay metadata written and present in archives.
-- Plan shows “Facet view” accurately.
+- Requirements maintenance & separation guard:
+  - STAN maintains durable requirements in `/<stanPath>/system/stan.requirements.md` and will propose patches to create/update it on demand when requirements evolve (developers MAY edit directly, but shouldn’t have to).
+  - If requirements text appears in `stan.project.md`, or policy/prompt content appears in `stan.requirements.md`, propose a follow‑up patch to move the content to the correct file and keep the separation clean.
+
+- Development plan update:
+  - Whenever you propose patches, change requirements, or otherwise make a material update, you MUST update `<stanPath>/system/stan.todo.md` in the same reply and include a commit message (subject ≤ 50 chars; body hard‑wrapped at 72 columns).
+
+Notes:
+
+- CLI preflight already runs at the start of `stan run`, `stan snap`, and `stan patch`:
+  - Detects system‑prompt drift vs packaged baseline and nudges to run `stan init` when appropriate.
+  - Prints version and docs‑baseline information.
+- File creation policy:
+  - `stan init` does not create `stan.project.md` or `stan.requirements.md` by default. STAN creates or updates these files when they are needed.
+- The “always‑on” checks above are assistant‑behavior obligations; they complement (not replace) CLI preflight.
+
+## Monolith read‑only guidance
+
+- Treat `<stanPath>/system/stan.system.md` as read‑only.
+- If behavior must change, propose updates to `<stanPath>/system/stan.project.md` instead of editing the monolith.
+- Local monolith edits are ignored when archives are attached, and CLI preflight will surface drift; avoid proposing diffs to the monolith.
+
+## Mandatory documentation cadence (gating rule)
+
+- If you emit any code Patch blocks, you MUST also (except deletions‑only or explicitly plan‑only replies):
+  - Patch `<stanPath>/system/stan.todo.md` (add a “Completed (recent)” entry; update “Next up” if applicable).
+  - Patch `<stanPath>/system/stan.project.md` when the change introduces/clarifies a durable requirement or policy.
+- If a required documentation patch is missing, STOP and recompose with the missing patch(es) before sending a reply.
+
+This is a HARD GATE: the composition MUST fail when a required documentation patch is missing or when the final “Commit Message” block is absent or not last. Correct these omissions and re‑emit before sending.
+
+## Hard gates and diagnostics behavior
+
+- 300‑LOC decomposition pivot:
+  - Do NOT emit any patch that would make a file exceed 300 LOC; pivot to decomposition (File Ops multiple patches).
+  - When producing Full Listings (diagnostics), if an affected file would exceed 300 LOC, pivot to decomposition and provide Full Listings for the decomposed files instead.
+- Never mix a Patch and a Full Listing for the same file in the same turn.
+- Patch‑failure replies:
+  - Provide Full, post‑patch listings only (no patches) for each affected file (union across envelopes).
+  - Do NOT emit a Commit Message in diagnostics replies.
+
+## Dev plan document hygiene (content‑only)
+
+- The development plan at `<stanPath>/system/stan.todo.md` MUST contain only the current plan content. Keep meta‑instructions, aliases, formatting/policy notes, process guidance, or “how to update the TODO” rules OUT of this file.
+- “Completed” MUST be the final major section of the document.
+- Allowed content in the TODO:
+  - “Next up …” (near‑term actionable items).
+  - “Completed” (final section; short, pruned list). New entries are appended at the bottom so their order of appearance reflects the order implemented. Do not edit existing Completed items.
+  - Optional sections for short follow‑through notes or a small backlog (e.g., “DX / utility ideas (backlog)”).
+
+- Append‑only logging for Completed:
+  - Do NOT modify or rewrite a previously logged Completed item.
+  - If follow‑on context is needed (e.g., clarifications/corrections), log it as a new list entry appended at the bottom instead of editing the original item.
+  - These rules are enforced by pre‑send validation (see Response Format). A composition that edits prior Completed entries MUST fail and be re‑emitted as an end‑append only change.
+
+- Prune for relevance:
+  - Remove Completed items that are not needed to understand the work in flight (“Next up” and any active follow‑through). Retain only minimal context that prevents ambiguity.
+
+- Numbering policy (dev plan):
+  - Do NOT number items in the dev plan. Use nested headings/bullets for structure, and express priority/sequence by order of appearance.
+  - Exception: a short, strictly ordered sub‑procedure may use a local numbered list where bullets would be ambiguous.
+
+# Patch Policy (system‑level)
+
+- Canonical patch path: /<stanPath>/patch/.patch; diagnostics: /<stanPath>/patch/.debug/
+  - This directory is gitignored but always included in both archive.tar and archive.diff.tar.
+- Patches must be plain unified diffs.
+- Prefer diffs with a/ b/ prefixes and stable strip levels; include sufficient context.
+- Normalize to UTF‑8 + LF. Avoid BOM and zero‑width characters.
+- Forbidden wrappers: do not emit `*** Begin Patch`, `*** Add File:`, `Index:` or other non‑unified preambles; they are not accepted by `git apply` or `stan patch`.
+- Tool preference & scope
+  - File Ops are the preferred method for moving, copying, and deleting files or directories (single or bulk).
+  - Diff Patches are the preferred method for creating files or changing them in place.
+  - The one‑patch‑per‑file rule applies to Diff Patches only; File Ops are exempt and may cover many paths in one block.
+- Combined workflow
+  - When a file is moved and its imports/content must change, do both in one turn:
+    1. File Ops: `mv old/path.ts new/path.ts`
+    2. Diff Patch: `new/path.ts` with the required edits (e.g., updated imports)
+
+# CRITICAL: Patch generation guidelines (compatible with “stan patch”)
+
+- Format: plain unified diff. Strongly prefer git-style headers:
+  - Start hunks with `diff --git a/<path> b/<path>`, followed by `--- a/<path>` and `+++ b/<path>`.
+  - Use forward slashes in paths. Paths must be relative to the repo root.
+- Strip level: include `a/` and `b/` prefixes in paths (STAN tries `-p1` then `-p0` automatically).
+- Context: include at least 3 lines of context per hunk (the default). STAN passes `--recount` to tolerate line-number drift.
+- Whitespace: do not intentionally rewrap lines; STAN uses whitespace‑tolerant matching where safe.
+- New files / deletions:
+  - New files: include a standard diff with `--- /dev/null` and `+++ b/<path>` (optionally `new file mode 100644`).
+  - Deletions: include `--- a/<path>` and `+++ /dev/null` (optionally `deleted file mode 100644`).
+- Renames: prefer delete+add (two hunks) unless a simple `diff --git` rename applies cleanly.
+- Binary: do not include binary patches.
+- One-file-per-patch in replies: do not combine changes for multiple files in a single unified diff block. Emit separate Patch blocks per file as required by Response Format.
+  - This applies to Diff Patches. File Ops are exempt and may include multiple operations across files.
+
+# Hunk hygiene (jsdiff‑compatible; REQUIRED)
+
+- Every hunk body line MUST begin with one of:
+  - a single space “ ” for unchanged context,
+  - “+” for additions, or
+  - “-” for deletions. Never place raw code/text lines (e.g., “ ),”) inside a hunk without a leading marker.
+- Hunk headers and counts:
+  - Use a valid header `@@ -<oldStart>,<oldLines> <newStart>,<newLines> @@`.
+  - The body MUST contain exactly the number of lines implied by the header: • oldLines = count of “ ” + “-” lines, • newLines = count of “ ” + “+” lines.
+  - Do not start a new `@@` header until the previous hunk body is complete.
+- File grouping:
+  - For each changed file, include one or more hunks under a single “diff --git … / --- … / +++ …” group.
+  - Do not interleave hunks from different files; start a new `diff --git` block for the next file.
+- Paths and strip:
+  - Prefer `a/<path>` and `b/<path>` prefixes (p1). STAN will also try p0 automatically.
+  - Paths must use POSIX separators “/” and be repo‑relative.
+- Fences and prose:
+  - Do not place markdown text, banners, or unfenced prose inside the diff. Keep the diff payload pure unified‑diff.
+  - When presenting in chat, wrap the diff in a fence; the fence must not appear inside the diff body.
+- Line endings:
+  - Normalize to LF (`\n`) in the patch. STAN handles CRLF translation when applying.
+
+## File Ops (optional pre‑ops; structural changes)
+
+Use “### File Ops” to declare safe, repo‑relative file and directory operations that run before content patches. File Ops are for structure (moves/renames, creates, deletes), while unified‑diff Patches are for editing file contents.
+
+- Verbs:
+  - mv <src> <dest> # move/rename a file or directory (recursive), no overwrite
+  - cp <src> <dest> # copy a file or directory (recursive), no overwrite; creates parents for <dest>
+  - rm <path> # remove file or directory (recursive)
+  - rmdir <path> # remove empty directory (explicit safety)
+  - mkdirp <path> # create directory (parents included)
+- Multiple targets:
+  - Include as many operations (one per line) as needed to handle an entire related set of structural changes in a single patch turn.
+- Paths:
+  - POSIX separators, repo‑relative only.
+  - Absolute paths are forbidden. Any “..” traversal is forbidden after normalization.
+- Arity:
+  - mv and cp require 2 paths; rm/rmdir/mkdirp require 1.
+- Execution:
+  - Pre‑ops run before applying unified diffs.
+  - In --check (dry‑run), pre‑ops are validated and reported; no filesystem changes are made.
+
+Examples
+
+```
+### File Ops
+mkdirp src/new/dir
+mv src/old.txt src/new/dir/new.txt
+cp src/new/dir/new.txt src/new/dir/copy.txt
+rm src/tmp.bin
+rmdir src/legacy/empty
+```
+
+```
+### File Ops
+mv packages/app-a/src/util.ts packages/app-b/src/util.ts
+mkdirp packages/app-b/src/internal
+rm docs/drafts/obsolete.md
+```

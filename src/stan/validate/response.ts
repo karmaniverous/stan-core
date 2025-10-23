@@ -113,7 +113,7 @@ const isCommitLast = (text: string): boolean => {
   const openLine = fenceOpen[0];
   const ticks = (openLine.match(/`/g) ?? []).length;
   // Find closing fence with same tick count
-  const closeRe = new RegExp(`^\\\`${'{'}${ticks}{'}'}\\s*$`, 'm');
+  const closeRe = new RegExp(`^\\\`{${ticks}{'}'}\\s*$`, 'm');
   const closeMatch = tail.match(closeRe);
   if (!closeMatch) return false;
   const closeIdx = tail.search(closeRe);

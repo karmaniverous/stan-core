@@ -2,6 +2,14 @@
   "version": "0.10.0",
   "prompt": {
     "source": "local",
-    "hash": "06fcfb7cba886be36dc4568541cbd6034c629b13fc8d5818ad8b58e3968341ec"
+    "hash": "35ef1e68e0cedab3bf363dc17eb0cf948ebca5a5de443db888b9ffdc11c28356"
+  },
+  "overlay": {
+    "enabled": false,
+    "activated": [],
+    "deactivated": [],
+    "effective": {},
+    "autosuspended": [],
+    "anchorsKept": {}
   }
 }

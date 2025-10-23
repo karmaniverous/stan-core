@@ -23,7 +23,7 @@ export const extractFirstUnifiedDiff = (text: string): string | null => {
     if (!m) continue;
     const tickCount = (open.match(/^`+/) ?? [''])[0].length;
     for (let j = i + 1; j < lines.length; j += 1) {
-      if (new RegExp(`^\\\`${'{'}${tickCount}{'}'}\\s*$`).test(lines[j])) {
+      if (new RegExp(`^\\\`{${tickCount}{'}'}\\s*$`).test(lines[j])) {
         const inner = lines.slice(i + 1, j).join('\n');
         if (isUnifiedDiff(inner)) return inner;
         i = j;

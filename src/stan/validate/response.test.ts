@@ -185,9 +185,9 @@ describe('response-format validator', () => {
   });
 
   it('validateOrThrow throws with a readable message', () => {
-    expect(() => validateOrThrow('## Commit Message\n```\nmsg\n```\n')).toThrow(
-      /validation failed/i,
-    );
+    expect(() => {
+      validateOrThrow('## Commit Message\n```\nmsg\n```\n');
+    }).toThrow(/validation failed/i);
   });
 
   it('File Ops validator accepts valid verbs/paths', () => {

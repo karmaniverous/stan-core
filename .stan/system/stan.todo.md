@@ -68,3 +68,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - allows only end‑append changes (no edits/insertions/re‑ordering of existing items),
     - requires corrections as a new “Amendment:” entry appended at the bottom.
   - Purpose: preserve append‑only history and prevent accidental churn in prior Completed items.
+
+- Tooling — migrate ESLint config to typed flat TS
+  - Replaced `eslint.config.js` with `eslint.config.ts` using typed `Linter.FlatConfig[]`.
+  - Adopted `typescript-eslint` strictTypeChecked with `project: ['./tsconfig.json']` and `tsconfigRootDir` for type-aware linting.
+  - Preserved Prettier integration (`eslint-config-prettier` `eslint-plugin-prettier`), simple-import-sort, and TSDoc rules.
+  - Kept Vitest test rules and JSONC linting.
+  - No behavior change expected; flat config remains the single source of truth for ESLint.

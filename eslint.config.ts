@@ -1,19 +1,19 @@
-/** See <stanPath>/system/stan.project.md for global & cross‑cutting requirements. */
-/* eslint-env node */
 import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import jsonc from 'eslint-plugin-jsonc';
-import jsoncParser from 'jsonc-eslint-parser';
+import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import tsdoc from 'eslint-plugin-tsdoc';
 import vitest from '@vitest/eslint-plugin';
+import jsonc from 'eslint-plugin-jsonc';
+import jsoncParser from 'jsonc-eslint-parser';
+import tseslint from 'typescript-eslint';
+import type { Linter } from 'eslint';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
-export default [
+const config: Linter.FlatConfig[] = [
   // Ignore generated and third‑party artifacts
   {
     ignores: [
@@ -26,15 +26,18 @@ export default [
       '.stan/**',
     ],
   },
+
   // Base JS
   eslint.configs.recommended,
 
-  // TypeScript (type-aware under src/**)
-  ...tseslint.configs.recommendedTypeChecked.map((c) => ({
+  // TypeScript (strict, type-aware under src/**)
+  ...tseslint.configs.strictTypeChecked.map((c) => ({
     ...c,
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     languageOptions: {
       ...c.languageOptions,
+      // Important: keep the TS parser and explicit project for type-aware linting
+      parser: tseslint.parser,
       parserOptions: {
         ...(c.languageOptions?.parserOptions ?? {}),
         project: ['./tsconfig.json'],
@@ -44,22 +47,26 @@ export default [
     plugins: {
       ...(c.plugins ?? {}),
       prettier: prettierPlugin,
-      'simple-import-sort': simpleImportSort,
+      'simple-import-sort': simpleImportSortPlugin,
       tsdoc,
     },
     rules: {
       ...(c.rules ?? {}),
-      // Defer to the repo Prettier config (.prettierrc.json) as the single source of truth.
+      // Formatting via Prettier
       'prettier/prettier': 'error',
+      // Import ordering
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
-      // Our TS preferences
+      // TS preferences
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-      // Quieter tsdoc syntax checks (we fix the worst offenders in-source)
+      // TSDoc hygiene (quiet)
       'tsdoc/syntax': 'warn',
     },
   })),
+
+  // Disable stylistic conflicts with Prettier
+  prettierConfig,
 
   // Tests
   {
@@ -72,19 +79,24 @@ export default [
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      // Tests/mocks often return Promises or use async wrappers without awaits.
-      // Avoid busywork fixes; require-await adds little value in tests.
+      // Tests/mocks often wrap async without awaits.
       '@typescript-eslint/require-await': 'off',
     },
   },
 
   // JSON (no nested extends)
-  {
-    files: ['**/*.json'],
-    languageOptions: { parser: jsoncParser },
-    plugins: { jsonc },
-    rules: {
-      ...(jsonc.configs['recommended-with-json'].rules ?? {}),
-    },
-  },
+  (() => {
+    const jsoncRecommendedWithJson =
+      (jsonc.configs['recommended-with-json'] as Linter.FlatConfig) ?? {};
+    return {
+      files: ['**/*.json'],
+      languageOptions: { parser: jsoncParser },
+      plugins: { jsonc },
+      rules: {
+        ...(jsoncRecommendedWithJson.rules ?? {}),
+      },
+    } satisfies Linter.FlatConfig;
+  })(),
 ];
+
+export default config;
