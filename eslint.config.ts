@@ -6,13 +6,15 @@ import vitest from '@vitest/eslint-plugin';
 import jsonc from 'eslint-plugin-jsonc';
 import jsoncParser from 'jsonc-eslint-parser';
 import tseslint from 'typescript-eslint';
-import type { Linter } from 'eslint';
+import type { FlatConfig, Plugin } from '@eslint/core';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
-const config: Linter.FlatConfig[] = [
+const TS_FILES = ['src/**/*.ts', 'src/**/*.tsx'];
+
+const config: FlatConfig[] = [
   // Ignore generated and third‑party artifacts
   {
     ignores: [
@@ -29,12 +31,15 @@ const config: Linter.FlatConfig[] = [
   // Base JS
   eslint.configs.recommended,
 
-  // TypeScript preset (type‑aware, closer to previous behavior)
-  ...tseslint.configs.recommendedTypeChecked,
+  // TypeScript presets (scoped to TS files only)
+  ...tseslint.configs.recommendedTypeChecked.map((c) => {
+    // Scope each preset to our TS globs; avoid applying typed rules to JSON/etc.
+    return { ...(c as FlatConfig), files: TS_FILES } satisfies FlatConfig;
+  }),
 
   // Our project override (parser/project + plugins/rules)
   {
-    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    files: TS_FILES,
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -43,9 +48,9 @@ const config: Linter.FlatConfig[] = [
       },
     },
     plugins: {
-      prettier: prettierPlugin as unknown as Linter.Plugin,
-      'simple-import-sort': simpleImportSortPlugin as unknown as Linter.Plugin,
-      tsdoc: tsdoc as unknown as Linter.Plugin,
+      prettier: prettierPlugin as unknown as Plugin,
+      'simple-import-sort': simpleImportSortPlugin as unknown as Plugin,
+      tsdoc: tsdoc as unknown as Plugin,
     },
     rules: {
       // Formatting via Prettier
@@ -61,16 +66,16 @@ const config: Linter.FlatConfig[] = [
       // Keep prior behavior; do not introduce stricter rules
       '@typescript-eslint/no-unnecessary-condition': ['off'],
       '@typescript-eslint/restrict-template-expressions': ['off'],
-    } as const satisfies Linter.RulesRecord,
+    } as const,
   },
 
   // Disable stylistic conflicts with Prettier
-  (await import('eslint-config-prettier')).default as unknown as Linter.FlatConfig,
+  (await import('eslint-config-prettier')).default as unknown as FlatConfig,
 
   // Tests
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],
-    plugins: { vitest: vitest as unknown as Linter.Plugin },
+    plugins: { vitest: vitest as unknown as Plugin },
     languageOptions: {
       globals: vitest.environments.env.globals,
     },
@@ -80,16 +85,16 @@ const config: Linter.FlatConfig[] = [
       '@typescript-eslint/no-unsafe-return': ['off'],
       // Tests/mocks often wrap async without awaits.
       '@typescript-eslint/require-await': ['off'],
-    } as const satisfies Linter.RulesRecord,
+    } as const,
   },
 
   // JSON (no nested extends)
   {
     files: ['**/*.json'],
     languageOptions: { parser: jsoncParser },
-    plugins: { jsonc: jsonc as unknown as Linter.Plugin },
+    plugins: { jsonc: jsonc as unknown as Plugin },
     rules: {
-      ...(jsonc.configs['recommended-with-json']?.rules as Linter.RulesRecord),
+      ...(jsonc.configs['recommended-with-json']?.rules as Record<string, unknown>),
     },
   },
 ];

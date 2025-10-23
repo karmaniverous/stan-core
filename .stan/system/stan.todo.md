@@ -80,4 +80,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Switched to `typescript-eslint` recommendedTypeChecked (avoid stricter rules).
   - Added a dedicated src/** override with `parser` and `project` for type-aware linting.
   - Cast ecosystem plugin/config types as needed; added `@humanwhocodes/momoa` for JSONC types.
-  - Kept Prettier + simple-import-sort + tsdoc; disabled stricter rules to match prior behavior.
+  - Kept Prettier + simple-import-sort + tsdoc; disabled stricter rules to match prior behavior.
+
+- Amendment: ESLint typing — scope presets to TS and shim momoa
+  - Scoped `typescript-eslint` presets to `src/**` so typed rules do not run on JSON files.
+  - Kept a TS override with `parserOptions.project` for type-aware linting.
+  - Imported `FlatConfig`/`Plugin` from `@eslint/core` and cast plugins accordingly.
+  - Added `types/momoa.d.ts` ambient module and removed the unused `@humanwhocodes/momoa` devDependency (silences knip and TS7016).
