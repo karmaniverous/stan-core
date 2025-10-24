@@ -27,8 +27,8 @@ export type ParsedDiffInfo = {
 export const parseUnifiedDiff = (cleaned: string): ParsedDiffInfo => {
   const patches = parsePatch(cleaned);
   const files: ParsedFilePatch[] = patches.map((p) => {
-    const a = stripAB(p.oldFileName ?? null);
-    const b = stripAB(p.newFileName ?? null);
+    const a = stripAB(p.oldFileName);
+    const b = stripAB(p.newFileName);
     return {
       oldPath: a.path,
       newPath: b.path,

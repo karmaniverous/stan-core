@@ -21,9 +21,13 @@ export const extractFirstUnifiedDiff = (text: string): string | null => {
     const open = lines[i];
     const m = open.match(/^`{3,}.*$/);
     if (!m) continue;
-    const tickCount = (open.match(/^`+/) ?? [''])[0].length;
+    // Count the backticks at the start of the opening fence
+    const tickPrefix = (open.match(/^`+/) ?? [''])[0];
+    const tickCount = tickPrefix.length;
     for (let j = i + 1; j < lines.length; j += 1) {
-      if (new RegExp(`^\\\`{${tickCount}{'}'}\\s*$`).test(lines[j])) {
+      const closeLine = lines[j].trimEnd();
+      // Closing fence: exactly the same number of backticks (no language tag)
+      if (closeLine === '`'.repeat(tickCount)) {
         const inner = lines.slice(i + 1, j).join('\n');
         if (isUnifiedDiff(inner)) return inner;
         i = j;
@@ -36,6 +40,7 @@ export const extractFirstUnifiedDiff = (text: string): string | null => {
   if (idx < 0) idx = text.search(/^---\s+(?:a\/|\S)/m);
   if (idx < 0) return null;
   const body = text.slice(idx);
+  // If a trailing fence was present, strip it
   const trimmed = body.replace(/\n`{3,}\s*$/m, '\n');
   return trimmed;
 };

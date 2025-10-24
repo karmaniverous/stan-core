@@ -80,7 +80,12 @@ export const prepareImports = async (args: {
 
     const staged: string[] = [];
     for (const patternRaw of globs) {
-      const pattern = String(patternRaw ?? '').trim();
+      let pattern = '';
+      if (typeof patternRaw === 'string') {
+        pattern = patternRaw.trim();
+      } else if (patternRaw != null) {
+        pattern = String(patternRaw).trim();
+      }
       if (!pattern) continue;
       // Compute static parent for tail mapping (best-effort)
       const parent = globParent(pattern.replace(/\\/g, '/'));

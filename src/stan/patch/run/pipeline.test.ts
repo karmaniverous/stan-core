@@ -25,12 +25,12 @@ let jsResult: {
 vi.mock('../apply', () => ({
   __esModule: true,
   buildApplyAttempts: () => [],
-  runGitApply: async () => gitResult,
+  runGitApply: () => Promise.resolve(gitResult),
 }));
 
 vi.mock('../jsdiff', () => ({
   __esModule: true,
-  applyWithJsDiff: async () => jsResult,
+  applyWithJsDiff: () => Promise.resolve(jsResult),
 }));
 
 describe('applyPatchPipeline (git path and jsdiff fallback)', () => {

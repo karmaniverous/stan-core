@@ -113,7 +113,7 @@ const isCommitLast = (text: string): boolean => {
   const openLine = fenceOpen[0];
   const ticks = (openLine.match(/`/g) ?? []).length;
   // Find closing fence with same tick count
-  const closeRe = new RegExp(`^\\\`{${ticks}{'}'}\\s*$`, 'm');
+  const closeRe = new RegExp(`^\\\`{${String(ticks)}{'}}\\s*$`, 'm');
   const closeMatch = tail.match(closeRe);
   if (!closeMatch) return false;
   const closeIdx = tail.search(closeRe);
@@ -226,7 +226,7 @@ export const validateResponseMessage = (text: string): ValidationResult => {
   {
     const fullIndex = new Map<string, Block>();
     for (const f of listings) {
-      const key = toPosix(f.path ?? '(unknown)');
+      const key = toPosix(typeof f.path === 'string' ? f.path : '(unknown)');
       fullIndex.set(key, f);
     }
     for (const p of patches) {
@@ -256,11 +256,12 @@ export const validateResponseMessage = (text: string): ValidationResult => {
     for (const p of patches) {
       const diffs = parseDiffHeaders(p.body);
       if (diffs.length > 0) {
-        const b = toPosix(diffs[0].b ?? '');
-        if (b) targets.push(b);
+        const bRaw = diffs[0]?.b;
+        const b = typeof bRaw === 'string' ? toPosix(bRaw) : '';
+        if (b.length) targets.push(b);
       } else {
-        const k = toPosix(p.path ?? '');
-        if (k) targets.push(k);
+        const k = p.path ? toPosix(p.path) : '';
+        if (k.length) targets.push(k);
       }
     }
     const isTodo = (s: string) => toPosix(s) === '.stan/system/stan.todo.md';

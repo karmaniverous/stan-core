@@ -19,9 +19,9 @@ export const isAbsolutePosix = (p: string): boolean => /^[/\\]/.test(p);
  *
  * Returns null when invalid.
  */
-export const normalizeRepoPath = (raw?: string): string | null => {
-  if (!raw || !String(raw).trim()) return null;
-  const posix = toPosix(String(raw).trim());
+export const normalizeRepoPath = (raw?: unknown): string | null => {
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  const posix = toPosix(raw.trim());
   if (isAbsolutePosix(posix)) return null;
   const parts = posix.split('/').filter(Boolean);
   if (parts.some((seg) => seg === '..')) return null;

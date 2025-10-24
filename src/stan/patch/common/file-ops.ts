@@ -7,7 +7,7 @@ export const extractFileOpsBody = (text: string): string | null => {
   const headingRe = /^###\s+File Ops\s*$/m;
   const hm = headingRe.exec(text);
   if (!hm) return null;
-  const afterIdx = (hm.index ?? 0) + hm[0].length;
+  const afterIdx = hm.index + hm[0].length;
   const tail = text.slice(afterIdx);
   const lines = tail.split(/\r?\n/);
   // Skip leading blank lines

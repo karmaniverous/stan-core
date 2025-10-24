@@ -32,9 +32,7 @@ const tryCreationFallback = async (
       const m = lines[i + 1].match(/^\+\+\+\s+b\/(.+)\s*$/);
       if (m && m[1]) {
         plusIdx = i + 1;
-        newRel = String(m[1])
-          .trim()
-          .replace(/^[./]+/, '');
+        newRel = m[1].trim().replace(/^[./]+/, '');
         break;
       }
     }

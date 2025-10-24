@@ -67,14 +67,14 @@ export const classifyForArchive = async (
     relFiles.map(async (rel) => {
       const posixRel = toPosix(rel);
       const abs = resolve(cwd, rel);
-      let s: { size: number } | null = null;
+      let size = 0;
       try {
-        s = await stat(abs);
+        const st = await stat(abs);
+        size = st.size;
       } catch {
         // Skip paths we cannot stat
         return;
       }
-      const size = s?.size ?? 0;
 
       // Binary?
       let bin = false;

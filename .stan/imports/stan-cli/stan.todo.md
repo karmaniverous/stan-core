@@ -127,4 +127,9 @@
   - Moved the hide-cursor (CSI ?25l) emission into the first render immediately
     after the leading newline so the first byte in the buffer is “\n” and the
     first frame still contains CSI nA via the existing render logic (clearCount
-    then relative up). Removed unused code flagged by lint.
+    then relative up). Removed unused code flagged by lint.
+
+- Tests — anchored writer CSI detection robustness
+  - Made the unit test accept either the actual ESC (U+001B) control character or a
+    literal "\u001B" in the captured buffer for the “cursor up” (CSI nA) check. This
+    resolves the single failing test without changing runtime TTY behavior.

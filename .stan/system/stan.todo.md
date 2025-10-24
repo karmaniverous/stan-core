@@ -97,3 +97,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Adopted typescript-eslint strictTypeChecked presets for TS files.
   - Removed test‑only rule relaxations; tests now meet the same standard as other code.
   - Recorded “never disable a lint rule without prior discussion” in the project prompt.
+
+- Lint — strict typed ESLint conformance across code and tests
+  - Removed unused test type aliases/imports; replaced async mocks with explicit Promises to satisfy require-await.
+  - Eliminated unnecessary `String()` conversions and nullish chains; narrowed types instead.
+  - Addressed `restrict-template-expressions` by stringifying numeric values in diagnostics.
+  - Refactored size stat/read logic to avoid optional chains; adjusted regex closing-fence logic to stringify tick counts.
+  - No rule disables introduced; tests meet the same lint standard as source.

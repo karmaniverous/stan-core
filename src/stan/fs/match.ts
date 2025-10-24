@@ -10,7 +10,7 @@ const hasGlob = (p: string): boolean =>
   /[*?[\]{}()!]/.test(p) || p.includes('**');
 
 const normalize = (p: string): string =>
-  String(p)
+  p
     .replace(/\\/g, '/')
     .replace(/^\.\/+/, '')
     .replace(/\/+$/, '');
@@ -39,7 +39,7 @@ const toMatcher = (pattern: string): ((f: string) => boolean) => {
 export const makeGlobMatcher = (
   patterns: string[],
 ): ((rel: string) => boolean) => {
-  const mats = (patterns ?? []).map(toMatcher);
+  const mats = patterns.map(toMatcher);
   if (mats.length === 0) return () => false;
   return (rel: string) => {
     const file = normalize(rel);

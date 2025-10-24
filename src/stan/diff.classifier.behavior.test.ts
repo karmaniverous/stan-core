@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { withMockTarCapture } from '../test/helpers';
 import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
-type TarCall = (typeof calls)[number];
 
 describe('createArchiveDiff integrates classifier (excludes binaries, surfaces warnings via callback)', () => {
   let dir: string;

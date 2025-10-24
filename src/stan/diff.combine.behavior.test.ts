@@ -8,7 +8,6 @@ import { withMockTarCapture } from '../test/helpers';
 import { createArchive } from './archive';
 import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
-type TarCall = (typeof calls)[number];
 
 describe('combine archiving behavior (outputs inside archives)', () => {
   let dir: string;

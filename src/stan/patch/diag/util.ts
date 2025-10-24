@@ -33,6 +33,6 @@ export const firstStderrLine = (s?: string): string | undefined => {
 export const renderAttemptSummary = (captures: AttemptLike[]): string[] => {
   return captures.map((a) => {
     const fl = firstStderrLine(a.stderr);
-    return `${a.label}: exit ${a.code}${fl ? ` — ${fl}` : ''}`;
+    return `${a.label}: exit ${String(a.code)}${fl ? ` — ${fl}` : ''}`;
   });
 };

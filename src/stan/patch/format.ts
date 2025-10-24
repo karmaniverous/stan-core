@@ -55,7 +55,7 @@ const fmtStanDiff = (
       : 'The unified diff patch was invalid.';
 
   let diag = '';
-  if (attempts && attempts.length) {
+  if (Array.isArray(attempts) && attempts.length > 0) {
     const attemptLines = renderAttemptSummary(attempts);
     const jsLines =
       js && js.length ? js.map((j) => `jsdiff: ${j.path}: ${j.reason}`) : [];

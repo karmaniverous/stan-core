@@ -130,7 +130,9 @@ export const runGitApply = async (
       return { ok: true, tried, lastCode: 0, captures };
     }
     if (debug) {
-      console.error(`stan: git apply failed for ${att.label} (exit ${code})`);
+      console.error(
+        `stan: git apply failed for ${att.label} (exit ${String(code)})`,
+      );
     }
   }
   return { ok: false, tried, lastCode: 1, captures };
