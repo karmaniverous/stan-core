@@ -75,7 +75,7 @@ const fmtStanDiff = (
     id,
     '',
     'START PATCH DIAGNOSTICS',
-    diag ?? '',
+    diag,
     'END PATCH DIAGNOSTICS',
     '',
   ].join(NL);

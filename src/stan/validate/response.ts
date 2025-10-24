@@ -94,7 +94,7 @@ const parseDiffHeaders = (body: string): Array<{ a: string; b: string }> => {
   const out: Array<{ a: string; b: string }> = [];
   let m: RegExpExecArray | null;
   while ((m = re.exec(body))) {
-    out.push({ a: toPosix(m[1] ?? ''), b: toPosix(m[2] ?? '') });
+    out.push({ a: toPosix(m[1]), b: toPosix(m[2]) });
   }
   return out;
 };
@@ -230,7 +230,7 @@ export const validateResponseMessage = (text: string): ValidationResult => {
       fullIndex.set(key, f);
     }
     for (const p of patches) {
-      const key = toPosix(p.path ?? '(unknown)');
+      const key = toPosix(p.path as string);
       const f = fullIndex.get(key);
       if (f && !(p.start < f.start)) {
         errors.push(

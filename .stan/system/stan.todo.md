@@ -104,3 +104,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Addressed `restrict-template-expressions` by stringifying numeric values in diagnostics.
   - Refactored size stat/read logic to avoid optional chains; adjusted regex closing-fence logic to stringify tick counts.
   - No rule disables introduced; tests meet the same lint standard as source.
+
+- Lint — finish strict type-aware ESLint cleanup (no-unnecessary-condition group)
+  - Removed unreachable conditional in imports staging (string-only globs).
+  - Replaced redundant 'mkdirp' equality with final else in file-ops executor.
+  - Dropped nullish coalescing on guaranteed strings (format/response).
+  - Kept tests and source under the same lint standard; no rule disables added.

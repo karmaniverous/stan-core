@@ -162,7 +162,7 @@ export const executeFileOps = async (
         const entries = await readdir(abs);
         if (entries.length > 0) throw new Error('directory not empty');
         if (!dryRun) await remove(abs);
-      } else if (op.verb === 'mkdirp') {
+      } else {
         const { abs, ok } = within(op.src);
         if (!ok) throw new Error('path escapes repo root');
         if (!dryRun) await ensureDir(abs);

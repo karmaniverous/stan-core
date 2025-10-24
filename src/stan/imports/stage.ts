@@ -80,14 +80,9 @@ export const prepareImports = async (args: {
 
     const staged: string[] = [];
     for (const patternRaw of globs) {
-      let pattern = '';
-      if (typeof patternRaw === 'string') {
-        pattern = patternRaw.trim();
-      } else if (patternRaw != null) {
-        pattern = String(patternRaw).trim();
-      }
+      const pattern = patternRaw.trim();
       if (!pattern) continue;
-      // Compute static parent for tail mapping (best-effort)
+      // Compute static parent for tail mapping (best‑effort)
       const parent = globParent(pattern.replace(/\\/g, '/'));
       try {
         // Resolve absolute file paths for matches; allow absolute & relative inputs

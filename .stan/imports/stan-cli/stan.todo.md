@@ -132,4 +132,11 @@
 - Tests — anchored writer CSI detection robustness
   - Made the unit test accept either the actual ESC (U+001B) control character or a
     literal "\u001B" in the captured buffer for the “cursor up” (CSI nA) check. This
-    resolves the single failing test without changing runtime TTY behavior.
+    resolves the single failing test without changing runtime TTY behavior.
+
+- Lint — migrate ESLint config to TypeScript; strict type-aware across all TS (incl. tests)
+  - Replaced eslint.config.js with eslint.config.ts (flat config). Adopted
+    typescript-eslint strictTypeChecked with parserOptions.project for type-aware
+    rules on all *.ts(x) files, including tests; added Vitest globals without rule
+    relaxations. Kept Prettier as formatting authority and simple-import-sort. The
+    anchored-writer test now avoids a literal control char regex (no-control-regex). 
