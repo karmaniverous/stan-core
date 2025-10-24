@@ -236,62 +236,27 @@ export const filterFiles = async (
   return base;
 };
 /**
- * SSR-safe accessor for makeStanDirs with a local fallback.
- * Some SSR environments can surface transient undefined named exports;
- * prefer a dynamic import when needed and fall back to a local pure
- * implementation to avoid brittle runtime failures in tests.
+ * Resolve makeStanDirs from ./paths using a dynamic import.
+ * Vitest SSR can occasionally surface a transient undefined named export;
+ * prefer the named export, falling back to default.makeStanDirs when present.
  */
-const normRel = (p: string): string =>
-  p.replace(/\\/g, '/').replace(/^\.\/+/, '');
-
-const fallbackMakeStanDirs = (cwd: string, stanPath: string): StanDirs => {
-  const rootRel = normRel(stanPath);
-  const systemRel = `${rootRel}/system`;
-  const outputRel = `${rootRel}/output`;
-  const diffRel = `${rootRel}/diff`;
-  const distRel = `${rootRel}/dist`;
-  const patchRel = `${rootRel}/patch`;
-  const importsRel = `${rootRel}/imports`;
-
-  const rootAbs = resolve(cwd, rootRel);
-  const systemAbs = resolve(cwd, systemRel);
-  const outputAbs = resolve(cwd, outputRel);
-  const diffAbs = resolve(cwd, diffRel);
-  const distAbs = resolve(cwd, distRel);
-  const patchAbs = resolve(cwd, patchRel);
-  const importsAbs = resolve(cwd, importsRel);
-
-  return {
-    rootRel,
-    systemRel,
-    outputRel,
-    diffRel,
-    distRel,
-    patchRel,
-    importsRel,
-    rootAbs,
-    systemAbs,
-    outputAbs,
-    diffAbs,
-    distAbs,
-    patchAbs,
-    importsAbs,
-  };
-};
-
 const getMakeStanDirs = async (): Promise<
-  ((cwd: string, stanPath: string) => StanDirs) | null
+  (cwd: string, stanPath: string) => StanDirs
 > => {
   try {
     const mod = await import('./paths');
-    return typeof (mod as { makeStanDirs?: unknown }).makeStanDirs ===
-      'function'
-      ? (mod as unknown as { makeStanDirs: (c: string, s: string) => StanDirs })
-          .makeStanDirs
-      : null;
+    const named = (mod as unknown as { makeStanDirs?: unknown }).makeStanDirs;
+    const viaDefault = (
+      mod as unknown as { default?: { makeStanDirs?: unknown } }
+    ).default?.makeStanDirs;
+    const fn = (typeof named === 'function' ? named : viaDefault) as
+      | ((cwd: string, stanPath: string) => StanDirs)
+      | undefined;
+    if (typeof fn === 'function') return fn;
   } catch {
-    return null;
+    /* ignore */
   }
+  throw new Error('makeStanDirs export not found in ./paths');
 };
 /**
  * Ensure `<stanPath>` workspace exists (root/output/diff/patch).
@@ -307,7 +272,7 @@ export const ensureStanWorkspace = async (
   patchAbs: string;
 }> => {
   const mk = await getMakeStanDirs();
-  const dirs = mk ? mk(cwd, stanPath) : fallbackMakeStanDirs(cwd, stanPath);
+  const dirs = mk(cwd, stanPath);
   await ensureDir(dirs.rootAbs);
   await ensureDir(dirs.outputAbs);
   await ensureDir(dirs.diffAbs);

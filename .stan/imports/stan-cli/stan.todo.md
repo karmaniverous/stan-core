@@ -135,7 +135,15 @@
   - Updated src/cli/header.test.ts to capture calls explicitly instead of relying on Spy.mock internals; resolves strict typing errors.
 
 - Facets — enable “snap” for next run
-  - Enabled the “snap” facet in .stan/system/facet.state.json so src/runner/snap/** is visible.
+  - Enabled the “snap” facet in .stan/system/facet.state.json so src/runner/snap/\*\* is visible.
   - Next: patch src/runner/snap/git.ts to import { spawn } from 'node:child_process' so the stash-failure test can vi.mock spawn reliably.
-  - Run with overlay active: `stan run -f snap` (or use the default overlay with this state),
-    then we will submit the git.ts patch in the following turn.
+  - Run with overlay active: `stan run -f snap` (or use the default overlay with this state), then we will submit the git.ts patch in the following turn.
+
+- Tests — stabilize prompt resolution fallback mock (node:module)
+  - Updated src/runner/prompt/resolve.test.ts to partially mock only createRequire via vi.mock with importOriginal and spread of the real module. This avoids a default-export expectation on the node:module mock. No product-code change.
+
+- Tests — snap stash failure path remains compatible with spawn mock
+  - Confirmed snap’s git helper imports spawn as a named export from node:child_process, enabling vi.mock to provide a spawn stub. No further product-code change required.
+
+- Tests — stabilize node:module mock in prompt resolver fallback
+  - Updated src/runner/prompt/resolve.test.ts to return both \_\_esModule and a default export in the vi.mock('node:module') factory, while overriding only createRequire. Eliminates Vitest’s “No default export” error.

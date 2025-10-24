@@ -63,3 +63,5 @@ export const makeStanDirs = (cwd: string, stanPath: string): StanDirs => {
     importsAbs,
   };
 };
+
+export default { makeStanDirs };
