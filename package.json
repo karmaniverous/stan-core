@@ -38,6 +38,7 @@
     "@types/picomatch": "^4.0.2",
     "@vitest/coverage-v8": "^4.0.2",
     "auto-changelog": "^2.5.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsonc": "^2.21.0",

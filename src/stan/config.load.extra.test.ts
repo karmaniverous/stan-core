@@ -7,8 +7,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { loadConfig, loadConfigSync, resolveStanPathSync } from '@/stan/config';
 
-import { writeStanConfigYaml } from '../test/helpers';
-
 const write = (p: string, s: string) => writeFile(p, s, 'utf8');
 
 describe('config.load (namespaced stan-core + minimal shape)', () => {
@@ -23,10 +21,15 @@ describe('config.load (namespaced stan-core + minimal shape)', () => {
   });
 
   it('loads stan-core block and normalizes minimal fields', async () => {
-    await writeStanConfigYaml(dir, {
-      stanPath: 'out',
-      excludes: ['CHANGELOG.md'],
-    });
+    // Write a minimal YAML config (omit includes; provide excludes)
+    const body = [
+      'stan-core:',
+      '  stanPath: out',
+      '  excludes:',
+      '    - CHANGELOG.md',
+      '',
+    ].join('\n');
+    await write(path.join(dir, 'stan.config.yml'), body);
 
     const cfg = await loadConfig(dir);
     expect(cfg.stanPath).toBe('out');

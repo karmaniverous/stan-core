@@ -1,8 +1,6 @@
 {
   "entry": ["src/**/index.ts"],
-  "ignoreDependencies": [
-    "@types/eslint-config-prettier"
-  ],
+  "ignoreDependencies": ["@types/eslint-config-prettier", "cross-env"],
   "ignore": [
     "src/test/helpers.ts",
     "src/stan/patch/context.ts",

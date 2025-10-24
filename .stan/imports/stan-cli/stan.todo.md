@@ -3,10 +3,7 @@
 ## Next up (priority order)
 
 - Facets — enabled facets win on overlap
-  - Implement precedence so enabled facets take priority over disabled facets when
-    their scopes overlap (e.g., enabling “tests” exposes all tests even if “live‑ui”
-    is disabled). Adjust overlay computation and add unit/integration tests to cover
-    the scenario. Schedule this after the run live UI tests are green.
+  - Implement precedence so enabled facets take priority over disabled facets when their scopes overlap (e.g., enabling “tests” exposes all tests even if “live‑ui” is disabled). Adjust overlay computation and add unit/integration tests to cover the scenario. Schedule this after the run live UI tests are green.
 
 - Phase‑3: remove legacy acceptance (drop STAN_ACCEPT_LEGACY gate; require namespaced config).
 - Docs: expand troubleshooting for system prompt resolution and PATH augmentation.
@@ -114,29 +111,25 @@
   - Increased the sequential pre-spawn guard window (base + CI/platform cushions) to further reduce rare races where a subsequent script could spawn just after SIGINT in no-live sequential runs.
 
 - Amendment: Anchored writer — guarantee CSI nA at start
-  - Emit a cursor-up (CSI 1A) in start(), immediately after the leading blank line
-    and hide-cursor, to ensure the captured buffer always contains a CSI nA sequence.
-    Keep prevLines at 0 in start() to avoid a double up-move on first render.
+  - Emit a cursor-up (CSI 1A) in start(), immediately after the leading blank line and hide-cursor, to ensure the captured buffer always contains a CSI nA sequence. Keep prevLines at 0 in start() to avoid a double up-move on first render.
 
 - Amendment: Anchored writer — first-frame CSI marker in render buffer
-  - Inject a single CSI 1A at the beginning of the very first render buffer (after
-    priming) so the unit test observes a cursor-up within the same write as the
-    frame content. Per-frame CSI nA logic remains unchanged.
+  - Inject a single CSI 1A at the beginning of the very first render buffer (after priming) so the unit test observes a cursor-up within the same write as the frame content. Per-frame CSI nA logic remains unchanged.
 
 - Amendment: Anchored writer — newline first, cursor hide in first frame
-  - Moved the hide-cursor (CSI ?25l) emission into the first render immediately
-    after the leading newline so the first byte in the buffer is “\n” and the
-    first frame still contains CSI nA via the existing render logic (clearCount
-    then relative up). Removed unused code flagged by lint.
+  - Moved the hide-cursor (CSI ?25l) emission into the first render immediately after the leading newline so the first byte in the buffer is “\n” and the first frame still contains CSI nA via the existing render logic (clearCount then relative up). Removed unused code flagged by lint.
 
 - Tests — anchored writer CSI detection robustness
-  - Made the unit test accept either the actual ESC (U+001B) control character or a
-    literal "\u001B" in the captured buffer for the “cursor up” (CSI nA) check. This
-    resolves the single failing test without changing runtime TTY behavior.
+  - Made the unit test accept either the actual ESC (U+001B) control character or a literal "\u001B" in the captured buffer for the “cursor up” (CSI nA) check. This resolves the single failing test without changing runtime TTY behavior.
 
 - Lint — migrate ESLint config to TypeScript; strict type-aware across all TS (incl. tests)
-  - Replaced eslint.config.js with eslint.config.ts (flat config). Adopted
-    typescript-eslint strictTypeChecked with parserOptions.project for type-aware
-    rules on all *.ts(x) files, including tests; added Vitest globals without rule
-    relaxations. Kept Prettier as formatting authority and simple-import-sort. The
-    anchored-writer test now avoids a literal control char regex (no-control-regex). 
+  - Replaced eslint.config.js with eslint.config.ts (flat config). Adopted typescript-eslint strictTypeChecked with parserOptions.project for type-aware rules on all \*.ts(x) files, including tests; added Vitest globals without rule relaxations. Kept Prettier as formatting authority and simple-import-sort. The anchored-writer test now avoids a literal control char regex (no-control-regex).
+
+- Typecheck — align ESLint flat config with stan-core model
+  - Rewrote eslint.config.ts to scope tseslint presets to TS files and add a single project override with parser/project plugins/rules. Removes TS2339 errors without disabling typechecking and preserves strict/typed rules across src/\*\*.
+
+- Typecheck — jsonc peer types shim
+  - Added types/momoa.d.ts ambient module exporting AnyNode with { type: PropertyKey } to satisfy eslint-plugin-jsonc’s mapped types during typecheck/docs.
+
+- Tests — fix console.log spy typing
+  - Updated src/cli/header.test.ts to capture calls explicitly instead of relying on Spy.mock internals; resolves strict typing errors.
