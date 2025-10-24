@@ -119,3 +119,10 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
 - Lint — finalize strict typed ESLint in validator (commit position check)
   - Removed an unnecessary falsy guard; use non‑null assertion for the final block and compare kind directly.
   - No rule disables introduced; tests continue to meet the same standard as source.
+
+- Tests — SSR-safe import for makeStanDirs in fs.ts
+  - Replaced the static named import with a dynamic accessor and local fallback in src/stan/fs.ts to avoid a Vitest 4 SSR edge case where `makeStanDirs` was undefined in combine-behavior tests.
+  - Restores green on src/stan/diff.combine.behavior.test.ts; no runtime behavior change.
+  - Touch points:
+    - src/stan/fs.ts — dynamic import fallbackMakeStanDirs
+    - Documentation: this entry
