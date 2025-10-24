@@ -10,7 +10,6 @@
     "url": "https://github.com/karmaniverous/stan-core/issues"
   },
   "dependencies": {
-    "@vitest/eslint-plugin": "^1.3.23",
     "diff": "^8.0.2",
     "fast-glob": "^3.3.3",
     "fs-extra": "^11.3.2",
@@ -37,6 +36,7 @@
     "@types/node": "^24.9.1",
     "@types/picomatch": "^4.0.2",
     "@vitest/coverage-v8": "^4.0.2",
+    "@vitest/eslint-plugin": "^1.3.23",
     "auto-changelog": "^2.5.0",
     "cross-env": "^10.1.0",
     "eslint": "^9.38.0",

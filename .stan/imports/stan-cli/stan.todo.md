@@ -147,3 +147,11 @@
 
 - Tests — stabilize node:module mock in prompt resolver fallback
   - Updated src/runner/prompt/resolve.test.ts to return both \_\_esModule and a default export in the vi.mock('node:module') factory, while overriding only createRequire. Eliminates Vitest’s “No default export” error.
+
+- Snap — robust spawn resolver for git helper (test/mock stability)
+  - Updated src/runner/snap/git.ts to resolve child_process.spawn by preferring the named export and falling back to default.spawn. This tolerates different module shapes under Vitest and fixes “spawn is not a function” in the stash- failure test without changing runtime behavior.
+
+- Snap — type fix for spawn options (TS2322)
+  - Adjusted the spawn resolver signature in src/runner/snap/git.ts to use
+    SpawnOptions (and return ChildProcess) so providing a stdio array is
+    type-correct. No runtime behavior change; preserves test stability.

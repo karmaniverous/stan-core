@@ -141,3 +141,8 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
   - Added a durable note to .stan/system/stan.requirements.md describing the named-or-default dynamic import pattern to keep Vitest SSR stable.
   - Includes a small example and guidance to prefer static imports unless dynamic resolution is required for test/SSR robustness.
   - No runtime behavior change; documentation only.
+
+- Lint — integrate @vitest/eslint-plugin for tests
+  - Move @vitest/eslint-plugin to devDependencies and enable vitest.configs.recommended in eslint.config.ts for *.test.ts(x).
+  - Keeps strict, type-aware linting and adds focused test rules without changing runtime behavior.
+  - No code changes beyond lint configuration.

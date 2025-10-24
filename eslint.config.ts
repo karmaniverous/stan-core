@@ -76,6 +76,11 @@ const config = [
     languageOptions: {
       globals: vitest.environments.env.globals,
     },
+    // Adopt Vitest’s recommended rule set in test files.
+    // Cast required to satisfy FlatConfig typing in this project.
+    rules: {
+      ...(vitest.configs.recommended?.rules as Record<string, unknown>),
+    },
   },
 
   // JSON (no nested extends)
