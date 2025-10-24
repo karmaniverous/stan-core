@@ -126,3 +126,8 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
   - Touch points:
     - src/stan/fs.ts — dynamic import fallbackMakeStanDirs
     - Documentation: this entry
+
+- Tests — SSR import stabilization for createArchiveDiff
+  - In src/stan/run.combine.archive.behavior.test.ts, switch to a dynamic import of ./diff inside the failing test to avoid a Vitest 4 SSR named-export binding glitch that surfaced “createArchiveDiff is not a function”.
+  - Aligns with prior SSR-safe patterns; no runtime behavior change.
+  - Expect green on the remaining combine-behavior suite.

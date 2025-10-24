@@ -133,3 +133,9 @@
 
 - Tests — fix console.log spy typing
   - Updated src/cli/header.test.ts to capture calls explicitly instead of relying on Spy.mock internals; resolves strict typing errors.
+
+- Facets — enable “snap” for next run
+  - Enabled the “snap” facet in .stan/system/facet.state.json so src/runner/snap/** is visible.
+  - Next: patch src/runner/snap/git.ts to import { spawn } from 'node:child_process' so the stash-failure test can vi.mock spawn reliably.
+  - Run with overlay active: `stan run -f snap` (or use the default overlay with this state),
+    then we will submit the git.ts patch in the following turn.

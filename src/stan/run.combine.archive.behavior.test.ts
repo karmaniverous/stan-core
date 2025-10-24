@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { withMockTarCapture } from '../test/helpers';
 import { createArchive } from './archive';
-import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
 
 describe('combine archiving behavior (outputs inside archives)', () => {
@@ -42,6 +41,8 @@ describe('combine archiving behavior (outputs inside archives)', () => {
       'utf8',
     );
 
+    // Vitest 4 SSR can occasionally surface a non-function named export; use dynamic import.
+    const { createArchiveDiff } = await import('./diff');
     await createArchiveDiff({
       cwd: dir,
       stanPath: out,
