@@ -101,7 +101,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Lint — strict typed ESLint conformance across code and tests
   - Removed unused test type aliases/imports; replaced async mocks with explicit Promises to satisfy require-await.
   - Eliminated unnecessary `String()` conversions and nullish chains; narrowed types instead.
-  - Addressed `restrict-template-expressions` by stringifying numeric values in diagnostics.
+  - Addressed `restrict-template-expressions` byrefactor(lint): finalize strict typed ESLint in validator
+
+When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condition error without disabling rules; tests must meet the same standard. What changed:
+
+- src/stan/validate/response.ts: remove an unnecessary falsy guard in the commit-position check; use non-null assertion and compare kind directly.
+- .stan/system/stan.todo.md: append Completed entry documenting the final strict typed ESLint cleanup in the validator. stringifying numeric values in diagnostics.
   - Refactored size stat/read logic to avoid optional chains; adjusted regex closing-fence logic to stringify tick counts.
   - No rule disables introduced; tests meet the same lint standard as source.
 
@@ -109,4 +114,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Removed unreachable conditional in imports staging (string-only globs).
   - Replaced redundant 'mkdirp' equality with final else in file-ops executor.
   - Dropped nullish coalescing on guaranteed strings (format/response).
-  - Kept tests and source under the same lint standard; no rule disables added.
+  - Kept tests and source under the same lint standard; no rule disables added.
+
+- Lint — finalize strict typed ESLint in validator (commit position check)
+  - Removed an unnecessary falsy guard; use non‑null assertion for the final block and compare kind directly.
+  - No rule disables introduced; tests continue to meet the same standard as source.

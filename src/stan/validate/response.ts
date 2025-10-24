@@ -244,8 +244,9 @@ export const validateResponseMessage = (text: string): ValidationResult => {
   if (commitBlocks.length === 0) {
     errors.push('Missing "## Commit Message" section');
   } else {
+    // commitBlocks.length > 0 implies blocks has at least one element; last is non-null
     const last = blocks[blocks.length - 1];
-    if (!last || last.kind !== 'commit') {
+    if (last.kind !== 'commit') {
       errors.push('Commit Message is not last');
     }
   }
