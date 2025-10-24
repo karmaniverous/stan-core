@@ -135,4 +135,9 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
 - Core — DRY makeStanDirs usage (remove local fallback)
   - Added a default export to src/stan/paths.ts so SSR can resolve makeStanDirs via either named or default export.
   - Removed the duplicated fallbackMakeStanDirs from src/stan/fs.ts; ensureStanWorkspace now resolves makeStanDirs with a dynamic import and falls back to the default export when needed.
-  - Preserves Vitest SSR robustness without code duplication; no functional changes at runtime.
+  - Preserves Vitest SSR robustness without code duplication; no functional changes at runtime.
+
+- Requirements — document SSR-friendly dynamic import pattern
+  - Added a durable note to .stan/system/stan.requirements.md describing the named-or-default dynamic import pattern to keep Vitest SSR stable.
+  - Includes a small example and guidance to prefer static imports unless dynamic resolution is required for test/SSR robustness.
+  - No runtime behavior change; documentation only.
