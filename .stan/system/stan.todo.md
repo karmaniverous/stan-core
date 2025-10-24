@@ -86,4 +86,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Scoped `typescript-eslint` presets to `src/**` so typed rules do not run on JSON files.
   - Kept a TS override with `parserOptions.project` for type-aware linting.
   - Imported `FlatConfig`/`Plugin` from `@eslint/core` and cast plugins accordingly.
-  - Added `types/momoa.d.ts` ambient module and removed the unused `@humanwhocodes/momoa` devDependency (silences knip and TS7016).
+  - Added `types/momoa.d.ts` ambient module and removed the unused `@humanwhocodes/momoa` devDependency (silences knip and TS7016).
+
+- Amendment: ESLint typing — drop @eslint/core types and relax lib checks
+  - Removed explicit `@eslint/core` type imports; the config is now untyped at the boundary to avoid cross‑package type drift.
+  - Kept tseslint presets scoped to TS files and the project‑aware override; rule set unchanged.
+  - Enabled `skipLibCheck` to avoid third‑party d.ts friction (e.g., eslint‑plugin‑jsonc generics) during typecheck/build/docs.

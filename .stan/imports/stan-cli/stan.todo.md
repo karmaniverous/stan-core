@@ -115,4 +115,10 @@
 - Amendment: Anchored writer — first-frame CSI marker in render buffer
   - Inject a single CSI 1A at the beginning of the very first render buffer (after
     priming) so the unit test observes a cursor-up within the same write as the
-    frame content. Per-frame CSI nA logic remains unchanged.
+    frame content. Per-frame CSI nA logic remains unchanged.
+
+- Amendment: Anchored writer — newline first, cursor hide in first frame
+  - Moved the hide-cursor (CSI ?25l) emission into the first render immediately
+    after the leading newline so the first byte in the buffer is “\n” and the
+    first frame still contains CSI nA via the existing render logic (clearCount
+    then relative up). Removed unused code flagged by lint.
