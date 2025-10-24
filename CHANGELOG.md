@@ -2,9 +2,29 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.3](https://github.com/karmaniverous/stan-core/compare/0.4.2...0.4.3)
+
+- chore(eslint): migrate to typed flat eslint.config.ts [`1765211`](https://github.com/karmaniverous/stan-core/commit/17652115d3de9883c0c2ed05d40d62e1a093aace)
+- refactor(lint): finish strict typed ESLint cleanup (no-unnecessary-condition) [`365845e`](https://github.com/karmaniverous/stan-core/commit/365845ef0f4cc25075af9354c6dc9edfad35ede2)
+- docs: record strict typed ESLint policy [`6eec305`](https://github.com/karmaniverous/stan-core/commit/6eec3052c144d822bede5543181465dbb20bea06)
+- chore(lint): integrate @vitest/eslint-plugin (recommended rules) [`378159b`](https://github.com/karmaniverous/stan-core/commit/378159bb6af4664c6b226297f675941f69a8ee14)
+- chore(eslint): fix typed flat config (ts-safe) and JSONC types; keep prior rule parity [`200338d`](https://github.com/karmaniverous/stan-core/commit/200338dec59ac466a7969810a7516d86e237a0fb)
+- refactor(lint): fix strict typed ESLint findings across code and tests [`0feae9e`](https://github.com/karmaniverous/stan-core/commit/0feae9ed0807d88c0ff207a8133c278072c0135a)
+- test(config): inline YAML write in config.load.extra.test to fix runtime import [`97e74f5`](https://github.com/karmaniverous/stan-core/commit/97e74f5988199a1600e1677f20cc628b7b444078)
+- refactor: DRY makeStanDirs usage; export default from paths [`45b493a`](https://github.com/karmaniverous/stan-core/commit/45b493a8ac4c550a0d0a0abc9e8a6a5d0146b445)
+- fix: SSR-safe makeStanDirs import fallback in fs.ts [`249dbbf`](https://github.com/karmaniverous/stan-core/commit/249dbbfe0f80b02d68a31890a75555c57e401cec)
+- chore(eslint): finalize typed flat config; scope TS rules; add momoa shim [`04f10b8`](https://github.com/karmaniverous/stan-core/commit/04f10b8342fe04dbd4d42f5fc82476afdc82b2d4)
+- docs: add SSR-friendly dynamic import pattern to requirements [`15c10e0`](https://github.com/karmaniverous/stan-core/commit/15c10e0451cd93fc321837bc2d7ac8459bb7dd13)
+- chore(eslint): remove @eslint/core type imports; scope presets; enable skipLibCheck [`c8a3b42`](https://github.com/karmaniverous/stan-core/commit/c8a3b42c58102c87d995d0e69967027d317836fa)
+- refactor(lint): finalize strict typed ESLint in validator [`7680c0d`](https://github.com/karmaniverous/stan-core/commit/7680c0de38d3ab38341d6c1c8d6f4074b8f68a96)
+- test: stabilize createArchiveDiff import under Vitest SSR [`12ce38e`](https://github.com/karmaniverous/stan-core/commit/12ce38e9bd4e161b7e8271711bc92d4710a1b4f3)
+
 #### [0.4.2](https://github.com/karmaniverous/stan-core/compare/0.4.1...0.4.2)
 
+> 18 October 2025
+
 - docs: add stanPath write‑time discipline to system prompt [`2aae47e`](https://github.com/karmaniverous/stan-core/commit/2aae47ed80eadaa3c1475f5a6bc078e94a76f5bc)
+- chore: release v0.4.2 [`adc1b30`](https://github.com/karmaniverous/stan-core/commit/adc1b309755800b8ee3b5ce3147854a4c078b34b)
 - docs: enforce dev plan “Completed” append-only with pre-send validation [`f56c4a4`](https://github.com/karmaniverous/stan-core/commit/f56c4a43588228d9d858d1f4394d7f757cf619fe)
 
 #### [0.4.1](https://github.com/karmaniverous/stan-core/compare/0.4.0...0.4.1)
