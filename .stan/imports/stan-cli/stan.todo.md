@@ -2,6 +2,12 @@
 
 ## Next up (priority order)
 
+- Facets — enabled facets win on overlap
+  - Implement precedence so enabled facets take priority over disabled facets when
+    their scopes overlap (e.g., enabling “tests” exposes all tests even if “live‑ui”
+    is disabled). Adjust overlay computation and add unit/integration tests to cover
+    the scenario. Schedule this after the run live UI tests are green.
+
 - Phase‑3: remove legacy acceptance (drop STAN_ACCEPT_LEGACY gate; require namespaced config).
 - Docs: expand troubleshooting for system prompt resolution and PATH augmentation.
 - Snap UX: improve “snap info” formatting (clearer current index; optional time‑ago).

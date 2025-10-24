@@ -3,6 +3,7 @@
 This document augments the system prompt with repo‑specific guidance for developing stan-core (engine) and stan-cli (CLI/runner) together using a published STAN baseline. It contains only instructions to the assistant. It is not a repository for project requirements or the dev plan.
 
 The goals:
+
 - Keep engine/CLI responsibilities clean: the CLI acquires/presents; the core decides/processes.
 - Make multi‑repo context predictable and safe when archives ingest imports from other STAN instances.
 - Provide a lightweight, deterministic interop channel for cross‑repo coordination (multi‑file, aggressively pruned).
@@ -129,4 +130,11 @@ export const userSettingsSchema = z.object({
 });
 export type UserSettings = z.infer<typeof userSettingsSchema>;
 ```
+
 ---
+
+## Linting policy (project-level)
+
+- Enforce strict, type‑aware ESLint rules across all TypeScript files, including tests.
+- Do not disable any linting rule without prior discussion and agreement.
+- Prettier remains the sole source of truth for formatting; ESLint defers to Prettier for style.

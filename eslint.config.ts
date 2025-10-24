@@ -31,7 +31,7 @@ const config = [
   eslint.configs.recommended,
 
   // TypeScript presets (scoped to TS files only)
-  ...tseslint.configs.recommendedTypeChecked.map((c) => ({
+  ...tseslint.configs.strictTypeChecked.map((c) => ({
     // Scope each preset to our TS globs; avoid applying typed rules to JSON/etc.
     ...(c as Record<string, unknown>),
     files: TS_FILES,
@@ -63,9 +63,6 @@ const config = [
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       // TSDoc hygiene (quiet)
       'tsdoc/syntax': ['warn'],
-      // Keep prior behavior; do not introduce stricter rules
-      '@typescript-eslint/no-unnecessary-condition': ['off'],
-      '@typescript-eslint/restrict-template-expressions': ['off'],
     },
   },
 
@@ -78,13 +75,6 @@ const config = [
     plugins: { vitest },
     languageOptions: {
       globals: vitest.environments.env.globals,
-    },
-    rules: {
-      '@typescript-eslint/no-unused-vars': ['off'],
-      '@typescript-eslint/no-unsafe-assignment': ['off'],
-      '@typescript-eslint/no-unsafe-return': ['off'],
-      // Tests/mocks often wrap async without awaits.
-      '@typescript-eslint/require-await': ['off'],
     },
   },
 

@@ -1,21 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "baseUrl": ".",
+    "incremental": true,
+    "isolatedModules": true,
     "lib": ["ES2022"],
-    "noEmit": true,
-    "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    "strict": true,
-    "isolatedModules": true,
-    "incremental": true,
-    "tsBuildInfoFile": "./.tsbuildinfo",
-    "types": ["node", "vitest/globals"],
-    "baseUrl": ".",
+    "noEmit": true,
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
   },
   "exclude": ["coverage", "dist", "docs", "node_modules"],
   "include": ["**/*"]

@@ -78,7 +78,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Amendment: ESLint TS config typing and rule parity
   - Switched to `typescript-eslint` recommendedTypeChecked (avoid stricter rules).
-  - Added a dedicated src/** override with `parser` and `project` for type-aware linting.
+  - Added a dedicated src/\*\* override with `parser` and `project` for type-aware linting.
   - Cast ecosystem plugin/config types as needed; added `@humanwhocodes/momoa` for JSONC types.
   - Kept Prettier + simple-import-sort + tsdoc; disabled stricter rules to match prior behavior.
 
@@ -91,4 +91,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Amendment: ESLint typing — drop @eslint/core types and relax lib checks
   - Removed explicit `@eslint/core` type imports; the config is now untyped at the boundary to avoid cross‑package type drift.
   - Kept tseslint presets scoped to TS files and the project‑aware override; rule set unchanged.
-  - Enabled `skipLibCheck` to avoid third‑party d.ts friction (e.g., eslint‑plugin‑jsonc generics) during typecheck/build/docs.
+  - Enabled `skipLibCheck` to avoid third‑party d.ts friction (e.g., eslint‑plugin‑jsonc generics) during typecheck/build/docs.
+
+- Lint — enforce strict typed ESLint across all TS (including tests)
+  - Adopted typescript-eslint strictTypeChecked presets for TS files.
+  - Removed test‑only rule relaxations; tests now meet the same standard as other code.
+  - Recorded “never disable a lint rule without prior discussion” in the project prompt.
