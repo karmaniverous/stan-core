@@ -2,7 +2,7 @@
 
 # @karmaniverous/stan-core (engine)
 
-[![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](./LICENSE) [Changelog](./CHANGELOG.md)
+[![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) <!-- TYPEDOC_EXCLUDE --> [![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/stan-core) [![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/CHANGELOG.md)<!-- /TYPEDOC_EXCLUDE --> [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/LICENSE.md)
 
 This package exposes the STAN engine as a library:
 
@@ -180,8 +180,7 @@ See ENVIRONMENT.md for a complete list of environment variable switches observed
 
 ## Migration (legacy configs)
 
-This engine expects a top‑level, namespaced `stan-core` block in `stan.config.yml|json`.
-If your repository still uses legacy, flat keys at the root, migrate with the CLI:
+This engine expects a top‑level, namespaced `stan-core` block in `stan.config.yml|json`. If your repository still uses legacy, flat keys at the root, migrate with the CLI:
 
 ```bash
 stan init  # offers to refactor legacy → namespaced; supports --dry-run and backups
