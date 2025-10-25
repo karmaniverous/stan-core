@@ -27,7 +27,7 @@ describe('config discovery and fallback stanPath', () => {
   it('finds nearest stan.config.yml when ascending package roots', async () => {
     // Write a config at repo root (content shape unimportant for discovery)
     const yml = ['stan-core:', '  stanPath: stan', ''].join('\n');
-    await write(path.join(dir, 'stan.config.yml'), yml);
+    await writeFile(path.join(dir, 'stan.config.yml'), yml, 'utf8');
     // Ensure a package.json so packageDirectorySync can identify the repo root
     await writeFile(
       path.join(dir, 'package.json'),

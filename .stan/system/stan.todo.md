@@ -157,4 +157,9 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
   - Replaced the helper import with a local YAML write in
     src/stan/config.discover.test.ts to avoid an intermittent SSR import
     ambiguity under Vitest. Test intent and behavior unchanged; resolves the
-    single failing test.
+    single failing test.
+
+- Amendment: config discovery test — use writeFile directly
+  - Replaced the undefined helper call with a direct writeFile in
+    src/stan/config.discover.test.ts to fix TS2304 and lint errors.
+  - No change in test intent; stabilizes typecheck/lint/build.
