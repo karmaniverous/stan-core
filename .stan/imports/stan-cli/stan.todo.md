@@ -152,6 +152,51 @@
   - Updated src/runner/snap/git.ts to resolve child_process.spawn by preferring the named export and falling back to default.spawn. This tolerates different module shapes under Vitest and fixes “spawn is not a function” in the stash- failure test without changing runtime behavior.
 
 - Snap — type fix for spawn options (TS2322)
-  - Adjusted the spawn resolver signature in src/runner/snap/git.ts to use
-    SpawnOptions (and return ChildProcess) so providing a stdio array is
-    type-correct. No runtime behavior change; preserves test stability.
+  - Adjusted the spawn resolver signature in src/runner/snap/git.ts to use SpawnOptions (and return ChildProcess) so providing a stdio array is type-correct. No runtime behavior change; preserves test stability.
+
+- Lint/test hygiene — incremental fixes (no behavior change)
+  - Wrapped numeric interpolations in template strings with String(...) to satisfy @typescript-eslint/restrict-template-expressions in:
+    - src/anchored-writer/index.ts
+    - src/runner/run/logs.ts
+    - src/runner/util/time.ts
+  - Replaced unnecessary Boolean() conversions with explicit equality checks:
+    - src/cli/cli-utils.ts (rootDefaults)
+    - src/cli/snap.ts (pass plain boolean to handleSnap)
+  - Fixed require-await in test mocks by returning Promise.resolve (no async without await):
+    - src/cli/patch.fileops-only.test.ts
+    - src/cli/snap.stash.success.test.ts
+  - Removed non-null assertion in patch help test and an unused import in root env defaults test.
+  - Goal: reduce lint errors without touching runtime semantics; further passes will address remaining no-unnecessary-condition and unused items.
+
+- Run defaults — honor cliDefaults booleans (no fallback to baseline)
+  - Fixed boolean merge in deriveRunParameters: config values (false/true) are now respected when CLI flags are not provided. Removed the incorrect "|| baseline" fallback that forced archive/live to true.
+
+- CLI config load — SSR‑safe fallback in parseCliNode
+  - Added a guarded path when the zod parser is transiently unavailable under SSR/test module evaluation. Falls back to a minimal, tolerant coercion for scripts/cliDefaults/patchOpenCommand. Keeps strict zod validation when the parser is present.
+
+- Lint — replace dynamic delete with Reflect.deleteProperty
+  - Updated migrate.ts to use Reflect.deleteProperty for dynamic keys and avoid @typescript-eslint/no-dynamic-delete violations.
+
+- Tests — avoid misused spread in node:module mock
+  - Rewrote the test mock to use Object.assign instead of spreading a module namespace that includes class declarations.
+
+- Lint — finalize config loader cleanup and attachNode delete
+  - src/cli/config/load.ts:
+    - Removed unused ZodError import and the unused formatZodError helper.
+    - Simplified parser resolution to eliminate unnecessary conditionals flagged by no-unnecessary-condition; renamed unused parameter to \_cfgPath.
+  - src/runner/init/service/migrate.ts:
+    - Replaced dynamic delete in attachNode with Reflect.deleteProperty to satisfy no-dynamic-delete for computed keys.
+  - No behavior changes; resolves remaining lint errors.
+
+- Tests — localize createRequire stubbing (no global module mock)
+  - Replaced full module mock of 'node:module' in src/runner/prompt/resolve.test.ts with a spy on createRequire that returns a scoped fake resolver. Restored after the test. This prevents cross-suite leakage that broke Live UI construction (LiveSink not a constructor) and archive-stage import resolution under Vitest SSR.
+  - Restores green on live cancellation matrix and alignment suites.
+
+- Facets — narrow view for current stan-cli work
+  - Keep “tests” and “live-ui” facets active (visible); deactivate “ci”, “vscode”, “docs”, “patch”, “snap”, and “init” (anchors kept for breadcrumbs). Overlay default remains enabled; per-run flags still override.
+
+- Archives — keep facet.state.json even if gitignored
+  - The archive phase now always anchors `<stanPath>/system/facet.state.json` so it is included in full archives and appears in the diff when changed, regardless of .gitignore.
+
+- Interop — report creation‑fallback path bug to stan-core
+  - Added an interop note describing a bug where new‑file creation under “.stan/…” can materialize under “stan/…”. Proposed a fix: treat “.stan/…” as a normal relative path in the creation fallback and add unit tests to cover both “.stan/…” and “stan/…”.
