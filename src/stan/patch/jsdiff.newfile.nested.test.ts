@@ -4,8 +4,6 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { applyWithJsDiff } from './jsdiff';
-
 describe('applyWithJsDiff — creates nested new files (ensures parent dirs)', () => {
   let dir: string;
 
@@ -34,6 +32,8 @@ describe('applyWithJsDiff — creates nested new files (ensures parent dirs)', (
       '',
     ].join('\n');
 
+    // Dynamic import avoids cross‑suite mock leakage under SSR.
+    const { applyWithJsDiff } = await import('./jsdiff');
     const out = await applyWithJsDiff({
       cwd: dir,
       cleaned: diff,

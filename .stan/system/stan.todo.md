@@ -162,4 +162,10 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
 - Amendment: config discovery test — use writeFile directly
   - Replaced the undefined helper call with a direct writeFile in
     src/stan/config.discover.test.ts to fix TS2304 and lint errors.
-  - No change in test intent; stabilizes typecheck/lint/build.
+  - No change in test intent; stabilizes typecheck/lint/build.
+
+- Tests — stabilize SSR-sensitive imports in two suites
+  - src/stan/archive.classifier.behavior.test.ts: dynamically import the tar
+    mock helper inside beforeEach and reset captured calls there.
+  - src/stan/patch/jsdiff.newfile.nested.test.ts: dynamically import
+    applyWithJsDiff inside the test body to avoid cross‑suite mock effects.

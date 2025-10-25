@@ -4,15 +4,23 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { withMockTarCapture } from '../test/helpers';
 import { createArchive } from './archive';
-const { calls } = withMockTarCapture('TAR');
+let calls: Array<{
+  file: string;
+  cwd?: string;
+  filter?: (p: string, s: unknown) => boolean;
+  files: string[];
+}>;
 
 describe('createArchive integrates classifier (excludes binaries, surfaces warnings via callback)', () => {
   let dir: string;
 
   beforeEach(async () => {
     dir = await mkdtemp(path.join(os.tmpdir(), 'stan-arch-class-'));
+    // Initialize tar mock capture for this suite; reset calls each run.
+    const { withMockTarCapture } = await import('../test/helpers');
+    const state = withMockTarCapture('TAR');
+    calls = state.calls;
     calls.length = 0;
   });
 
