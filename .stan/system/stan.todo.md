@@ -143,6 +143,12 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
   - No runtime behavior change; documentation only.
 
 - Lint — integrate @vitest/eslint-plugin for tests
-  - Move @vitest/eslint-plugin to devDependencies and enable vitest.configs.recommended in eslint.config.ts for *.test.ts(x).
+  - Move @vitest/eslint-plugin to devDependencies and enable vitest.configs.recommended in eslint.config.ts for \*.test.ts(x).
   - Keeps strict, type-aware linting and adds focused test rules without changing runtime behavior.
-  - No code changes beyond lint configuration.
+  - No code changes beyond lint configuration.
+
+- Patch engine — preserve leading dot in “.stan/…” creation paths
+  - Fixed path normalization in jsdiff fallback and last‑resort creation fallback to strip only a literal “./” and preserve “.stan/...”.
+  - Added focused tests:
+    - src/stan/patch/jsdiff.newfile.dotstan.test.ts
+    - src/stan/patch/run/pipeline.creation.dotstan.test.ts

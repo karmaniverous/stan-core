@@ -82,7 +82,7 @@ export const applyWithJsDiff = async (args: {
       });
       continue;
     }
-    const rel = candidate.replace(/^[./]+/, '');
+    const rel = candidate.replace(/^\.\//, '').replace(/\\/g, '/');
     const abs = path.resolve(cwd, rel);
 
     const isMd = /\.md$/i.test(rel);
