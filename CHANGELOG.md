@@ -2,11 +2,24 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.4](https://github.com/karmaniverous/stan-core/compare/0.4.3...0.4.4)
+
+- updated docs [`9a63a45`](https://github.com/karmaniverous/stan-core/commit/9a63a4536ef3788598af11dbe0b0ef9bb262d3be)
+- interop & todo cleanup [`fd8ee44`](https://github.com/karmaniverous/stan-core/commit/fd8ee44e929b8e77e25180b789901cf6d9cea84a)
+- fix: preserve .stan path on creation fallback [`53a7a4e`](https://github.com/karmaniverous/stan-core/commit/53a7a4eb991a6d4fa2d2fde418257d652fb62f6c)
+- interop [`f7ce416`](https://github.com/karmaniverous/stan-core/commit/f7ce416fa1ffae69fd74de011b33e87f1ed78bcf)
+- test: stabilize SSR-sensitive test imports (tar capture, jsdiff) [`448f84c`](https://github.com/karmaniverous/stan-core/commit/448f84c1ac489028a5336da5547288f08eaf198d)
+- test: stabilize config discovery test import under Vitest SSR [`6e552fc`](https://github.com/karmaniverous/stan-core/commit/6e552fce9484bdd7fb9ac557a5a37580f892e6de)
+- test: fix config discovery test write helper usage [`9b26199`](https://github.com/karmaniverous/stan-core/commit/9b26199f6c34fd2d6661d5e55b610ba52c119a43)
+
 #### [0.4.3](https://github.com/karmaniverous/stan-core/compare/0.4.2...0.4.3)
+
+> 24 October 2025
 
 - chore(eslint): migrate to typed flat eslint.config.ts [`1765211`](https://github.com/karmaniverous/stan-core/commit/17652115d3de9883c0c2ed05d40d62e1a093aace)
 - refactor(lint): finish strict typed ESLint cleanup (no-unnecessary-condition) [`365845e`](https://github.com/karmaniverous/stan-core/commit/365845ef0f4cc25075af9354c6dc9edfad35ede2)
 - docs: record strict typed ESLint policy [`6eec305`](https://github.com/karmaniverous/stan-core/commit/6eec3052c144d822bede5543181465dbb20bea06)
+- chore: release v0.4.3 [`435b4d8`](https://github.com/karmaniverous/stan-core/commit/435b4d8a1945aec2b556a076715067b3fa414e2a)
 - chore(lint): integrate @vitest/eslint-plugin (recommended rules) [`378159b`](https://github.com/karmaniverous/stan-core/commit/378159bb6af4664c6b226297f675941f69a8ee14)
 - chore(eslint): fix typed flat config (ts-safe) and JSONC types; keep prior rule parity [`200338d`](https://github.com/karmaniverous/stan-core/commit/200338dec59ac466a7969810a7516d86e237a0fb)
 - refactor(lint): fix strict typed ESLint findings across code and tests [`0feae9e`](https://github.com/karmaniverous/stan-core/commit/0feae9ed0807d88c0ff207a8133c278072c0135a)
