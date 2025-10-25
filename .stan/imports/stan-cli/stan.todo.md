@@ -200,3 +200,7 @@
 
 - Interop — report creation‑fallback path bug to stan-core
   - Added an interop note describing a bug where new‑file creation under “.stan/…” can materialize under “stan/…”. Proposed a fix: treat “.stan/…” as a normal relative path in the creation fallback and add unit tests to cover both “.stan/…” and “stan/…”.
+
+- Tests — fix resolveCorePromptPath fallback under ESM
+  - Replaced ESM spy on node:module.createRequire with a localized vi.doMock for the dynamic import in src/runner/prompt/resolve.test.ts.
+  - Avoids “Cannot spy on export … Module namespace is not configurable” and keeps the mock scoped to the test (unmock/reset after import).

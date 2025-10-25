@@ -152,3 +152,9 @@ When: 2025-10-24 Why: Resolve the final @typescript-eslint/no-unnecessary-condit
   - Added focused tests:
     - src/stan/patch/jsdiff.newfile.dotstan.test.ts
     - src/stan/patch/run/pipeline.creation.dotstan.test.ts
+
+- Tests — fix helper import ambiguity in config discovery test
+  - Replaced the helper import with a local YAML write in
+    src/stan/config.discover.test.ts to avoid an intermittent SSR import
+    ambiguity under Vitest. Test intent and behavior unchanged; resolves the
+    single failing test.

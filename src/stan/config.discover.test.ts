@@ -6,8 +6,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { findConfigPathSync, resolveStanPathSync } from '@/stan/config';
 
-import { writeStanConfigYaml } from '../test/helpers';
-
 describe('config discovery and fallback stanPath', () => {
   let dir: string;
 
@@ -28,7 +26,8 @@ describe('config discovery and fallback stanPath', () => {
 
   it('finds nearest stan.config.yml when ascending package roots', async () => {
     // Write a config at repo root (content shape unimportant for discovery)
-    await writeStanConfigYaml(dir, { stanPath: 'stan' });
+    const yml = ['stan-core:', '  stanPath: stan', ''].join('\n');
+    await write(path.join(dir, 'stan.config.yml'), yml);
     // Ensure a package.json so packageDirectorySync can identify the repo root
     await writeFile(
       path.join(dir, 'package.json'),
