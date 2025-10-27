@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.5](https://github.com/karmaniverous/stan-core/compare/0.4.4...0.4.5)
+
+- fix: stabilize SSR classifier import and use static eslint-config-prettier [`2a0afb3`](https://github.com/karmaniverous/stan-core/commit/2a0afb32c5db2e0455f5170396228787d5f2d82f)
+
 #### [0.4.4](https://github.com/karmaniverous/stan-core/compare/0.4.3...0.4.4)
 
+> 25 October 2025
+
+- chore: release v0.4.4 [`1bd34c3`](https://github.com/karmaniverous/stan-core/commit/1bd34c3facd582d9be11bcd24b967650a57bc719)
 - updated docs [`9a63a45`](https://github.com/karmaniverous/stan-core/commit/9a63a4536ef3788598af11dbe0b0ef9bb262d3be)
 - interop & todo cleanup [`fd8ee44`](https://github.com/karmaniverous/stan-core/commit/fd8ee44e929b8e77e25180b789901cf6d9cea84a)
 - fix: preserve .stan path on creation fallback [`53a7a4e`](https://github.com/karmaniverous/stan-core/commit/53a7a4eb991a6d4fa2d2fde418257d652fb62f6c)
