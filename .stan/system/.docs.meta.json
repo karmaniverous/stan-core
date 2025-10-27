@@ -1,15 +1,16 @@
 {
-  "version": "0.10.0",
-  "prompt": {
-    "source": "local",
-    "hash": "35ef1e68e0cedab3bf363dc17eb0cf948ebca5a5de443db888b9ffdc11c28356"
-  },
+  "version": "0.11.1",
   "overlay": {
     "enabled": false,
     "activated": [],
     "deactivated": [],
     "effective": {},
     "autosuspended": [],
-    "anchorsKept": {}
+    "anchorsKept": {},
+    "overlapKept": {}
+  },
+  "prompt": {
+    "source": "local",
+    "hash": "35ef1e68e0cedab3bf363dc17eb0cf948ebca5a5de443db888b9ffdc11c28356"
   }
 }

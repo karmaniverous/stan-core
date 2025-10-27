@@ -15,7 +15,6 @@ import {
   makeTarFilter,
   surfaceArchiveWarnings,
 } from './archive/util';
-import { classifyForArchive } from './classifier';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 type TarLike = {
   create: (
@@ -49,6 +48,27 @@ const snapshotPathFor = (diffDir: string): string =>
 const sentinelPathFor = (diffDir: string): string =>
   join(diffDir, '.stan_no_changes');
 
+/**
+ * SSR‑safe resolver for classifyForArchive (named‑or‑default).
+ * Prefer the named export; fall back to default.classifyForArchive.
+ */
+const getClassifyForArchive = async (): Promise<
+  (typeof import('./classifier'))['classifyForArchive']
+> => {
+  try {
+    const mod = await import('./classifier');
+    const named = (mod as { classifyForArchive?: unknown }).classifyForArchive;
+    const viaDefault = (mod as { default?: { classifyForArchive?: unknown } })
+      .default?.classifyForArchive;
+    const fn = (typeof named === 'function' ? named : viaDefault) as
+      | (typeof import('./classifier'))['classifyForArchive']
+      | undefined;
+    if (typeof fn === 'function') return fn;
+  } catch {
+    /* ignore */
+  }
+  throw new Error('classifyForArchive export not found in ./classifier');
+};
 /**
  * Compute (and optionally update) the snapshot file in <stanPath>/diff/.
  * Returns the absolute snapshot path.
@@ -184,6 +204,7 @@ export const createArchiveDiff = async ({
   // Classify like the regular archive:
   // - exclude binaries
   // - flag large text (not excluded)
+  const classifyForArchive = await getClassifyForArchive();
   const { textFiles, warningsBody } = await classifyForArchive(cwd, changedRaw);
   const changed = textFiles;
 

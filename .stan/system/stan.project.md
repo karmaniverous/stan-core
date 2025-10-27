@@ -138,3 +138,21 @@ export type UserSettings = z.infer<typeof userSettingsSchema>;
 - Enforce strict, type‑aware ESLint rules across all TypeScript files, including tests.
 - Do not disable any linting rule without prior discussion and agreement.
 - Prettier remains the sole source of truth for formatting; ESLint defers to Prettier for style.
+
+## SSR/ESM test‑stability (engine patterns)
+
+Under Vitest SSR, import‑time evaluation order can differ from Node runtime. To keep tests deterministic without changing runtime behavior:
+
+- Hoist fragile exports
+  - Prefer exported function declarations over `export const fn = (...) => ...` for helpers that other modules resolve dynamically.
+- Resolve at call‑time where appropriate
+  - Use `await import(...)` inside the action that needs the helper to avoid module‑eval races in tests.
+  - Pick functions via a “named‑or‑default” resolver:
+    - prefer `mod.named`, fall back to `mod.default.named`, and finally to `mod.default` when it is a callable function.
+- Keep test‑only optionals defensive
+  - Optional helpers should be behind `?.` in test paths to avoid throwing under SSR.
+- Engine purity (no console I/O)
+  - Surface warnings/notes via return values or optional callbacks (e.g., archive classifier warnings), not console output.
+- Examples in this repo
+  - Classifier resolution in archiving/diff paths uses a named‑or‑default, action‑time dynamic import to avoid SSR hazards.
+  - Heavy, environment‑specific dependencies (e.g., `tar`) are resolved at call‑time.

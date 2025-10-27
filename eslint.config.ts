@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+import prettierConfig from 'eslint-config-prettier';
 import tsdoc from 'eslint-plugin-tsdoc';
 import vitest from '@vitest/eslint-plugin';
 import jsonc from 'eslint-plugin-jsonc';
@@ -67,7 +68,7 @@ const config = [
   },
 
   // Disable stylistic conflicts with Prettier
-  (await import('eslint-config-prettier')).default,
+  prettierConfig,
 
   // Tests
   {
