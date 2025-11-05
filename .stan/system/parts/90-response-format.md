@@ -101,7 +101,6 @@ Before sending a reply, verify all of the following:
    - There is exactly one Patch block per changed file.
    - Each Patch block MUST contain exactly one `diff --git a/<path> b/<path>` header.
    - No Patch block contains more than one `diff --git a/<path> b/<path>`.
-   - Forbidden wrappers are not present: `*** Begin Patch`, `*** Add File:`, `Index:` (or similar non‑unified preludes).
    - For new files, headers MUST be `--- /dev/null` and `+++ b/<path>`.
    - For deleted files, headers MUST be `--- a/<path>` and `+++ /dev/null`.
    - Never mix a Patch and a Full Listing for the same file in the same turn.
@@ -134,11 +133,10 @@ Before sending a reply, verify all of the following:
 
 Follow the canonical rules in “Patch Policy” (see earlier section). The Response Format adds presentation requirements only (fencing, section ordering, per‑file one‑patch rule). Do not duplicate prose inside patch fences; emit plain unified diff payloads.
 
-Optional Full Listings — Normal replies only: when explicitly requested by the user in a non‑diagnostics turn, include Full Listings for the relevant files; otherwise omit listings by default.
-Diagnostics replies (after patch‑failure envelopes) MUST provide Full, post‑patch listings as described above (no patches, union across envelopes, no commit message).
-Skip listings for deletions.
+Optional Full Listings — Normal replies only: when explicitly requested by the user in a non‑diagnostics turn, include Full Listings for the relevant files; otherwise omit listings by default. Diagnostics replies (after patch‑failure envelopes) MUST provide Full, post‑patch listings as described above (no patches, union across envelopes, no commit message). Skip listings for deletions.
 
 Dev plan Completed enforcement (pre‑send)
+
 - If `<stanPath>/system/stan.todo.md` is patched in this turn, enforce late‑append semantics for the “Completed” section:
   - “Completed” MUST remain the final major section of the document.
   - Only append new lines at the end of “Completed”. Do NOT modify existing lines above the final append point (no edits, no insertions, no re‑ordering).
@@ -149,6 +147,7 @@ Dev plan Completed enforcement (pre‑send)
 ## File Ops (optional pre‑ops; structural changes)
 
 Use “### File Ops” to declare safe, repo‑relative file and directory operations that run before content patches. File Ops are for structure (moves/renames, creates, deletes), while unified‑diff Patches are for editing file contents.
+
 - Verbs:
   - mv <src> <dest> # move/rename a file or directory (recursive), no overwrite
   - cp <src> <dest> # copy a file or directory (recursive), no overwrite; creates parents for <dest>

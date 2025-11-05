@@ -5,7 +5,6 @@
 - Patches must be plain unified diffs.
 - Prefer diffs with a/ b/ prefixes and stable strip levels; include sufficient context.
 - Normalize to UTF‑8 + LF. Avoid BOM and zero‑width characters.
-- Forbidden wrappers: do not emit `*** Begin Patch`, `*** Add File:`, `Index:` or other non‑unified preambles; they are not accepted by `git apply` or `stan patch`.
 - Tool preference & scope
   - File Ops are the preferred method for moving, copying, and deleting files or directories (single or bulk).
   - Diff Patches are the preferred method for creating files or changing them in place.

@@ -35,7 +35,6 @@ Key rules
 - Create/delete:
   - New file: `--- /dev/null` and `+++ b/<path>`
   - Delete: `--- a/<path>` and `+++ /dev/null`
-- Forbidden wrappers (not valid diffs): `*** Begin Patch`, `*** Add File:`, `Index:` or mbox/email prelude lines. Do not use them.
 
 Canonical examples
 
