@@ -18,7 +18,7 @@ import type { StanDirs } from './paths';
  * relative paths (`/` separators, no leading `./`). *
  * @param root - Absolute directory to walk.
  */
-export const listFiles = async (root: string): Promise<string[]> => {
+export async function listFiles(root: string): Promise<string[]> {
   const out: string[] = [];
   const stack: string[] = ['.'];
   while (stack.length) {
@@ -32,7 +32,7 @@ export const listFiles = async (root: string): Promise<string[]> => {
     }
   }
   return out;
-};
+}
 
 /** Build an "ignore" instance from .gitignore (full pattern semantics). */
 const buildIgnoreFromGitignore = async (
@@ -140,7 +140,7 @@ export type FilterOptions = {
  * @param options - See {@link FilterOptions}.
  * @returns Filtered list to include in archives/snapshots.
  */
-export const filterFiles = async (
+export async function filterFiles(
   files: string[],
   {
     cwd,
@@ -150,7 +150,7 @@ export const filterFiles = async (
     excludes = [],
     anchors = [],
   }: FilterOptions,
-): Promise<string[]> => {
+): Promise<string[]> {
   const stanRel = stanPath.replace(/\\/g, '/');
   // Default sub‑package exclusion: any directory that contains its own package.json
   const subpkgDirs = detectSubpackageDirs(files, stanRel);
@@ -234,7 +234,7 @@ export const filterFiles = async (
   }
 
   return base;
-};
+}
 /**
  * Resolve makeStanDirs from ./paths using a dynamic import.
  * Vitest SSR can occasionally surface a transient undefined named export;
@@ -262,7 +262,7 @@ const getMakeStanDirs = async (): Promise<
  * Ensure `<stanPath>` workspace exists (root/output/diff/patch).
  * Returns the resolved directory set.
  */
-export const ensureStanWorkspace = async (
+export async function ensureStanWorkspace(
   cwd: string,
   stanPath: string,
 ): Promise<{
@@ -270,7 +270,7 @@ export const ensureStanWorkspace = async (
   outputAbs: string;
   diffAbs: string;
   patchAbs: string;
-}> => {
+}> {
   const mk = await getMakeStanDirs();
   const dirs = mk(cwd, stanPath);
   await ensureDir(dirs.rootAbs);
@@ -284,13 +284,13 @@ export const ensureStanWorkspace = async (
     diffAbs: dirs.diffAbs,
     patchAbs: dirs.patchAbs,
   };
-};
+}
 
 /** Back-compat: ensureOutAndDiff returns just output/diff absolute paths. */
-export const ensureOutAndDiff = async (
+export async function ensureOutAndDiff(
   cwd: string,
   stanPath: string,
-): Promise<{ outDir: string; diffDir: string }> => {
+): Promise<{ outDir: string; diffDir: string }> {
   const w = await ensureStanWorkspace(cwd, stanPath);
   return { outDir: w.outputAbs, diffDir: w.diffAbs };
-};
+}

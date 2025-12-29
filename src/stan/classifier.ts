@@ -55,10 +55,10 @@ export type ArchiveClassification = {
 };
 
 /** Classify files for archiving and build warnings body. */
-export const classifyForArchive = async (
+export async function classifyForArchive(
   cwd: string,
   relFiles: string[],
-): Promise<ArchiveClassification> => {
+): Promise<ArchiveClassification> {
   const textFiles: string[] = [];
   const excludedBinaries: Array<{ path: string; size: number }> = [];
   const largeText: Array<{ path: string; size: number; loc?: number }> = [];
@@ -140,4 +140,4 @@ export const classifyForArchive = async (
   const warningsBody = lines.join('\n') + (lines.length ? '\n' : '');
 
   return { textFiles, excludedBinaries, largeText, warningsBody };
-};
+}

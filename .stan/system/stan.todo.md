@@ -52,4 +52,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - makeStanDirs (paths)
     - createArchive (archive)
     - writeArchiveSnapshot/createArchiveDiff (diff)
-  - Goal: eliminate Vitest SSR “is not a function” export binding failures.
+  - Goal: eliminate Vitest SSR “is not a function” export binding failures.
+
+- Tests: hoist remaining high-fanout exports
+  - Hoisted classifyForArchive (classifier) to stop SSR “export not found”
+    failures in archive tests.
+  - Hoisted fs exports (listFiles/filterFiles/ensure*) to stop SSR “is not a
+    function” failures in fs-related tests and reduce follow-on flake risk.
