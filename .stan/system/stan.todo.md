@@ -40,4 +40,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: add “STAN assistant guide” upkeep policy
   - Added a system-prompt policy requiring a self-contained assistant guide doc
     (default `guides/stan-assistant-guide.md`, unless project prompt specifies a
-    different stable path) and keeping it updated alongside API/semantic changes.
+    different stable path) and keeping it updated alongside API/semantic changes.
+
+- Docs: create initial STAN assistant guide
+  - Added `guides/stan-assistant-guide.md` describing how to configure and use
+    the stan-core engine APIs (config, selection, archive/diff/snapshot,
+    imports staging, patch pipeline, and response validation).
