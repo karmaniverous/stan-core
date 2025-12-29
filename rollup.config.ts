@@ -37,8 +37,11 @@ const externalPkgs = new Set<string>([
   'clipboardy', // requires platform fallback binaries at runtime; bundling breaks resolution
   // fs-extra is a runtime dependency; keep external to avoid bundling its internals.
   'fs-extra',
-]);const copyDocsPlugin = (dest: string): Plugin => {
-  return {    name: 'stan-copy-docs',
+]);
+
+const copyDocsPlugin = (dest: string): Plugin => {
+  return {
+    name: 'stan-copy-docs',
     async writeBundle() {
       const fromSystem = path.resolve(__dirname, '.stan', 'system');
       const candidates = [
@@ -47,7 +50,8 @@ const externalPkgs = new Set<string>([
           dest: path.join(dest, 'stan.system.md'),
         },
       ];
-      try {        await fs.ensureDir(dest);
+      try {
+        await fs.ensureDir(dest);
         for (const c of candidates) {
           if (await fs.pathExists(c.src)) await fs.copyFile(c.src, c.dest);
         }
@@ -57,6 +61,7 @@ const externalPkgs = new Set<string>([
     },
   };
 };
+
 const makePlugins = (minify: boolean, extras: Plugin[] = []): Plugin[] => {
   const base: Plugin[] = [
     alias,
@@ -107,7 +112,4 @@ export const buildTypes = (dest: string): RollupOptions => ({
   plugins: [alias, dtsPlugin()],
 });
 
-export default [
-  buildLibrary(outputPath),
-  buildTypes(outputPath),
-];
+export default [buildLibrary(outputPath), buildTypes(outputPath)];

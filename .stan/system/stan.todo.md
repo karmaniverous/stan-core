@@ -36,3 +36,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Tests — stabilize SSR-sensitive imports in two suites
   - src/stan/archive.classifier.behavior.test.ts: dynamically import the tar mock helper inside beforeEach and reset captured calls there.
   - src/stan/patch/jsdiff.newfile.nested.test.ts: dynamically import applyWithJsDiff inside the test body to avoid cross‑suite mock effects.
+
+- Docs: add “STAN assistant guide” upkeep policy
+  - Added a system-prompt policy requiring a self-contained assistant guide doc
+    (default `guides/stan-assistant-guide.md`, unless project prompt specifies a
+    different stable path) and keeping it updated alongside API/semantic changes.

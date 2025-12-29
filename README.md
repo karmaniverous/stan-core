@@ -176,7 +176,7 @@ APIs that accept anchors:
 
 ## Environment variables
 
-See ENVIRONMENT.md for a complete list of environment variable switches observed by the engine, tests, and release scripts.
+See [Env Vars](./guides/env-vars.md) for a complete list of environment variable switches observed by the engine, tests, and release scripts.
 
 ## Migration (legacy configs)
 
