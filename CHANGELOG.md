@@ -2,8 +2,18 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.4.7](https://github.com/karmaniverous/stan-core/compare/0.4.6...0.4.7)
+
+- test: hoist classifier/fs exports for SSR [`14db59e`](https://github.com/karmaniverous/stan-core/commit/14db59e5e5f9eacf8610447720105ad14e082a82)
+- docs: add assistant guide policy to system prompt [`81487f7`](https://github.com/karmaniverous/stan-core/commit/81487f710f144793a0c078a43a45c0516dd6890a)
+- docs: add stan assistant guide [`e73ec14`](https://github.com/karmaniverous/stan-core/commit/e73ec142137d8b737ca0cd4b1125516d0249bc3a)
+- test: hoist exports to stabilize Vitest SSR [`bd41ed9`](https://github.com/karmaniverous/stan-core/commit/bd41ed982ab9c951f2b75df407aec0ab763ecf57)
+
 #### [0.4.6](https://github.com/karmaniverous/stan-core/compare/0.4.5...0.4.6)
 
+> 5 November 2025
+
+- chore: release v0.4.6 [`3ace057`](https://github.com/karmaniverous/stan-core/commit/3ace0571b9c5381e09058761d2569021b52da2c8)
 - Eliminate invalid wrappers [`6ca77c8`](https://github.com/karmaniverous/stan-core/commit/6ca77c85dd24128c98a2861fd6e4df2b72573f27)
 
 #### [0.4.5](https://github.com/karmaniverous/stan-core/compare/0.4.4...0.4.5)
