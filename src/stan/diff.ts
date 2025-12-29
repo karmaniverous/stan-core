@@ -92,7 +92,7 @@ const getClassifyForArchive = async (): Promise<
  * ```
  * @returns Absolute path to the `.archive.snapshot.json` file.
  */
-export const writeArchiveSnapshot = async ({
+export async function writeArchiveSnapshot({
   cwd,
   stanPath,
   includes,
@@ -104,7 +104,7 @@ export const writeArchiveSnapshot = async ({
   includes?: string[];
   excludes?: string[];
   anchors?: string[];
-}): Promise<string> => {
+}): Promise<string> {
   const { diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
   const all = await listFiles(cwd);
@@ -121,7 +121,7 @@ export const writeArchiveSnapshot = async ({
   const snapPath = snapshotPathFor(diffDir);
   await writeFile(snapPath, JSON.stringify(current, null, 2), 'utf8');
   return snapPath;
-};
+}
 
 /**
  * Create a diff tar at <stanPath>/output/<baseName>.diff.tar.
@@ -156,7 +156,7 @@ export const writeArchiveSnapshot = async ({
  * });
  * ```
  */
-export const createArchiveDiff = async ({
+export async function createArchiveDiff({
   cwd,
   stanPath,
   baseName,
@@ -176,7 +176,7 @@ export const createArchiveDiff = async ({
   includeOutputDirInDiff?: boolean;
   anchors?: string[];
   onArchiveWarnings?: (text: string) => void;
-}): Promise<{ diffPath: string }> => {
+}): Promise<{ diffPath: string }> {
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
   const all = await listFiles(cwd);
@@ -238,4 +238,4 @@ export const createArchiveDiff = async ({
   }
 
   return { diffPath };
-};
+}

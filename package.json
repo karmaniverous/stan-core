@@ -130,7 +130,7 @@
       ]
     },
     "npm": {
-      "publish": true
+      "publish": false
     }
   },
   "repository": {

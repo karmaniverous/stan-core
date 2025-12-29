@@ -105,11 +105,11 @@ const getClassifyForArchive = async (): Promise<
  * });
  * ```
  */
-export const createArchive = async (
+export async function createArchive(
   cwd: string,
   stanPath: string,
   options: CreateArchiveOptions = {},
-): Promise<string> => {
+): Promise<string> {
   const {
     includeOutputDir = false,
     fileName: rawFileName,
@@ -187,4 +187,4 @@ export const createArchive = async (
   }
 
   return archivePath;
-};
+}

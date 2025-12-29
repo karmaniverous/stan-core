@@ -29,7 +29,7 @@ export type StanDirs = {
 const normRel = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
 
-export const makeStanDirs = (cwd: string, stanPath: string): StanDirs => {
+export function makeStanDirs(cwd: string, stanPath: string): StanDirs {
   const rootRel = normRel(stanPath);
   const systemRel = `${rootRel}/system`;
   const outputRel = `${rootRel}/output`;
@@ -62,6 +62,6 @@ export const makeStanDirs = (cwd: string, stanPath: string): StanDirs => {
     patchAbs,
     importsAbs,
   };
-};
+}
 
 export default { makeStanDirs };

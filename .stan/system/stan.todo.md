@@ -45,4 +45,11 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: create initial STAN assistant guide
   - Added `guides/stan-assistant-guide.md` describing how to configure and use
     the stan-core engine APIs (config, selection, archive/diff/snapshot,
-    imports staging, patch pipeline, and response validation).
+    imports staging, patch pipeline, and response validation).
+
+- Tests: hoist SSR-fragile exports used by archiving
+  - Converted exported const-arrow bindings to function declarations for:
+    - makeStanDirs (paths)
+    - createArchive (archive)
+    - writeArchiveSnapshot/createArchiveDiff (diff)
+  - Goal: eliminate Vitest SSR “is not a function” export binding failures.
