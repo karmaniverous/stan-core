@@ -78,6 +78,11 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - `excludes` (take precedence over `includes`),
     - `anchors` (high‑precedence re‑inclusion; see below),
     - reserved workspace rules (exclude `<stanPath>/diff` and `<stanPath>/patch`, conditionally exclude `<stanPath>/output`).
+  - Context Mode selection (peer to standard selection):
+    - When enabled, selection starts with a **Mandatory Base** (System files + Staged Imports + Dependency Graph).
+    - It then applies the **Context Overlay** from `<stanPath>/system/context.meta.json` (explicit file list).
+    - **Override Rule**: Explicit entries in the Context Overlay MUST override default denials (specifically `node_modules` and `.gitignore`) to allow the AI to select external type definitions.
+    - Configured `excludes` and Reserved Workspace rules still take precedence over the Context Overlay for safety.
   - Anchors channel (new):
     - Core selection surfaces MUST accept an optional `anchors?: string[]` and re‑include matched paths after applying excludes and `.gitignore`.
     - Anchors MUST NOT override reserved denials (`.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`, and archive outputs) and MUST NOT bypass binary screening.
@@ -99,6 +104,9 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - Exclude binaries,
     - Flag large text by size and/or LOC.
   - Warnings must be exposed via return values and/or optional callbacks (no console I/O).
+  - Dependency Graph inclusion:
+    - If `@karmaniverous/stan-context` is available and Context Mode is enabled, generate the dependency graph.
+    - Embed the graph JSON in the archive (e.g., `<stanPath>/system/dependency-graph.json`).
   - Overlay metadata (CLI):
     - The CLI MUST write a machine‑readable `overlay` block to `<stanPath>/system/.docs.meta.json` each run capturing: `enabled`, per‑run overrides (`activated`/`deactivated`), final `effective` facet map, any `autosuspended` facets (ramp‑up safety), and optional `anchorsKept`.
     - This metadata MUST be included in both full and diff archives so the assistant can distinguish selection/view changes from code churn across turns.

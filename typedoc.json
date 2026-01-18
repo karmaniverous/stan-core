@@ -15,7 +15,7 @@
     "typescript",
     "yaml"
   ],
-  "hostedBaseUrl": "https://docs.karmanivero.us/stan",
+  "hostedBaseUrl": "https://docs.karmanivero.us/stan-core",
   "out": "./docs/",
   "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
   "projectDocuments": ["./guides/env-vars.md", "./CHANGELOG.md"],
