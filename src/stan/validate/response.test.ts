@@ -193,6 +193,7 @@ describe('response-format validator', () => {
       '### File Ops',
       'mkdirp src/a',
       'mv src/a/file.ts src/b/file.ts',
+      'cp src/b/file.ts src/c/file.ts',
       'rm src/tmp.txt',
       'rmdir src/empty',
       '',
@@ -219,7 +220,7 @@ describe('response-format validator', () => {
   it('File Ops validator flags bad verb/arity/paths', () => {
     const bad = [
       '### File Ops',
-      'cp a b',
+      'ln a b',
       'rm /etc/passwd',
       'mv a',
       '## Commit Message',

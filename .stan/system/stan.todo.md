@@ -62,4 +62,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Fixed unified-diff fence extraction to avoid treating diff context lines
     that start with a space as candidate closing fences (tilde and backtick).
   - Added a regression test and aligned remaining Response Format wording to
-    the tilde fence hygiene rule.
+    the tilde fence hygiene rule.
+
+- File Ops: implement cp
+  - Added `cp <src> <dest>` support (recursive, no overwrite, creates parents),
+    updated validation, and added execution coverage.

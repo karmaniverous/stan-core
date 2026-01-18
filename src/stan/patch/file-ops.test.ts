@@ -86,4 +86,35 @@ describe('file-ops execution (recursive mv/rm)', () => {
     expect(await s('b/a/dir/file.txt')).toBe(false);
     await rm(root, { recursive: true, force: true });
   });
+
+  it('cp copies a file and creates parent directories (no overwrite)', async () => {
+    const root = await mkdtemp(
+      path.join(process.env.TMPDIR ?? process.cwd(), 'stan-fops-cp-'),
+    );
+    await mkdir(path.join(root, 'src'), { recursive: true });
+    await writeFile(path.join(root, 'src', 'a.txt'), 'hello\n', 'utf8');
+
+    const ops = [
+      { verb: 'cp', src: 'src/a.txt', dest: 'dest/sub/b.txt' },
+    ] as const;
+    const out = await executeFileOps(root, ops as unknown as FileOp[], false);
+    expect(out.ok).toBe(true);
+    expect(out.results[0]?.status).toBe('ok');
+
+    const srcBody = await readFile(path.join(root, 'src', 'a.txt'), 'utf8');
+    const dstBody = await readFile(
+      path.join(root, 'dest', 'sub', 'b.txt'),
+      'utf8',
+    );
+    expect(srcBody).toBe('hello\n');
+    expect(dstBody).toBe('hello\n');
+
+    // Second attempt should fail due to no-overwrite behavior
+    const out2 = await executeFileOps(root, ops as unknown as FileOp[], false);
+    expect(out2.ok).toBe(false);
+    expect(out2.results[0]?.status).toBe('failed');
+    expect(out2.results[0]?.message ?? '').toMatch(/destination exists/i);
+
+    await rm(root, { recursive: true, force: true });
+  });
 });

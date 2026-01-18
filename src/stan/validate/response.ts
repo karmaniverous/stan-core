@@ -138,18 +138,18 @@ const validateFileOpsBlock = (text: string, errors: string[]): void => {
     const where = `File Ops line ${(i + 1).toString()}`;
     const bad = (msg: string) => errors.push(`${where}: ${msg}`);
     const normSafe = (p?: string): string | null => normalizeRepoPath(p);
-    if (!/^(mv|rm|rmdir|mkdirp)$/.test(verb)) {
+    if (!/^(mv|cp|rm|rmdir|mkdirp)$/.test(verb)) {
       bad(`unknown verb "${verb}"`);
       continue;
     }
-    if (verb === 'mv') {
+    if (verb === 'mv' || verb === 'cp') {
       if (args.length !== 2) {
         bad(`expected 2 paths, got ${args.length.toString()}`);
         continue;
       }
       const src = normSafe(args[0]);
       const dest = normSafe(args[1]);
-      if (!src || !dest) bad('mv: invalid repo-relative path');
+      if (!src || !dest) bad(`${verb}: invalid repo-relative path`);
       continue;
     }
     // rm | rmdir | mkdirp

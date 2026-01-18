@@ -1,8 +1,14 @@
 /* src/stan/patch/file-ops.ts
  * File Ops (pre-ops) parser and executor.
- * Verbs: mv <src> <dest> | rm <path> | rmdir <path> | mkdirp <path>
+ * Verbs:
+ * - mv <src> <dest>
+ * - cp <src> <dest>
+ * - rm <path>
+ * - rmdir <path>
+ * - mkdirp <path>
  * - Repo-relative POSIX paths only; deny absolute and any traversal outside repo root.
  * - mv: files or directories (recursive), no overwrite.
+ * - cp: files or directories (recursive), no overwrite; creates parents for <dest>.
  * - rm: files or directories (recursive).
  * - rmdir: empty directories only (safety).
  * - Dry-run mode validates constraints without changing the filesystem.
@@ -10,7 +16,13 @@
 import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-import { ensureDir, move as moveAsync, pathExists, remove } from 'fs-extra';
+import {
+  copy as copyAsync,
+  ensureDir,
+  move as moveAsync,
+  pathExists,
+  remove,
+} from 'fs-extra';
 
 import {
   normalizeRepoPath,
@@ -21,6 +33,7 @@ import { extractFileOpsBody } from './common/file-ops';
 
 export type FileOp =
   | { verb: 'mv'; src: string; dest: string }
+  | { verb: 'cp'; src: string; dest: string }
   | { verb: 'rm'; src: string }
   | { verb: 'rmdir'; src: string }
   | { verb: 'mkdirp'; src: string };
@@ -72,6 +85,16 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
           const dest = normSafe(args[1]);
           if (!src || !dest) bad('mv: invalid repo-relative path');
           else ops.push({ verb: 'mv', src, dest });
+        }
+        break;
+      }
+      case 'cp': {
+        needsTwo(args.length === 2);
+        if (args.length === 2) {
+          const src = normSafe(args[0]);
+          const dest = normSafe(args[1]);
+          if (!src || !dest) bad('cp: invalid repo-relative path');
+          else ops.push({ verb: 'cp', src, dest });
         }
         break;
       }
@@ -140,6 +163,24 @@ export const executeFileOps = async (
           await ensureDir(path.dirname(dstAbs));
           // fs-extra handles files or directories; cross-device safe
           await moveAsync(srcAbs, dstAbs, { overwrite: false });
+        }
+      } else if (op.verb === 'cp') {
+        const { abs: srcAbs, ok: sOK } = within(op.src);
+        const { abs: dstAbs, ok: dOK } = within(op.dest);
+        if (!sOK || !dOK) throw new Error('path escapes repo root');
+
+        const srcExists = await pathExists(srcAbs);
+        const dstExists = await pathExists(dstAbs);
+        if (!srcExists) throw new Error('source does not exist');
+        if (dstExists) throw new Error('destination exists (no overwrite)');
+
+        if (!dryRun) {
+          await ensureDir(path.dirname(dstAbs));
+          // fs-extra copy handles files or directories (recursive by default).
+          await copyAsync(srcAbs, dstAbs, {
+            overwrite: false,
+            errorOnExist: true,
+          });
         }
       } else if (op.verb === 'rm') {
         // Recursive remove of file or directory
