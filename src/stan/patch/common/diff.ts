@@ -13,21 +13,35 @@ export const isUnifiedDiff = (t: string): boolean => {
   return false;
 };
 
+type FenceInfo = { ch: '`' | '~'; count: number };
+
+/**
+ * Parse a Markdown code fence opener line (backticks or tildes) at column 0.
+ * We intentionally DO NOT accept indented fences here to avoid accidentally
+ * treating diff context lines (which commonly start with a single space) as
+ * nested fence delimiters.
+ */
+const parseFenceLine0 = (line: string): FenceInfo | null => {
+  const m = line.match(/^([`~]{3,})/);
+  if (!m || !m[1]) return null;
+  const run = m[1];
+  const ch = run[0] as '`' | '~';
+  for (const c of run) if (c !== ch) return null;
+  return { ch, count: run.length };
+};
+
 /** Return the first unified diff found (fenced or raw), else null. */
 export const extractFirstUnifiedDiff = (text: string): string | null => {
   // First, try fenced blocks
   const lines = text.split('\n');
   for (let i = 0; i < lines.length; i += 1) {
     const open = lines[i];
-    const m = open.match(/^`{3,}.*$/);
-    if (!m) continue;
-    // Count the backticks at the start of the opening fence
-    const tickPrefix = (open.match(/^`+/) ?? [''])[0];
-    const tickCount = tickPrefix.length;
+    const fence = parseFenceLine0(open);
+    if (!fence) continue;
     for (let j = i + 1; j < lines.length; j += 1) {
-      const closeLine = lines[j].trimEnd();
-      // Closing fence: exactly the same number of backticks (no language tag)
-      if (closeLine === '`'.repeat(tickCount)) {
+      const closeLine = lines[j].trim();
+      // Closing fence: exactly the same character/count (no language tag)
+      if (closeLine === fence.ch.repeat(fence.count)) {
         const inner = lines.slice(i + 1, j).join('\n');
         if (isUnifiedDiff(inner)) return inner;
         i = j;
@@ -41,7 +55,7 @@ export const extractFirstUnifiedDiff = (text: string): string | null => {
   if (idx < 0) return null;
   const body = text.slice(idx);
   // If a trailing fence was present, strip it
-  const trimmed = body.replace(/\n`{3,}\s*$/m, '\n');
+  const trimmed = body.replace(/\n(?:`{3,}|~{3,})\s*$/m, '\n');
   return trimmed;
 };
 

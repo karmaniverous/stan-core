@@ -38,14 +38,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - src/stan/patch/jsdiff.newfile.nested.test.ts: dynamically import applyWithJsDiff inside the test body to avoid cross‑suite mock effects.
 
 - Docs: add “STAN assistant guide” upkeep policy
-  - Added a system-prompt policy requiring a self-contained assistant guide doc
-    (default `guides/stan-assistant-guide.md`, unless project prompt specifies a
-    different stable path) and keeping it updated alongside API/semantic changes.
+  - Added a system-prompt policy requiring a self-contained assistant guide doc (default `guides/stan-assistant-guide.md`, unless project prompt specifies a different stable path) and keeping it updated alongside API/semantic changes.
 
 - Docs: create initial STAN assistant guide
-  - Added `guides/stan-assistant-guide.md` describing how to configure and use
-    the stan-core engine APIs (config, selection, archive/diff/snapshot,
-    imports staging, patch pipeline, and response validation).
+  - Added `guides/stan-assistant-guide.md` describing how to configure and use the stan-core engine APIs (config, selection, archive/diff/snapshot, imports staging, patch pipeline, and response validation).
 
 - Tests: hoist SSR-fragile exports used by archiving
   - Converted exported const-arrow bindings to function declarations for:
@@ -55,7 +51,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Goal: eliminate Vitest SSR “is not a function” export binding failures.
 
 - Tests: hoist remaining high-fanout exports
-  - Hoisted classifyForArchive (classifier) to stop SSR “export not found”
-    failures in archive tests.
-  - Hoisted fs exports (listFiles/filterFiles/ensure*) to stop SSR “is not a
-    function” failures in fs-related tests and reduce follow-on flake risk.
+  - Hoisted classifyForArchive (classifier) to stop SSR “export not found” failures in archive tests.
+  - Hoisted fs exports (listFiles/filterFiles/ensure\*) to stop SSR “is not a function” failures in fs-related tests and reduce follow-on flake risk.
+
+- Docs + patch ingestion: default tilde fences (~~~~)
+  - Updated system-prompt guidance to wrap all code blocks in tilde fences with default `~~~~`, bumping by 1 when inner content contains `~` runs.
+  - Updated patch cleaner/extractor to accept both backtick and tilde fenced payloads, and added focused tests to prevent regressions.

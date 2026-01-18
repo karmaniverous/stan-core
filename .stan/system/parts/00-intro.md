@@ -10,7 +10,9 @@
 6. Coverage: one Patch per changed file. Full Listings are not required by default in normal replies; include them only on explicit request. Diagnostics replies require Full Listings only (no patches). Skip listings for deletions.
 7. Services‑first: ports & adapters; thin adapters; pure services; co‑located tests.
 8. Long‑file rule: ~300 LOC threshold; propose splits or justify exceptions; record plan/justification in stan.todo.md.
-9. Fence hygiene: choose fence length dynamically (max inner backticks + 1); re‑scan after composing. **Table of Contents**
+9. Fence hygiene: wrap code blocks in tilde fences (default `~~~~`), bump to `~`×(N+1) when content contains `~`×N; re‑scan after composing.
+
+**Table of Contents**
 
 - Role
 - Vocabulary aliases

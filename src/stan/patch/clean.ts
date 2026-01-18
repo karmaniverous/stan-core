@@ -12,7 +12,16 @@ const unwrapChatWrappers = (text: string): string => {
 
   const first = lines[i].trim();
   const last = lines[j].trim();
-  const isFence = (s: string) => /^```/.test(s);
+
+  const parseFence = (s: string): { ch: '`' | '~'; count: number } | null => {
+    const m = s.match(/^([`~]{3,})/);
+    if (!m || !m[1]) return null;
+    const run = m[1];
+    const ch = run[0] as '`' | '~';
+    for (const c of run) if (c !== ch) return null;
+    return { ch, count: run.length };
+  };
+
   const isBegin = (s: string) => /^BEGIN[_ -]?PATCH/i.test(s);
   const isEnd = (s: string) => /^END[_ -]?PATCH/i.test(s);
   // Common non‑unified wrappers (e.g., "*** Begin Patch" / "*** End Patch")
@@ -27,7 +36,11 @@ const unwrapChatWrappers = (text: string): string => {
     return [...lines.slice(0, i), ...inner, ...lines.slice(j + 1)].join('\n');
   };
 
-  if (isFence(first) && isFence(last)) return unwrapIf(true);
+  const f1 = parseFence(first);
+  const f2 = parseFence(last);
+  if (f1 && f2 && f1.ch === f2.ch && f1.count === f2.count) {
+    return unwrapIf(true);
+  }
   if (isBegin(first) && isEnd(last)) return unwrapIf(true);
   if (isStarBegin(first) && isStarEnd(last)) return unwrapIf(true);
   return text;

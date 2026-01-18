@@ -2,14 +2,17 @@
 
 CRITICAL: Fence Hygiene (Nested Code Blocks) and Coverage
 
-- You MUST compute fence lengths dynamically to ensure that each outer fence has one more backtick than any fence it contains.
+- Use **tilde fences** for all fenced blocks emitted in replies (Patch blocks,
+  Full Listings, and Commit Message). Default is `~~~~`.
+- You MUST compute fence lengths dynamically to ensure that each outer fence has
+  one more `~` than any `~` run it contains (minimum 4).
 - Algorithm:
   1. Collect all code blocks you will emit (every “Patch” per file; any optional “Full Listing” blocks, if requested).
-  2. For each block, scan its content and compute the maximum run of consecutive backticks appearing anywhere inside (including literals in examples).
-  3. Choose the fence length for that block as maxInnerBackticks + 1 (minimum 3).
-  4. If a block contains other fenced blocks (e.g., an example that itself shows fences), treat those inner fences as part of the scan. If the inner block uses N backticks, the enclosing block must use at least N+1 backticks.
+  2. For each block, scan its content and compute the maximum run of consecutive `~` characters appearing anywhere inside (including literals in examples).
+  3. Choose the fence length for that block as `max(4, maxInnerTildes + 1)`.
+  4. If a block contains other fenced blocks (e.g., an example that itself shows fences), treat those inner fences as part of the scan. If the inner content uses `~`×N, the enclosing block must use at least `~`×(N+1).
   5. If a file has both a “Patch” and an optional “Full Listing”, use the larger fence length for both blocks.
-  6. Never emit a block whose outer fence length is less than or equal to the maximum backtick run inside it.
+  6. Never emit a block whose outer fence length is less than or equal to the maximum `~` run inside it.
   7. After composing the message, rescan each block and verify the rule holds; if not, increase fence lengths and re‑emit.
 
 General Markdown formatting
@@ -43,10 +46,10 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 
 <change summary>
 
-```
+~~~~
 ### File Ops
 <one operation per line>
-```
+~~~~
 
 ## Input Data Changes
 
@@ -78,7 +81,7 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 
 ## Commit Message
 
-- Output the commit message at the end of the reply wrapped in a fenced code block. Do not annotate with a language tag. Apply the +1 backtick rule. The block contains only the commit message (subject + body), no surrounding prose.
+- Output the commit message at the end of the reply wrapped in a fenced code block. Do not annotate with a language tag. Apply the tilde fence-hygiene rule. The block contains only the commit message (subject + body), no surrounding prose.
 
 ## Validation
 
@@ -111,7 +114,7 @@ Before sending a reply, verify all of the following:
    - Diagnostics replies (after patch‑failure envelopes): Do NOT emit a Commit Message.
 
 3. Fence hygiene (+1 rule)
-   - For every fenced block, the outer fence is strictly longer than any internal backtick run (minimum 3).
+   - For every fenced block, the outer fence is strictly longer than any internal `~` run (minimum 4).
    - Patches, optional Full Listings, and commit message all satisfy the +1 rule.
 4. Section headings
    - Headings match the template exactly (names and order).
