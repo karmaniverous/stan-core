@@ -57,3 +57,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs + patch ingestion: default tilde fences (~~~~)
   - Updated system-prompt guidance to wrap all code blocks in tilde fences with default `~~~~`, bumping by 1 when inner content contains `~` runs.
   - Updated patch cleaner/extractor to accept both backtick and tilde fenced payloads, and added focused tests to prevent regressions.
+
+- Patch ingestion: avoid false close on " ~~~~" context lines
+  - Fixed unified-diff fence extraction to avoid treating diff context lines
+    that start with a space as candidate closing fences (tilde and backtick).
+  - Added a regression test and aligned remaining Response Format wording to
+    the tilde fence hygiene rule.

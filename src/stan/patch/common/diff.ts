@@ -39,7 +39,10 @@ export const extractFirstUnifiedDiff = (text: string): string | null => {
     const fence = parseFenceLine0(open);
     if (!fence) continue;
     for (let j = i + 1; j < lines.length; j += 1) {
-      const closeLine = lines[j].trim();
+      // Do not trim leading whitespace: unified diffs commonly contain context
+      // lines that start with a single space, which must not be mistaken for a
+      // closing fence delimiter.
+      const closeLine = lines[j].trimEnd();
       // Closing fence: exactly the same character/count (no language tag)
       if (closeLine === fence.ch.repeat(fence.count)) {
         const inner = lines.slice(i + 1, j).join('\n');

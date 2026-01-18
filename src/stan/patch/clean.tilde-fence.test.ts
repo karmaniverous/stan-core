@@ -50,4 +50,31 @@ describe('detectAndCleanPatch (tilde fenced payloads)', () => {
     expect(cleaned.includes('Thanks!')).toBe(false);
     expect(cleaned.endsWith('\n')).toBe(true);
   });
+
+  it('does not treat a diff context line " ~~~~" as a closing fence', () => {
+    const rel = 'README.md';
+    const raw = [
+      'Here you go:',
+      '',
+      '~~~~',
+      `diff --git a/${rel} b/${rel}`,
+      `--- a/${rel}`,
+      `+++ b/${rel}`,
+      '@@ -1,3 +1,3 @@',
+      '-old',
+      '+new',
+      ' ~~~~',
+      ' keep',
+      '~~~~',
+      '',
+    ].join('\n');
+
+    const cleaned = detectAndCleanPatch(raw);
+    expect(cleaned.startsWith('diff --git ')).toBe(true);
+    // The context line containing "~~~~" must still be present in the cleaned diff.
+    expect(cleaned).toContain('\n ~~~~\n');
+    // And content after that line must not be truncated.
+    expect(cleaned).toContain('\n keep\n');
+    expect(cleaned.endsWith('\n')).toBe(true);
+  });
 });

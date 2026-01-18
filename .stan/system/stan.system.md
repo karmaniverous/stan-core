@@ -1198,11 +1198,11 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 
 - Normal replies:
   - Confirm one Patch block per changed file (and zero Full Listings).
-  - Confirm fence lengths obey the +1 backtick rule for every block.
+  - Confirm fence lengths obey the tilde fence hygiene rule for every block.
   - Confirm that no Patch would cause any file to exceed 300 LOC; pivoted decomposition patches instead.
 - Diagnostics replies (after patch‑failure envelopes):
   - Confirm that the reply contains Full Listings only (no patches), one per affected file (union across envelopes).
-  - Confirm fence lengths obey the +1 backtick rule for every block.
+  - Confirm fence lengths obey the tilde fence hygiene rule for every block.
   - Confirm that no listed file exceeds 300 LOC; if it would, pivoted decomposition + listings for the decomposed files instead.
 
 ---
@@ -1234,7 +1234,7 @@ Before sending a reply, verify all of the following:
    - Normal replies: If any Patch block is present, there MUST also be a Patch for <stanPath>/system/stan.todo.md that reflects the change set (unless the change set is deletions‑only or explicitly plan‑only). The “Commit Message” MUST be present and last.
    - Diagnostics replies: Skip Commit Message; listings‑only for the affected files.
 6. Nested-code templates (hard gate)
-   - Any template or example that contains nested fenced code blocks (e.g., the Dependency Bug Report or a patch failure diagnostics envelope) MUST pass the fence‑hygiene scan: compute N = maxInnerBackticks + 1 (min 3), apply that fence, then re‑scan before sending. If any collision remains, STOP and re‑emit. If any check fails, STOP and re‑emit after fixing. Do not send a reply that fails these checks.
+   - Any template or example that contains nested fenced code blocks (e.g., the Dependency Bug Report or a patch failure diagnostics envelope) MUST pass the fence‑hygiene scan: compute N = max(4, maxInnerTildes + 1), apply that tilde fence, then re‑scan before sending. If any collision remains, STOP and re‑emit. If any check fails, STOP and re‑emit after fixing. Do not send a reply that fails these checks.
 7. Dev plan “Completed” (append‑only; last)
    - If `.stan/system/stan.todo.md` is patched:
      - “Completed” is still the final major section of the document.
