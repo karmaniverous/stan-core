@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.5.1](https://github.com/karmaniverous/stan-core/compare/0.5.0...0.5.1)
+
+- updated dependencies [`3387a7e`](https://github.com/karmaniverous/stan-core/commit/3387a7e20355c49bebab4a3e3798f606f0f0879a)
+
 #### [0.5.0](https://github.com/karmaniverous/stan-core/compare/0.4.7...0.5.0)
 
+> 18 January 2026
+
+- chore: release v0.5.0 [`7a0e5c1`](https://github.com/karmaniverous/stan-core/commit/7a0e5c1a4a3a326b1bf3290fdd89175c73d15a75)
 - docs: default tilde fences + patch cleaner [`2e4d118`](https://github.com/karmaniverous/stan-core/commit/2e4d11893689a97e74ec85c585aed778ee462055)
 - stan imports & config [`91b3fc7`](https://github.com/karmaniverous/stan-core/commit/91b3fc70f872a408ffa2b88b2fa162c704ea1702)
 - feat: add cp to File Ops [`46cb9d6`](https://github.com/karmaniverous/stan-core/commit/46cb9d6e38e246cda109e0d6e5b7500f05cdfae8)
