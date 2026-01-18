@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.5.0](https://github.com/karmaniverous/stan-core/compare/0.4.7...0.5.0)
+
+- docs: default tilde fences + patch cleaner [`2e4d118`](https://github.com/karmaniverous/stan-core/commit/2e4d11893689a97e74ec85c585aed778ee462055)
+- stan imports & config [`91b3fc7`](https://github.com/karmaniverous/stan-core/commit/91b3fc70f872a408ffa2b88b2fa162c704ea1702)
+- feat: add cp to File Ops [`46cb9d6`](https://github.com/karmaniverous/stan-core/commit/46cb9d6e38e246cda109e0d6e5b7500f05cdfae8)
+- fix: robust tilde fence patch extraction [`014438d`](https://github.com/karmaniverous/stan-core/commit/014438d3f688c95d5377d81391f75c63c9b2cce9)
+- clarify fence hygiene [`d609fe8`](https://github.com/karmaniverous/stan-core/commit/d609fe83dde811fa8b46dab22c37dd805e2651c1)
+
 #### [0.4.7](https://github.com/karmaniverous/stan-core/compare/0.4.6...0.4.7)
+
+> 29 December 2025
 
 - test: hoist classifier/fs exports for SSR [`14db59e`](https://github.com/karmaniverous/stan-core/commit/14db59e5e5f9eacf8610447720105ad14e082a82)
 - docs: add assistant guide policy to system prompt [`81487f7`](https://github.com/karmaniverous/stan-core/commit/81487f710f144793a0c078a43a45c0516dd6890a)
 - docs: add stan assistant guide [`e73ec14`](https://github.com/karmaniverous/stan-core/commit/e73ec142137d8b737ca0cd4b1125516d0249bc3a)
+- chore: release v0.4.7 [`0c4d210`](https://github.com/karmaniverous/stan-core/commit/0c4d210032cc79d2bcafd07e7f499d85877ff99a)
 - test: hoist exports to stabilize Vitest SSR [`bd41ed9`](https://github.com/karmaniverous/stan-core/commit/bd41ed982ab9c951f2b75df407aec0ab763ecf57)
 
 #### [0.4.6](https://github.com/karmaniverous/stan-core/compare/0.4.5...0.4.6)
