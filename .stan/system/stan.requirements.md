@@ -13,12 +13,12 @@ This document lists durable requirements for the STAN engine (“stan-core”), 
 - Example (pattern)
   ```ts
   // Resolve "foo" from ./peer using a robust SSR-safe pattern.
-  const getFoo = async (): Promise<typeof import('./peer')['foo']> => {
+  const getFoo = async (): Promise<(typeof import('./peer'))['foo']> => {
     const mod = await import('./peer');
     const named = (mod as { foo?: unknown }).foo;
     const viaDefault = (mod as { default?: { foo?: unknown } }).default?.foo;
     const fn = (typeof named === 'function' ? named : viaDefault) as
-      | typeof import('./peer')['foo']
+      | (typeof import('./peer'))['foo']
       | undefined;
     if (typeof fn === 'function') return fn;
     throw new Error('foo export not found in ./peer');
@@ -40,7 +40,8 @@ stan-cli MUST be able to run against any compatible stan-core at runtime.
     - `assembleSystemMonolith(cwd, stanPath)` assembles `<stanPath>/system/parts/*.md` into `<stanPath>/system/stan.system.md` in dev workflows (quiet helper; no logs).
 
 - Packaging
-  - Dist: ESM/CJS outputs under `dist/mjs` and `dist/cjs` with `.d.ts` types.
+  - Dist: ESM output under `dist/mjs` with `.d.ts` types under `dist/types`.
+  - The published package is ESM-only (no CommonJS `require()` entrypoint).
   - No CLI binaries or TTY dependencies in the engine package.
 
 ---

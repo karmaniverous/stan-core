@@ -12,6 +12,9 @@ stan-core:
     stan-cli:
       - ../stan-cli/.stan/interop/stan-core/**
       - ../stan-cli/guides/stan-assistant-guide.md
+    stan-context:
+      - ../stan-context/.stan/interop/stan-core/**
+      - ../stan-context/guides/stan-assistant-guide.md
 stan-cli:
   scripts:
     typecheck: npm run typecheck

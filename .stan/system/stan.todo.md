@@ -66,4 +66,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - File Ops: implement cp
   - Added `cp <src> <dest>` support (recursive, no overwrite, creates parents),
-    updated validation, and added execution coverage.
+    updated validation, and added execution coverage.
+
+- Packaging: make the library ESM-only
+  - Stop publishing `dist/cjs` and remove the `exports.require` condition.
+  - Point `main` and `types` at the ESM build outputs.
+  - Update README and the local assistant guide to avoid subpath imports and
+    to explicitly document ESM-only usage.
+
+- Docs: align requirements with ESM-only packaging
+  - Update `.stan/system/stan.requirements.md` to reflect ESM-only outputs.

@@ -25,13 +25,14 @@ pnpm add @karmaniverous/stan-core
 
 Node: >= 20
 
+This package is ESM-only (no CommonJS `require()` entrypoint).
+
 ## Quick examples
 
 Create a full archive (binary‑safe) and a diff archive:
 
 ```ts
-import { createArchive } from '@karmaniverous/stan-core/stan';
-import { createArchiveDiff } from '@karmaniverous/stan-core/stan/diff';
+import { createArchive, createArchiveDiff } from '@karmaniverous/stan-core';
 
 const cwd = process.cwd();
 const stanPath = '.stan';
@@ -57,7 +58,7 @@ import {
   detectAndCleanPatch,
   executeFileOps,
   parseFileOpsBlock,
-} from '@karmaniverous/stan-core/stan/patch';
+} from '@karmaniverous/stan-core';
 
 const cwd = process.cwd();
 
@@ -111,7 +112,7 @@ stan-core:
 TypeScript:
 
 ```ts
-import { loadConfig } from '@karmaniverous/stan-core/stan/config';
+import { loadConfig } from '@karmaniverous/stan-core';
 
 const cfg = await loadConfig(process.cwd());
 // cfg has the minimal engine shape:
@@ -124,7 +125,7 @@ const cfg = await loadConfig(process.cwd());
 Stage external imports under <stanPath>/imports/<label>/… before archiving:
 
 ```ts
-import { prepareImports } from '@karmaniverous/stan-core/stan';
+import { prepareImports } from '@karmaniverous/stan-core';
 await prepareImports({
   cwd: process.cwd(),
   stanPath: '.stan',
@@ -137,14 +138,14 @@ await prepareImports({
 Validate assistant responses (optional utility):
 
 ```ts
-import { validateResponseMessage } from '@karmaniverous/stan-core/stan';
+import { validateResponseMessage } from '@karmaniverous/stan-core';
 const res = validateResponseMessage(replyBody);
 if (!res.ok) console.error(res.errors.join('\n'));
 ```
 
 ## API surface
 
-Top‑level (via `import '@karmaniverous/stan-core/stan'`):
+Top‑level (via `import '@karmaniverous/stan-core'`):
 
 - Archiving/diff/snapshot: `createArchive`, `createArchiveDiff`, `writeArchiveSnapshot`
 - Selection/FS: `listFiles`, `filterFiles`
