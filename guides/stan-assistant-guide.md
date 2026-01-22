@@ -247,6 +247,35 @@ Important:
   because anchors override both `.gitignore` and configured excludes:
   - `anchors: ['<stanPath>/context/**']` (use the concrete `stanPath`, e.g. `.stan/context/**`)
 
+### Archive-flow helpers (stage + include + archive)
+
+For adapters that want a single “do the right thing” entrypoint (typically stan-cli),
+the engine also provides archive-flow wrappers that:
+- compute the stage set from dependency state closure (when provided),
+- stage only those external nodes,
+- and force archive inclusion via `anchors: ['<stanPath>/context/**']`.
+
+```ts
+import {
+  createArchiveWithDependencyContext,
+  createArchiveDiffWithDependencyContext,
+} from '@karmaniverous/stan-core';
+
+const full = await createArchiveWithDependencyContext({
+  cwd,
+  stanPath,
+  dependency: { meta: built.meta, state: depState, sources: built.sources, clean: true },
+  archive: { includeOutputDir: false },
+});
+
+const diff = await createArchiveDiffWithDependencyContext({
+  cwd,
+  stanPath,
+  dependency: { meta: built.meta, state: depState, sources: built.sources, clean: false },
+  diff: { baseName: 'archive', updateSnapshot: 'createIfMissing' },
+});
+```
+
 Dependency requirements (loaded only when invoked):
 
 - `buildDependencyMeta` dynamically imports `typescript` and throws if it cannot be imported.

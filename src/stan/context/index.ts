@@ -3,6 +3,20 @@
  */
 
 export type {
+  CreateArchiveDiffWithDependencyContextResult,
+  CreateArchiveWithDependencyContextResult,
+  DependencyContextInputs,
+  DependencyContextMeta,
+  PrepareDependencyContextResult,
+  StagePreparedDependencyContextResult,
+} from './archive-flow';
+export {
+  createArchiveDiffWithDependencyContext,
+  createArchiveWithDependencyContext,
+  prepareDependencyContext,
+  stagePreparedDependencyContext,
+} from './archive-flow';
+export type {
   BuildDependencyMetaArgs,
   BuildDependencyMetaResult,
 } from './build';

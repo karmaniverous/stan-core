@@ -6,13 +6,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Dependency graph mode (engine): stage external context under `.stan/context/**`
-  - Wire staging + inclusion into the archive flow used by the CLI:
-    - stage npm/abs nodes using resolved paths available during graph generation
-    - validate staged bytes hash to `metadata.hash` (fail fast)
-    - ensure archiving uses `anchors: ['.stan/context/**']` (context is gitignored)
-  - Add support for staging only a selected nodeId set (state closure) to avoid bloat.
-
 - Undo/redo validation seam (engine; CLI calls)
   - Provide a validation API to support strict undo/redo:
     - compute selected node set from restored meta+state
@@ -157,4 +150,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Lint: fix stageDependencyContext unnecessary-condition
   - Adjusted `stageDependencyContext` meta typing and guards to satisfy
-    `@typescript-eslint/no-unnecessary-condition` without changing behavior.
+    `@typescript-eslint/no-unnecessary-condition` without changing behavior.
+
+- Dependency graph mode: wire staging into archive flow
+  - Added archive-flow helpers that stage selected external context (from
+    dependency state closure when provided) and force archive inclusion via
+    `anchors: ['.stan/context/**']` so gitignored context is still archived.
+  - Added a focused test and documented the wrapper APIs in the assistant guide.
