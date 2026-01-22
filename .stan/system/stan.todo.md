@@ -132,4 +132,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Imports safety: enforce `<stanPath>/imports/**` read-only in patch + File Ops
   - Threaded `stanPath` through patch pipeline and jsdiff sandbox defaults so the engine can apply workspace-scoped protection rules.
   - Refused File Ops and unified diff targets that touch `<stanPath>/imports/**` when `stanPath` is provided (CLI will always provide it).
-  - Added focused tests and updated the local assistant guide to document the safety net.
+  - Added focused tests and updated the local assistant guide to document the safety net.
+
+- Chore: fix imports-guard lint and test
+  - src/stan/patch/run/pipeline.ts: remove unnecessary `??` on regex capture groups (eslint `no-unnecessary-condition`).
+  - src/stan/patch/imports-policy.test.ts: create fixture parent dirs before writing into `.stan/imports/...`.

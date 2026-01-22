@@ -18,7 +18,7 @@ const touchedPathsFromUnifiedDiff = (cleaned: string): string[] => {
     const re = /^diff --git a\/(.+?) b\/(.+?)\s*$/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(cleaned))) {
-      const b = (m[2] ?? '').trim();
+      const b = m[2].trim();
       if (!b || b === '/dev/null') continue;
       out.push(b.replace(/^\.\/+/, '').replace(/\\/g, '/'));
     }
@@ -28,7 +28,7 @@ const touchedPathsFromUnifiedDiff = (cleaned: string): string[] => {
     const re = /^\+\+\+\s+(?:b\/)?(.+?)\s*$/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(cleaned))) {
-      const p = (m[1] ?? '').trim();
+      const p = m[1].trim();
       if (!p || p === '/dev/null') continue;
       out.push(p.replace(/^\.\/+/, '').replace(/\\/g, '/'));
     }

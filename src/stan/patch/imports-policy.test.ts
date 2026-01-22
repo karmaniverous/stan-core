@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -22,6 +22,7 @@ describe('imports read-only policy (engine safety net)', () => {
     try {
       const rel = '.stan/imports/pkg/readme.md';
       const abs = path.join(dir, ...rel.split('/'));
+      await mkdir(path.dirname(abs), { recursive: true });
       await writeFile(abs, 'old\n', 'utf8');
 
       const diff = [
