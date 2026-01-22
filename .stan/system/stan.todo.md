@@ -144,4 +144,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Chore: remove shim; fix context-mode lint
   - Installed `@karmaniverous/stan-context` as a devDependency and removed the local type shim.
   - Refactored dependency meta builder helpers into small modules to keep files under the 300-LOC cap and satisfy strict ESLint rules.
-  - Fixed lint in context tests (no conditional expect; no unsafe return).
+  - Fixed lint in context tests (no conditional expect; no unsafe return).
+
+- Lint: fix build.ts unnecessary condition checks
+  - Fixed two `@typescript-eslint/no-unnecessary-condition` errors in
+    `src/stan/context/build.ts` by tightening types and using `Array#at(-1)`.
