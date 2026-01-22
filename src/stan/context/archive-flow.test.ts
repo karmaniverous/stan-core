@@ -19,8 +19,8 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
   beforeEach(async () => {
     dir = await mkdtemp(path.join(os.tmpdir(), 'stan-ctx-arch-'));
     // Capture tar calls; dynamic import to avoid SSR/mock ordering issues.
-    const { withMockTarCapture } = await import('../test/helpers');
-    const state = withMockTarCapture('TAR');
+    const helpers = (await import('../../test/helpers')) as typeof import('../../test/helpers');
+    const state = helpers.withMockTarCapture('TAR');
     calls = state.calls;
     calls.length = 0;
   });
@@ -55,9 +55,9 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
     const meta = {
       // minimal meta shape for closure: edges must contain keys for referenced nodeIds
       nodes: {
-        'src/a.ts': { kind: 'source' },
+        'src/a.ts': { kind: 'source' as const },
         [nodeId]: {
-          kind: 'external',
+          kind: 'external' as const,
           metadata: { hash: '', size: body.length },
         },
       },

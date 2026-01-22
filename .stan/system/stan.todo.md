@@ -156,4 +156,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added archive-flow helpers that stage selected external context (from
     dependency state closure when provided) and force archive inclusion via
     `anchors: ['.stan/context/**']` so gitignored context is still archived.
-  - Added a focused test and documented the wrapper APIs in the assistant guide.
+  - Added a focused test and documented the wrapper APIs in the assistant guide.
+
+- Fix: archive-flow test + lint hygiene
+  - Fixed the archive-flow test helper import path and removed `any`-typed
+    dynamic import usage; also cleaned up redundant/unused types in
+    `src/stan/context/archive-flow.ts`.

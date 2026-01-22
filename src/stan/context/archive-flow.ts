@@ -14,10 +14,8 @@ import { createArchiveDiff } from '../diff';
 import type { NodeSource } from './build';
 import type {
   DependencyEdgeType,
-  DependencyMetaEdge,
   DependencyMetaFile,
   DependencyMetaNode,
-  DependencyStateFile,
 } from './schema';
 import { parseDependencyStateFile } from './schema';
 import type { StageDependencyContextResult } from './stage';
@@ -62,7 +60,7 @@ export type DependencyContextInputs = {
    * When present, used to compute a selected closure and stage only those nodes.
    * When absent, staging falls back to "all stageable nodes in sources".
    */
-  state?: DependencyStateFile | unknown;
+  state?: unknown;
   /**
    * Node source locators (produced by buildDependencyMeta).
    * Strongly recommended for npm nodes; abs nodes may also be staged using locatorAbs from meta.
@@ -82,7 +80,7 @@ export type PrepareDependencyContextResult = {
 export const prepareDependencyContext = (args: {
   stanPath: string;
   meta: DependencyContextMeta;
-  state?: DependencyStateFile | unknown;
+  state?: unknown;
   /** Optional override when state is omitted (default: stage all stageable nodes in sources). */
   nodeIdsWhenNoState?: string[];
 }): PrepareDependencyContextResult => {
