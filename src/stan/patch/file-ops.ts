@@ -7,6 +7,7 @@
  * - rmdir <path>
  * - mkdirp <path>
  * - Repo-relative POSIX paths only; deny absolute and any traversal outside repo root.
+ * - <stanPath>/imports/** is protected staged context and must not be modified.
  * - mv: files or directories (recursive), no overwrite.
  * - cp: files or directories (recursive), no overwrite; creates parents for <dest>.
  * - rm: files or directories (recursive).
@@ -30,6 +31,7 @@ import {
 } from '@/stan/path/repo';
 
 import { extractFileOpsBody } from './common/file-ops';
+import { isProtectedImportsPath } from './policy/imports';
 
 export type FileOp =
   | { verb: 'mv'; src: string; dest: string }
@@ -48,13 +50,20 @@ export type OpResult = {
 };
 
 /** Parse the optional "### File Ops" fenced block from a reply body. */
-export const parseFileOpsBlock = (source: string): FileOpsPlan => {
+export const parseFileOpsBlock = (
+  source: string,
+  stanPath?: string,
+): FileOpsPlan => {
   const ops: FileOp[] = [];
   const errors: string[] = [];
   const body = extractFileOpsBody(source);
   const extracted = body ? { body } : null;
   if (!extracted) return { ops, errors }; // no block present; treat as absent
   const bodyText = extracted.body;
+  const sp =
+    typeof stanPath === 'string' && stanPath.trim().length
+      ? stanPath.trim()
+      : null;
   const lines = bodyText.split(/\r?\n/);
   let lineNo = 0;
   for (const raw of lines) {
@@ -76,6 +85,12 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
     };
 
     const normSafe = (p?: string) => normalizeRepoPath(p);
+    const rejectIfProtected = (verb: string, p: string): boolean => {
+      if (!sp) return false;
+      if (!isProtectedImportsPath(sp, p)) return false;
+      bad(`${verb}: path targets protected imports area`);
+      return true;
+    };
 
     switch (verbRaw) {
       case 'mv': {
@@ -84,7 +99,12 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
           const src = normSafe(args[0]);
           const dest = normSafe(args[1]);
           if (!src || !dest) bad('mv: invalid repo-relative path');
-          else ops.push({ verb: 'mv', src, dest });
+          else if (
+            rejectIfProtected('mv', src) ||
+            rejectIfProtected('mv', dest)
+          ) {
+            // rejected by policy
+          } else ops.push({ verb: 'mv', src, dest });
         }
         break;
       }
@@ -94,7 +114,12 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
           const src = normSafe(args[0]);
           const dest = normSafe(args[1]);
           if (!src || !dest) bad('cp: invalid repo-relative path');
-          else ops.push({ verb: 'cp', src, dest });
+          else if (
+            rejectIfProtected('cp', src) ||
+            rejectIfProtected('cp', dest)
+          ) {
+            // rejected by policy
+          } else ops.push({ verb: 'cp', src, dest });
         }
         break;
       }
@@ -103,7 +128,9 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
         if (args.length === 1) {
           const src = normSafe(args[0]);
           if (!src) bad('rm: invalid repo-relative path');
-          else ops.push({ verb: 'rm', src });
+          else if (rejectIfProtected('rm', src)) {
+            // rejected by policy
+          } else ops.push({ verb: 'rm', src });
         }
         break;
       }
@@ -112,7 +139,9 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
         if (args.length === 1) {
           const src = normSafe(args[0]);
           if (!src) bad('rmdir: invalid repo-relative path');
-          else ops.push({ verb: 'rmdir', src });
+          else if (rejectIfProtected('rmdir', src)) {
+            // rejected by policy
+          } else ops.push({ verb: 'rmdir', src });
         }
         break;
       }
@@ -121,7 +150,9 @@ export const parseFileOpsBlock = (source: string): FileOpsPlan => {
         if (args.length === 1) {
           const src = normSafe(args[0]);
           if (!src) bad('mkdirp: invalid repo-relative path');
-          else ops.push({ verb: 'mkdirp', src });
+          else if (rejectIfProtected('mkdirp', src)) {
+            // rejected by policy
+          } else ops.push({ verb: 'mkdirp', src });
         }
         break;
       }
@@ -137,10 +168,20 @@ export const executeFileOps = async (
   cwd: string,
   ops: FileOp[],
   dryRun = false,
+  stanPath?: string,
 ): Promise<{ ok: boolean; results: OpResult[] }> => {
   const results: OpResult[] = [];
 
   const within = (rel: string) => resolveWithinRepo(cwd, rel);
+  const sp =
+    typeof stanPath === 'string' && stanPath.trim().length
+      ? stanPath.trim()
+      : null;
+  const guard = (rel: string): void => {
+    if (sp && isProtectedImportsPath(sp, rel)) {
+      throw new Error('path targets protected imports area');
+    }
+  };
 
   for (const op of ops) {
     const res: OpResult = {
@@ -151,6 +192,8 @@ export const executeFileOps = async (
     };
     try {
       if (op.verb === 'mv') {
+        guard(op.src);
+        guard(op.dest);
         const { abs: srcAbs, ok: sOK } = within(op.src);
         const { abs: dstAbs, ok: dOK } = within(op.dest);
         if (!sOK || !dOK) throw new Error('path escapes repo root');
@@ -165,6 +208,8 @@ export const executeFileOps = async (
           await moveAsync(srcAbs, dstAbs, { overwrite: false });
         }
       } else if (op.verb === 'cp') {
+        guard(op.src);
+        guard(op.dest);
         const { abs: srcAbs, ok: sOK } = within(op.src);
         const { abs: dstAbs, ok: dOK } = within(op.dest);
         if (!sOK || !dOK) throw new Error('path escapes repo root');
@@ -183,6 +228,7 @@ export const executeFileOps = async (
           });
         }
       } else if (op.verb === 'rm') {
+        guard(op.src);
         // Recursive remove of file or directory
         const { abs, ok } = within(op.src);
         if (!ok) throw new Error('path escapes repo root');
@@ -190,6 +236,7 @@ export const executeFileOps = async (
         if (!exists) throw new Error('path does not exist');
         if (!dryRun) await remove(abs);
       } else if (op.verb === 'rmdir') {
+        guard(op.src);
         const { abs, ok } = within(op.src);
         if (!ok) throw new Error('path escapes repo root');
         let st: import('fs').Stats | null = null;
@@ -204,6 +251,7 @@ export const executeFileOps = async (
         if (entries.length > 0) throw new Error('directory not empty');
         if (!dryRun) await remove(abs);
       } else {
+        guard(op.src);
         const { abs, ok } = within(op.src);
         if (!ok) throw new Error('path escapes repo root');
         if (!dryRun) await ensureDir(abs);

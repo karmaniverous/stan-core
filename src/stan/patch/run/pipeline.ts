@@ -1,5 +1,6 @@
 /* src/stan/patch/run/pipeline.ts
  * Worktree-first patch application pipeline: git apply attempts across p1→p0, then jsdiff fallback.
+ * Refuses to modify <stanPath>/imports/** (protected staged context) when stanPath is provided.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -8,6 +9,32 @@ import type { ApplyResult } from '../apply';
 import { buildApplyAttempts, runGitApply } from '../apply';
 import type { JsDiffOutcome } from '../jsdiff';
 import { applyWithJsDiff } from '../jsdiff';
+import { listProtectedImportsViolations } from '../policy/imports';
+
+const touchedPathsFromUnifiedDiff = (cleaned: string): string[] => {
+  const out: string[] = [];
+  // Primary: git-style diff header
+  {
+    const re = /^diff --git a\/(.+?) b\/(.+?)\s*$/gm;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(cleaned))) {
+      const b = (m[2] ?? '').trim();
+      if (!b || b === '/dev/null') continue;
+      out.push(b.replace(/^\.\/+/, '').replace(/\\/g, '/'));
+    }
+  }
+  // Fallback: +++ header (for minimal diffs)
+  if (out.length === 0) {
+    const re = /^\+\+\+\s+(?:b\/)?(.+?)\s*$/gm;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(cleaned))) {
+      const p = (m[1] ?? '').trim();
+      if (!p || p === '/dev/null') continue;
+      out.push(p.replace(/^\.\/+/, '').replace(/\\/g, '/'));
+    }
+  }
+  return Array.from(new Set(out));
+};
 
 /**
  * Try a last-resort creation fallback for a confident "/dev/null -\> b/<path>" patch:
@@ -20,6 +47,7 @@ const tryCreationFallback = async (
   cwd: string,
   cleaned: string,
   check: boolean,
+  stanPath: string,
 ): Promise<JsDiffOutcome | null> => {
   const text = cleaned.replace(/\r\n/g, '\n');
   const lines = text.split('\n');
@@ -65,7 +93,7 @@ const tryCreationFallback = async (
   if (!content.endsWith('\n')) content += '\n';
 
   const destRoot = check
-    ? path.join(cwd, '.stan', 'patch', '.sandbox', 'F')
+    ? path.join(cwd, stanPath, 'patch', '.sandbox', 'F')
     : cwd;
   const abs = path.resolve(destRoot, newRel);
   await mkdir(path.dirname(abs), { recursive: true });
@@ -91,8 +119,36 @@ export const applyPatchPipeline = async (args: {
   check: boolean;
   /** Attempt order; defaults to [1,0] (p1 then p0). */
   stripOrder?: number[];
+  /** When provided, enables protection rules scoped to this workspace (e.g., imports read-only). */
+  stanPath?: string;
 }): Promise<PipelineOutcome> => {
-  const { cwd, patchAbs, cleaned, check, stripOrder = [1, 0] } = args;
+  const {
+    cwd,
+    patchAbs,
+    cleaned,
+    check,
+    stripOrder = [1, 0],
+    stanPath = '.stan',
+  } = args;
+
+  // Policy guard: never modify staged imports
+  const touched = touchedPathsFromUnifiedDiff(cleaned);
+  const violations = listProtectedImportsViolations(stanPath, touched);
+  if (violations.length > 0) {
+    const js: JsDiffOutcome = {
+      okFiles: [],
+      failed: violations.map((p) => ({
+        path: p,
+        reason: 'refusing to modify protected imports path',
+      })),
+      sandboxRoot: undefined,
+    };
+    return {
+      ok: false,
+      result: { ok: false, tried: [], lastCode: 1, captures: [] },
+      js,
+    };
+  }
 
   // Git attempts (worktree only; never --index)
   const attempts = stripOrder.flatMap((p) =>
@@ -108,6 +164,7 @@ export const applyPatchPipeline = async (args: {
     cwd,
     cleaned,
     check,
+    stanPath,
   });
 
   if (js.okFiles.length > 0 && js.failed.length === 0) {
@@ -116,7 +173,7 @@ export const applyPatchPipeline = async (args: {
 
   // Last-resort: creation fallback for malformed but clearly new-file diffs
   try {
-    const created = await tryCreationFallback(cwd, cleaned, check);
+    const created = await tryCreationFallback(cwd, cleaned, check, stanPath);
     if (created) return { ok: true, result, js: created };
   } catch {
     // best-effort; fall through to not-ok

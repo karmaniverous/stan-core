@@ -22,12 +22,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - stage npm/abs nodes using resolved paths available during graph generation and validate staged bytes hash to `metadata.hash`
   - Ensure `.stan/context/**` remains gitignored but is included in archives when dependency mode is enabled.
 
-- Imports safety (engine + tooling invariants)
-  - Enforce “`.stan/imports/**` is read-only” at engine boundaries where applicable:
-    - refuse File Ops targeting `<stanPath>/imports/**`
-    - refuse unified diff targets under `<stanPath>/imports/**`
-  - (Assistant behavior is already documented; this adds an engine safety net.)
-
 - Undo/redo validation seam (engine; CLI calls)
   - Provide a validation API to support strict undo/redo:
     - compute selected node set from restored meta+state
@@ -133,4 +127,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added a focused unit test to pin down archive selection behavior.
 
 - Chore: fix meta archive test helper import
-  - Corrected the test helper import path in `src/stan/archive/meta.test.ts`.
+  - Corrected the test helper import path in `src/stan/archive/meta.test.ts`.
+
+- Imports safety: enforce `<stanPath>/imports/**` read-only in patch + File Ops
+  - Threaded `stanPath` through patch pipeline and jsdiff sandbox defaults so the engine can apply workspace-scoped protection rules.
+  - Refused File Ops and unified diff targets that touch `<stanPath>/imports/**` when `stanPath` is provided (CLI will always provide it).
+  - Added focused tests and updated the local assistant guide to document the safety net.

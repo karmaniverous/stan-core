@@ -78,8 +78,10 @@ These are always excluded from archives and cannot be forced back by includes/an
 - binary screening during archive classification (binaries are excluded even if selected)
 
 Additionally:
+
 - `.stan/imports/**` is staged context and should be treated as read-only:
   - never create, patch, or delete files under `.stan/imports/**`.
+  - the engine also enforces this when `stanPath` is provided to mutation APIs (Patch + File Ops), refusing ops/patches that target `<stanPath>/imports/**`.
 
 Additionally:
 
@@ -188,10 +190,10 @@ await writeArchiveSnapshot({
 
 ## Dependency graph mode (context expansion)
 
-When the CLI enables “context mode”, the engine can generate a dependency graph
-and use an assistant-authored state file to expand the archived context.
+When the CLI enables “context mode”, the engine can generate a dependency graph and use an assistant-authored state file to expand the archived context.
 
 Artifacts (under `.stan/context/`):
+
 - `dependency.meta.json` — assistant-facing graph meta:
   - deterministic `nodes` and `edges`,
   - per-node `metadata.hash` (sha256) and `metadata.size` (bytes) when applicable,
@@ -204,6 +206,7 @@ Artifacts (under `.stan/context/`):
   - `.stan/context/abs/<sha256(sourceAbs)>/<basename>`
 
 Archive output:
+
 - `archive.meta.tar` is written under `.stan/output/` when context mode is enabled.
   - It includes system files + dependency meta.
   - It excludes dependency state and staged payloads.
@@ -226,10 +229,12 @@ type DependencyStateFile = {
 ```
 
 Defaults:
+
 - If `depth` is omitted, it defaults to `0` (include only that nodeId).
 - If `edgeKinds` is omitted, it defaults to `['runtime', 'type', 'dynamic']`.
 
 Selection semantics:
+
 - Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
 - Excludes win and subtract using the same traversal semantics.
 - In dependency mode, expansion is intended to expand beyond baseline selection:
@@ -238,8 +243,7 @@ Selection semantics:
 
 ### Meta archive (thread opener)
 
-When context mode is enabled by a caller (typically stan-cli), the engine can
-create a small thread-opener archive at `.stan/output/archive.meta.tar`:
+When context mode is enabled by a caller (typically stan-cli), the engine can create a small thread-opener archive at `.stan/output/archive.meta.tar`:
 
 ```ts
 import { createMetaArchive } from '@karmaniverous/stan-core';
@@ -249,6 +253,7 @@ const p = await createMetaArchive(process.cwd(), '.stan');
 ```
 
 Contract:
+
 - Includes `<stanPath>/system/**` excluding `<stanPath>/system/.docs.meta.json`.
 - Includes `<stanPath>/context/dependency.meta.json`.
 - Excludes dependency state and staged payloads under `<stanPath>/context/**` by omission.
@@ -263,10 +268,14 @@ import {
   detectAndCleanPatch,
 } from '@karmaniverous/stan-core';
 
+const cwd = process.cwd();
+const stanPath = '.stan';
+
 const cleaned = detectAndCleanPatch(rawPatchText);
 
 const out = await applyPatchPipeline({
-  cwd: process.cwd(),
+  cwd,
+  stanPath, // enables workspace-scoped safety rules (e.g., imports read-only)
   patchAbs: '/abs/path/to/.stan/patch/.patch', // caller chooses where it is stored
   cleaned,
   check: false, // true => sandbox write only
@@ -286,6 +295,9 @@ Contract:
   3. final “creation fallback” for clearly-new files in malformed diffs.
 - `check: true` writes patched content to a sandbox directory (no repo mutation).
 - The engine does not print diagnostics; callers inspect the returned structured outcome.
+- Imports safety:
+  - `<stanPath>/imports/**` is protected staged context.
+  - When you provide `stanPath`, the engine refuses to apply diffs that target `<stanPath>/imports/**`.
 
 ### File Ops (pre-ops)
 
@@ -299,19 +311,24 @@ File Ops are a lightweight, safe structural operations layer (run before unified
 ```ts
 import { executeFileOps, parseFileOpsBlock } from '@karmaniverous/stan-core';
 
+const cwd = process.cwd();
+const stanPath = '.stan';
+
 const plan = parseFileOpsBlock(
   ['### File Ops', 'mkdirp src/new', 'mv src/old.ts src/new/old.ts'].join('\n'),
+  stanPath,
 );
 
 if (plan.errors.length) throw new Error(plan.errors.join('\n'));
 
-await executeFileOps(process.cwd(), plan.ops, false);
+await executeFileOps(cwd, plan.ops, false, stanPath);
 ```
 
 Contract:
 
 - Only repo-relative POSIX paths are allowed (no absolute paths; no `..` traversal).
 - `dryRun=true` validates without changing the filesystem.
+- When you provide `stanPath`, the engine refuses File Ops that target `<stanPath>/imports/**` (protected staged context).
 
 ### Optional: response-format validation
 

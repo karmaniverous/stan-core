@@ -4,8 +4,9 @@
  * - Deterministic path resolution from patch headers (no fuzzy/basename matching).
  * - Whitespace/EOL-tolerant comparison (ignores CR and trailing whitespace).
  * - Preserves original EOL flavor (CRLF vs LF) per file.
- * - When check=true, writes patched content to a sandbox under <stanPath>/patch/.sandbox/<ts>/ without touching repo files.
+ * - When check=true, writes patched content to a sandbox under <stanPath>/patch/.sandbox/ without touching repo files.
  * - When writing to the repo (check=false), ensure parent directories exist for new or nested paths.
+ * - Refuses to apply patches that target <stanPath>/imports/** (protected staged context) when stanPath is provided.
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -13,6 +14,7 @@ import path from 'node:path';
 
 import { applyPatch, parsePatch } from 'diff';
 
+import { isProtectedImportsPath } from './policy/imports';
 import { ensureParentDir } from './util/fs';
 
 const stripAB = (p?: string | null): string | null => {
@@ -42,8 +44,9 @@ export const applyWithJsDiff = async (args: {
   cleaned: string;
   check: boolean;
   sandboxRoot?: string;
+  stanPath?: string;
 }): Promise<JsDiffOutcome> => {
-  const { cwd, cleaned, check, sandboxRoot } = args;
+  const { cwd, cleaned, check, sandboxRoot, stanPath = '.stan' } = args;
 
   let patches: ReturnType<typeof parsePatch>;
   try {
@@ -84,6 +87,14 @@ export const applyWithJsDiff = async (args: {
     }
     const rel = candidate.replace(/^\.\//, '').replace(/\\/g, '/');
     const abs = path.resolve(cwd, rel);
+
+    if (isProtectedImportsPath(stanPath, rel)) {
+      failed.push({
+        path: rel,
+        reason: 'refusing to modify protected imports path',
+      });
+      continue;
+    }
 
     const isMd = /\.md$/i.test(rel);
     let original = '';
@@ -137,7 +148,7 @@ export const applyWithJsDiff = async (args: {
     try {
       if (check) {
         const root =
-          sandboxRoot ?? path.join(cwd, '.stan', 'patch', '.sandbox');
+          sandboxRoot ?? path.join(cwd, stanPath, 'patch', '.sandbox');
         const dest = path.resolve(root, rel);
         await ensureParentDir(dest);
         await writeFile(dest, finalBody, 'utf8');
