@@ -17,5 +17,6 @@ export type {
   NormalizedDependencyStateEntry,
 } from './schema';
 export { dependencyMetaFileSchema, parseDependencyStateFile } from './schema';
+export { stageDependencyContext } from './stage';
 export { computeSelectedNodeIds, expandEntry } from './state';
 export { writeDependencyMetaFile } from './write';

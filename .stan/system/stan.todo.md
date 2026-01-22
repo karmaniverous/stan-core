@@ -7,15 +7,11 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ## Next up (priority order)
 
 - Dependency graph mode (engine): stage external context under `.stan/context/**`
-  - Consume normalized dependency meta output from `buildDependencyMeta`.
-  - Stage required external bytes (npm + abs) into `.stan/context/...` prior to archiving.
-  - Hash-verify staged bytes match `metadata.hash` in meta; fail fast on mismatch.
-
-- Dependency graph mode (engine): stage external context under `.stan/context/**`
-  - Implement staging that copies required external bytes into `.stan/context/...` prior to archiving.
-  - No persistent `dependency.map.json`:
-    - stage npm/abs nodes using resolved paths available during graph generation and validate staged bytes hash to `metadata.hash`
-  - Ensure `.stan/context/**` remains gitignored but is included in archives when dependency mode is enabled.
+  - Wire staging + inclusion into the archive flow used by the CLI:
+    - stage npm/abs nodes using resolved paths available during graph generation
+    - validate staged bytes hash to `metadata.hash` (fail fast)
+    - ensure archiving uses `anchors: ['.stan/context/**']` (context is gitignored)
+  - Add support for staging only a selected nodeId set (state closure) to avoid bloat.
 
 - Undo/redo validation seam (engine; CLI calls)
   - Provide a validation API to support strict undo/redo:
@@ -152,4 +148,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Typecheck: restore sources Record typing
   - Fixed TS2322 in `src/stan/context/build.ts` by keeping `sources` typed as a
-    `Record<string, NodeSource>` and gating lookups with `hasOwnProperty`.
+    `Record<string, NodeSource>` and gating lookups with `hasOwnProperty`.
+
+- Dependency graph mode: stage external context bytes
+  - Added `stageDependencyContext(...)` to copy and sha256-verify external node
+    bytes into `.stan/context/{npm,abs}/...` for archiving.
+  - Added focused unit tests and documented the staging step in the assistant guide.

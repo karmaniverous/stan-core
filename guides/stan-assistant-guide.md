@@ -215,6 +215,38 @@ await writeDependencyMetaFile({ cwd, stanPath, meta: built.meta });
 // writes: <stanPath>/context/dependency.meta.json
 ```
 
+### Staging external dependency bytes (engine API)
+
+The dependency graph contains external nodes (npm + abs/outside-root). To make those
+files available to the assistant *inside archives*, they must be copied (“staged”)
+into the repo under `<stanPath>/context/**` prior to archiving.
+
+The engine provides:
+
+```ts
+import { stageDependencyContext } from '@karmaniverous/stan-core';
+
+await stageDependencyContext({
+  cwd,
+  stanPath,
+  meta: built.meta,
+  sources: built.sources,
+  clean: true, // clears <stanPath>/context/{npm,abs} before staging
+});
+```
+
+Contract:
+- Stages only `<stanPath>/context/npm/**` and `<stanPath>/context/abs/**` node IDs.
+- Verifies sha256 (and size when present) against `meta.nodes[nodeId].metadata`.
+- Fails fast (throws) on mismatch/missing source locator.
+- No console I/O; returns `{ staged, skipped }` on success.
+
+Important:
+- `<stanPath>/context/**` is typically gitignored, so callers must ensure it is
+  selected for archiving. The engine’s selection model supports this via `anchors`
+  because anchors override both `.gitignore` and configured excludes:
+  - `anchors: ['<stanPath>/context/**']` (use the concrete `stanPath`, e.g. `.stan/context/**`)
+
 Dependency requirements (loaded only when invoked):
 
 - `buildDependencyMeta` dynamically imports `typescript` and throws if it cannot be imported.
