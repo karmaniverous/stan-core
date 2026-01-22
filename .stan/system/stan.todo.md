@@ -6,12 +6,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Dependency graph mode (engine): file formats + types
-  - Add Zod schemas + TS types for:
-    - `.stan/context/dependency.meta.json` (assistant-facing; includes `description`; includes `locatorAbs` only for abs nodes)
-    - `.stan/context/dependency.state.json` (assistant-authored; include/exclude entries with depth + edgeKinds)
-  - Keep schemas strict and deterministic (stable key ordering in outputs where applicable).
-
 - Dependency graph mode (engine): normalize + embed dependency meta
   - Integrate `@karmaniverous/stan-context` as an optional runtime integration seam.
   - When graph generation is invoked by the caller (CLI context mode):
@@ -21,6 +15,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
       - npm nodes normalize to `.stan/context/npm/<pkg>/<ver>/<pathInPackage>`
       - abs nodes normalize to `.stan/context/abs/<sha256(sourceAbs)>/<basename>` and include `locatorAbs` in meta
     - Write `.stan/context/dependency.meta.json` deterministically.
+
+- Dependency graph mode (engine): closure primitives + tests are in place
+  - Next: wire closure into selection/staging and enforce reserved denials/binary exclusion policy at archive time.
 
 - Dependency graph mode (engine): compute selection closure from state
   - Implement deterministic closure:
@@ -138,3 +135,11 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: specify dependency graph mode contracts
   - Added baseline system-prompt guidance for dependency graph mode and made `.stan/imports/**` read-only as a baseline rule.
   - Documented `archive.meta.tar` output and dependency artifacts under `.stan/context/` (meta + state + staged externals).
+
+- Dependency graph mode: add schemas + closure primitives
+  - Added strict Zod schemas and TS types for dependency meta/state formats:
+    - `.stan/context/dependency.meta.json`
+    - `.stan/context/dependency.state.json`
+  - Implemented deterministic closure computation from meta+state (depth +
+    edgeKinds; excludes win) with unit tests.
+  - Exported these primitives from the engine barrel for downstream integration.

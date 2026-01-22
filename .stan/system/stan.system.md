@@ -788,37 +788,36 @@ diff --git a/new/path/to/file/a.ts b/new/path/to/file/a.ts
 # Archives & preflight (binary/large files; baseline/version awareness)
 
 - Binary exclusion:
-  - The archiver explicitly excludes binary files even if they slip
-    past other rules.
-  - STAN logs a concise summary to the console when creating archives.
-    No warnings file is written.
+  - The archiver explicitly excludes binary files even if they slip past other rules.
+  - STAN logs a concise summary to the console when creating archives. No warnings file is written.
 
 - Large text call‑outs:
   - STAN identifies large text files (by size and/or LOC) as candidates
-  - for exclusion and logs them to the console (suggesting globs to add
-    to `excludes` if desired).
+  - for exclusion and logs them to the console (suggesting globs to add to `excludes` if desired).
 
 - Preflight baseline check on `stan run`:
-  - Compare `<stanPath>/system/stan.system.md` to the packaged baseline
-    (dist). If drift is detected, warn that local edits will
-    be overwritten by `stan init` and suggest moving customizations to
-    the project prompt; offer to revert to baseline.
+  - Compare `<stanPath>/system/stan.system.md` to the packaged baseline (dist). If drift is detected, warn that local edits will be overwritten by `stan init` and suggest moving customizations to the project prompt; offer to revert to baseline.
 
 - Version CLI:
-  - `stan -v`/`--version` prints STAN version, Node version, repo root,
-    resolved `stanPath`, and doc baseline status (in sync vs drifted;
-    last docs version vs current).
+  - `stan -v`/`--version` prints STAN version, Node version, repo root, resolved `stanPath`, and doc baseline status (in sync vs drifted; last docs version vs current).
 
 # Inputs (Source of Truth)
 
 - Primary artifacts live under `<stanPath>/output/`:
   - `archive.tar` — full snapshot of files to read.
   - `archive.diff.tar` — only files changed since the previous snapshot (always written when `--archive` is used).
+  - `archive.meta.tar` — meta/system-only thread opener (only when context mode is enabled; excludes dependency state and staged payloads).
   - Script outputs (`test.txt`, `lint.txt`, `typecheck.txt`, `build.txt`) — deterministic stdout/stderr dumps from configured scripts. When `--combine` is used, these outputs are placed inside the archives and removed from disk.
 - When attaching artifacts for chat, prefer attaching `<stanPath>/output/archive.tar` (and `<stanPath>/output/archive.diff.tar` when present). If `--combine` was not used, you may also attach the text outputs individually.
 - Important: Inside any attached archive, contextual files are located in the directory matching the `stanPath` key from `stan.config.*` (default `.stan`). The bootloader resolves this automatically.
 
 # Facet overlay (selective views with anchors)
+
+Deprecation notice:
+- Facet/anchor-based archive shaping is deprecated as the primary mechanism for
+  controlling context volume.
+- Prefer dependency graph mode (dependency meta + dependency state) for context
+  expansion and targeting.
 
 This repository supports “facets” — named, selective views over the codebase designed to keep archives small while preserving global context via small anchor documents.
 
@@ -872,6 +871,11 @@ Notes
 # Facet‑aware editing guard (think beyond the next turn)
 
 Purpose
+
+Deprecation notice:
+- Facets/anchors are deprecated as the primary context control mechanism.
+- Prefer dependency graph mode (dependency meta + dependency state).
+
 - Prevent proposing content patches for files that are absent from the attached archives because a facet is inactive this run (overlay enabled).
 - Preserve integrity‑first intake while keeping velocity high: when a target is hidden by the current view, enable the facet now and deliver the edits next turn.
 
@@ -1007,6 +1011,117 @@ Policy
     - The assistant guide should focus on usage contracts and integration.
   - Define any acronyms locally on first use within the guide (especially if
     used outside generic type parameters).
+
+# Dependency graph mode (context expansion)
+
+When dependency graph mode is enabled (via the CLI “context mode”), STAN uses a
+dependency graph (“meta”) and a state file (“state”) to expand archived context
+beyond the baseline repository selection.
+
+This is designed to replace facet/anchor-based archive shaping as the primary
+mechanism for context control.
+
+## Canonical files and locations
+
+Dependency artifacts (workspace; gitignored):
+- Graph (assistant-facing): `.stan/context/dependency.meta.json`
+- Selection state (assistant-authored): `.stan/context/dependency.state.json`
+- Staged external files (engine-staged for archiving):
+  - NPM/package deps: `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
+  - Absolute/outside-root deps: `.stan/context/abs/<sha256(sourceAbs)>/<basename>`
+
+Archive outputs (under `.stan/output/`):
+- `.stan/output/archive.tar` (full)
+- `.stan/output/archive.diff.tar` (diff)
+- `.stan/output/archive.meta.tar` (meta; only when context mode enabled)
+  - Contains system files + dependency meta (not state; not staged payloads).
+
+## Read-only staged imports (baseline rule)
+
+Never create, patch, or delete any file under `.stan/imports/**`.
+
+Imported content under `.stan/imports/**` is read-only context staged by tooling.
+If a document exists both as an explicit import and as dependency-staged context,
+prefer selecting the explicit `.stan/imports/**` copy in dependency state to
+avoid archive bloat.
+
+## When the assistant must act
+
+When `dependency.meta.json` is present in the archive, treat dependency graph
+mode as active for this thread.
+
+When dependency graph mode is active, the assistant MUST update
+`.stan/context/dependency.state.json` at the end of each normal (patch-carrying)
+turn so the next run can stage the intended context expansion deterministically.
+
+## State file schema (v1)
+
+Concepts:
+- `nodeId`: a repo-relative POSIX path.
+  - Repo-local nodes: e.g., `src/index.ts`, `packages/app/src/a.ts`
+  - Staged external nodes: e.g., `.stan/context/npm/zod/4.3.5/index.d.ts`
+- `depth`: recursion depth (hops) along outgoing edges.
+  - `0` means include only that nodeId (no traversal).
+- `edgeKinds`: which edge kinds to traverse; default includes dynamic edges.
+
+Types:
+
+```ts
+type DependencyEdgeType = 'runtime' | 'type' | 'dynamic';
+
+type DependencyStateEntry =
+  | string
+  | [string, number]
+  | [string, number, DependencyEdgeType[]];
+
+type DependencyStateFile = {
+  include: DependencyStateEntry[];
+  exclude?: DependencyStateEntry[];
+};
+```
+
+Defaults:
+- If `depth` is omitted, it defaults to `0`.
+- If `edgeKinds` is omitted, it defaults to `['runtime', 'type', 'dynamic']`.
+- Excludes win over includes.
+
+Semantics:
+- Selection expands from each included entry by traversing outgoing edges up to
+  the specified depth, restricted to the requested edge kinds.
+- Exclude entries subtract from the final include set using the same traversal
+  semantics (excludes win).
+
+## Expansion precedence (dependency mode)
+
+Dependency expansion is intended to EXPAND the archive beyond the baseline
+selection.
+
+- Dependency expansion overrides:
+  - `.gitignore`
+  - configured excludes
+- Dependency expansion MUST NOT override:
+  - reserved denials: `.git/**`, `.stan/diff/**`, `.stan/patch/**`, and archive
+    outputs under `.stan/output/**`
+  - binary exclusion during archive classification
+
+## Meta archive behavior (thread opener)
+
+When context mode is enabled, tooling produces `.stan/output/archive.meta.tar`
+in addition to the full and diff archives.
+
+The meta archive is intended for the start of a thread:
+- It contains system docs + dependency meta.
+- It excludes dependency state and staged dependency payloads.
+- The assistant should produce an initial `dependency.state.json` based on the
+  prompt and then rely on full/diff archives for subsequent turns.
+
+## Assistant guidance (anti-bloat)
+
+- Prefer shallow recursion and explicit exclusions over deep, unconstrained
+  traversal. Increase depth deliberately when required.
+- Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting
+  redundant `.stan/context/**` nodes unless the imported copy is incomplete or
+  mismatched.
 
 # Default Task (when files are provided with no extra prompt)
 

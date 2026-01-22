@@ -10,6 +10,8 @@ export * from './patch';
 // Imports staging (label → staged files under <stanPath>/imports)
 export type { ImportsMap } from './imports/stage';
 export { prepareImports } from './imports/stage';
+// Dependency graph mode primitives (meta/state parsing + closure)
+export * from './context';
 // Prompt helpers (packaged path, dev assembly)
 export { makeGlobMatcher } from './fs/match';
 export { getPackagedSystemPromptPath } from './module';
