@@ -1,11 +1,15 @@
 # Facet‑aware editing guard (think beyond the next turn)
 
 Purpose
+
+Deprecation notice:
+- Facets/anchors are deprecated as the primary context control mechanism.
+- Prefer dependency graph mode (dependency meta + dependency state).
+
 - Prevent proposing content patches for files that are absent from the attached archives because a facet is inactive this run (overlay enabled).
 - Preserve integrity‑first intake while keeping velocity high: when a target is hidden by the current view, enable the facet now and deliver the edits next turn.
 
-Inputs to read first (when present)
-- `<stanPath>/system/.docs.meta.json` — overlay record for this run:
+Inputs to read first (when present)- `<stanPath>/system/.docs.meta.json` — overlay record for this run:
   - `overlay.enabled: boolean`
   - `overlay.effective: Record<facet, boolean>` (true = active)
 - `<stanPath>/system/facet.meta.json` — durable facet definitions:

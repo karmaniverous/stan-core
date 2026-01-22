@@ -75,4 +75,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     to explicitly document ESM-only usage.
 
 - Docs: align requirements with ESM-only packaging
-  - Update `.stan/system/stan.requirements.md` to reflect ESM-only outputs.
+  - Update `.stan/system/stan.requirements.md` to reflect ESM-only outputs.
+
+- Docs: specify dependency graph mode contracts
+  - Added baseline system-prompt guidance for dependency graph mode and made
+    `.stan/imports/**` read-only as a baseline rule.
+  - Documented `archive.meta.tar` output and dependency artifacts under
+    `.stan/context/` (meta + state + staged externals).

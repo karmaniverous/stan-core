@@ -1,5 +1,11 @@
 # Facet overlay (selective views with anchors)
 
+Deprecation notice:
+- Facet/anchor-based archive shaping is deprecated as the primary mechanism for
+  controlling context volume.
+- Prefer dependency graph mode (dependency meta + dependency state) for context
+  expansion and targeting.
+
 This repository supports “facets” — named, selective views over the codebase designed to keep archives small while preserving global context via small anchor documents.
 
 Files (under `<stanPath>/system/`)

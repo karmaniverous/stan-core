@@ -54,6 +54,63 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
 
 ### Scope
 
+- Dependency graph mode (context expansion; new)
+  - Purpose
+    - Expand the archived context beyond baseline selection using a dependency graph (“meta”) and a selection state file (“state”).
+    - This supersedes facet/anchor-based archive shaping as the primary mechanism for selecting context.
+  - TypeScript strictness (graph generation)
+    - When the caller (CLI) directs stan-core to generate a dependency graph, stan-core MUST require TypeScript to be available and MUST throw if it is not available.
+  - Canonical files and locations
+    - Dependency artifacts live under `<stanPath>/context/` (repo default: `.stan/context/`) and SHOULD be gitignored:
+      - `<stanPath>/context/dependency.meta.json` (assistant-facing meta)
+      - `<stanPath>/context/dependency.state.json` (assistant-authored state)
+      - staged external files:
+        - `<stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
+        - `<stanPath>/context/abs/<sha256(sourceAbs)>/<basename>`
+    - Archive outputs live under `<stanPath>/output/`:
+      - `archive.tar` (full)
+      - `archive.diff.tar` (diff)
+      - `archive.meta.tar` (meta; only when context mode is enabled)
+        - The meta archive MUST include system files and dependency meta.
+        - The meta archive MUST exclude dependency state and staged payloads.
+        - The meta archive MUST exclude `<stanPath>/system/.docs.meta.json`.
+  - Node IDs (graph + state)
+    - Node IDs MUST be repo-relative POSIX paths.
+    - External nodes MUST NOT use literal `node_modules/...` paths as node IDs; they MUST be normalized to the staged `<stanPath>/context/...` paths so the assistant can select files that exist within archives deterministically.
+  - Meta requirements (assistant-facing)
+    - The dependency meta file MUST include:
+      - deterministic graph nodes and edges (JSON-serializable),
+      - per-node `metadata.hash` (sha256) and `metadata.size` (bytes) when applicable,
+      - per-node `description` (when available from the context compiler),
+      - `locatorAbs` ONLY for abs/outside-root nodes (used for strict undo validation).
+    - The meta file MUST NOT include absolute-path locators for npm nodes.
+  - State file schema (v1; durable contract)
+    - `DependencyEdgeType = 'runtime' | 'type' | 'dynamic'`
+    - `DependencyStateEntry = string | [string, number] | [string, number, DependencyEdgeType[]]`
+      - string is `nodeId`
+      - number is recursion depth (defaults to `0` when omitted; `0` means include only that nodeId)
+      - edgeKinds defaults to `['runtime', 'type', 'dynamic']` when omitted
+    - `DependencyStateFile = { include: DependencyStateEntry[]; exclude?: DependencyStateEntry[] }`
+      - Excludes win over includes.
+      - Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
+  - Expansion precedence (dependency mode)
+    - Dependency expansion MUST override:
+      - `.gitignore`
+      - configured excludes
+    - Dependency expansion MUST NOT override:
+      - reserved denials: `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`, and archive outputs under `<stanPath>/output/**`
+      - binary exclusion during archive classification
+  - Imports (baseline safety)
+    - `.stan/imports/**` is staged context and MUST be treated as read-only by the assistant and engine operations:
+      - never create, patch, or delete files under `.stan/imports/**`.
+    - Engine SHOULD NOT attempt to deduplicate between `.stan/imports/**` and `<stanPath>/context/**`; selection decisions are handled at the assistant state level.
+  - Undo/redo (strict validation; CLI + engine seam)
+    - Undo/redo MUST fail immediately when the restored dependency selection cannot be satisfied by the current environment.
+    - Validation MUST be per-file hash (sha256), derived from the restored meta:
+      - For npm nodes: locate `<pkgName>@<pkgVersion>` in the current install and validate `<pathInPackage>` hashes match `metadata.hash`.
+      - For abs nodes: validate the file at `locatorAbs` hashes to `metadata.hash`.
+    - This strict mismatch detection MUST be performed even if cached archives contain older staged bytes; mismatch is defined as environment incompatibility.
+
 - Configuration (namespaced; canonical)
   - Config files are namespaced by consumer at the top level. Canonical keys:
     - `stan-core`: engine‑owned object; REQUIRED by the engine.
@@ -77,13 +134,15 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - `.gitignore` semantics,
     - `includes` (additive, override `.gitignore`),
     - `excludes` (take precedence over `includes`),
-    - `anchors` (high‑precedence re‑inclusion; see below),
+    - `anchors` (high‑precedence re‑inclusion; see below; deprecated as the primary context-control mechanism when dependency graph mode is used),
     - reserved workspace rules (exclude `<stanPath>/diff` and `<stanPath>/patch`, conditionally exclude `<stanPath>/output`).
   - Context Mode selection (peer to standard selection):
     - When enabled, selection starts with a **Mandatory Base** (System files + Staged Imports + Dependency Graph).
     - It then applies the **Context Overlay** from `<stanPath>/system/context.meta.json` (explicit file list).
     - **Override Rule**: Explicit entries in the Context Overlay MUST override default denials (specifically `node_modules` and `.gitignore`) to allow the AI to select external type definitions.
     - Configured `excludes` and Reserved Workspace rules still take precedence over the Context Overlay for safety.
+    - Deprecation note:
+      - Facet/anchor-based overlays are deprecated as the primary solution for context control; prefer dependency graph mode for expansion/targeting.
   - Anchors channel (new):
     - Core selection surfaces MUST accept an optional `anchors?: string[]` and re‑include matched paths after applying excludes and `.gitignore`.
     - Anchors MUST NOT override reserved denials (`.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`, and archive outputs) and MUST NOT bypass binary screening.
@@ -101,16 +160,20 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
   - Create full and diff archives:
     - `archive.tar` (full selection),
     - `archive.diff.tar` (changed since snapshot with snapshot management).
+  - Dependency graph mode MAY also produce:
+    - `archive.meta.tar` (system + dependency meta only; excludes dependency state and staged payloads).
   - Classification at archive time:
     - Exclude binaries,
     - Flag large text by size and/or LOC.
   - Warnings must be exposed via return values and/or optional callbacks (no console I/O).
   - Dependency Graph inclusion:
     - If `@karmaniverous/stan-context` is available and Context Mode is enabled, generate the dependency graph.
-    - Embed the graph JSON in the archive (e.g., `<stanPath>/system/dependency-graph.json`).
+    - Embed the graph JSON in the archive as `<stanPath>/context/dependency.meta.json`.
+    - External node IDs MUST be normalized to staged `<stanPath>/context/...` paths.
+    - Include `description` in the embedded meta for assistant prioritization.
   - Overlay metadata (CLI):
     - The CLI MUST write a machine‑readable `overlay` block to `<stanPath>/system/.docs.meta.json` each run capturing: `enabled`, per‑run overrides (`activated`/`deactivated`), final `effective` facet map, any `autosuspended` facets (ramp‑up safety), and optional `anchorsKept`.
-    - This metadata MUST be included in both full and diff archives so the assistant can distinguish selection/view changes from code churn across turns.
+    - This metadata MUST be included in both full and diff archives so the assistant can distinguish selection/view changes from code churn across turns across turns.
 
 - Snapshotting
   - Compute per‑file content hashes for the filtered selection.

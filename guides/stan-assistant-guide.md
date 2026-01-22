@@ -9,6 +9,7 @@ This guide is a compact, self-contained usage contract for `@karmaniverous/stan-
 - File selection (gitignore + includes/excludes + reserved workspace rules + anchors)
 - Archiving (full `archive.tar` and diff `*.diff.tar`)
 - Snapshotting (hash-based snapshot under `<stanPath>/diff`)
+- Dependency graph mode (context expansion; optional; context mode only)
 - Patch engine (git-apply cascade with jsdiff fallback + optional File Ops)
 - Imports staging (copy external artifacts into `<stanPath>/imports/<label>/...`)
 - Optional response-format validation utility
@@ -58,6 +59,9 @@ Given `stanPath = ".stan"`:
   - `archive.prev.tar` (previous full archive copy)
 - `.stan/patch/` — patch workspace (not intended for archiving; treated as reserved)
 - `.stan/imports/` — staged imports (copy-in area for external artifacts)
+- `.stan/context/` — dependency-graph artifacts and staged external context (context mode only):
+  - `dependency.meta.json` (assistant-facing graph meta)
+  - `dependency.state.json` (assistant-authored selection state)
 
 ## File selection model (mental model)
 
@@ -72,6 +76,10 @@ These are always excluded from archives and cannot be forced back by includes/an
 - `<stanPath>/patch/**`
 - archive files under `<stanPath>/output` (e.g., `archive.tar`, `archive.diff.tar`)
 - binary screening during archive classification (binaries are excluded even if selected)
+
+Additionally:
+- `.stan/imports/**` is staged context and should be treated as read-only:
+  - never create, patch, or delete files under `.stan/imports/**`.
 
 Additionally:
 
@@ -177,6 +185,56 @@ await writeArchiveSnapshot({
   anchors: ['docs/README.md'],
 });
 ```
+
+## Dependency graph mode (context expansion)
+
+When the CLI enables “context mode”, the engine can generate a dependency graph
+and use an assistant-authored state file to expand the archived context.
+
+Artifacts (under `.stan/context/`):
+- `dependency.meta.json` — assistant-facing graph meta:
+  - deterministic `nodes` and `edges`,
+  - per-node `metadata.hash` (sha256) and `metadata.size` (bytes) when applicable,
+  - per-node `description` (when available from the context compiler),
+  - `locatorAbs` only for abs/outside-root nodes (used for strict undo validation).
+- `dependency.state.json` — assistant-authored selection state:
+  - selects nodes to include and how deeply to traverse dependencies.
+- staged external context (engine-staged for archiving):
+  - `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
+  - `.stan/context/abs/<sha256(sourceAbs)>/<basename>`
+
+Archive output:
+- `archive.meta.tar` is written under `.stan/output/` when context mode is enabled.
+  - It includes system files + dependency meta.
+  - It excludes dependency state and staged payloads.
+  - It excludes `.stan/system/.docs.meta.json`.
+
+State file schema (v1):
+
+```ts
+type DependencyEdgeType = 'runtime' | 'type' | 'dynamic';
+
+type DependencyStateEntry =
+  | string
+  | [string, number]
+  | [string, number, DependencyEdgeType[]];
+
+type DependencyStateFile = {
+  include: DependencyStateEntry[];
+  exclude?: DependencyStateEntry[]; // excludes win
+};
+```
+
+Defaults:
+- If `depth` is omitted, it defaults to `0` (include only that nodeId).
+- If `edgeKinds` is omitted, it defaults to `['runtime', 'type', 'dynamic']`.
+
+Selection semantics:
+- Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
+- Excludes win and subtract using the same traversal semantics.
+- In dependency mode, expansion is intended to expand beyond baseline selection:
+  - overrides `.gitignore` and configured excludes,
+  - but never overrides reserved workspace denials or binary exclusion.
 
 ### Patch application pipeline
 
