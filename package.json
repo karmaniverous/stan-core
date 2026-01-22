@@ -99,9 +99,6 @@
     "typescript": ">=5"
   },
   "peerDependenciesMeta": {
-    "@karmaniverous/stan-context": {
-      "optional": true
-    },
     "typescript": {
       "optional": true
     }
