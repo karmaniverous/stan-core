@@ -18,7 +18,9 @@ describe('writeDependencyMetaFile', () => {
 
       const body = await readFile(abs, 'utf8');
       expect(body.endsWith('\n')).toBe(true);
-      expect(() => JSON.parse(body)).not.toThrow();
+      expect(() => {
+        JSON.parse(body);
+      }).not.toThrow();
     } finally {
       await rm(cwd, { recursive: true, force: true });
     }

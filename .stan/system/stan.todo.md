@@ -139,4 +139,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - npm externals -> `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
     - abs externals -> `.stan/context/abs/<sha256(locatorAbs)>/<basename>` with `locatorAbs` stored for future strict undo validation
   - Omitted builtin and missing/unresolved nodes from persisted meta, surfacing them as warnings instead.
-  - Added focused unit tests and updated the local assistant guide.
+  - Added focused unit tests and updated the local assistant guide.
+
+- Chore: remove shim; fix context-mode lint
+  - Installed `@karmaniverous/stan-context` as a devDependency and removed the local type shim.
+  - Refactored dependency meta builder helpers into small modules to keep files under the 300-LOC cap and satisfy strict ESLint rules.
+  - Fixed lint in context tests (no conditional expect; no unsafe return).

@@ -107,16 +107,15 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     const absNorm = nodeIds.find((id) =>
       id.startsWith(`${stanPath}/context/abs/`),
     );
-    expect(typeof absNorm).toBe('string');
-    if (absNorm) {
-      expect(out.meta.nodes[absNorm]?.locatorAbs).toBe(
-        absFileAbs.replace(/\\/g, '/'),
-      );
-    }
+    expect(absNorm).toBeTruthy();
+    const absId = absNorm as string;
+    expect(out.meta.nodes[absId].locatorAbs).toBe(
+      absFileAbs.replace(/\\/g, '/'),
+    );
 
     // Edges are preserved only among kept targets
-    expect(out.meta.edges[srcId]?.some((e) => e.target === npmNorm)).toBe(true);
-    expect(out.meta.edges[srcId]?.some((e) => e.target.includes('node:'))).toBe(
+    expect(out.meta.edges[srcId].some((e) => e.target === npmNorm)).toBe(true);
+    expect(out.meta.edges[srcId].some((e) => e.target.includes('node:'))).toBe(
       false,
     );
 

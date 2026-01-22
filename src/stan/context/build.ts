@@ -11,16 +11,18 @@
  * - Must omit builtins and missing nodes from persisted meta (surface as warnings).
  * - Must produce deterministic JSON-serializable nodes/edges and validate with dependencyMetaFileSchema.
  */
-import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { loadStanContext, loadTypeScript } from './deps';
-import type {
-  DependencyMetaFile,
-  DependencyMetaNode,
-  DependencyMetaNodeMetadata,
-} from './schema';
+import {
+  normalizeAbsExternal,
+  normalizeMetadata,
+  normalizeRepoLocal,
+  sortRecordKeys,
+  toPosix,
+} from './normalize';
+import { normalizeNpmExternal } from './npm';
+import type { DependencyMetaFile, DependencyMetaNode } from './schema';
 import { dependencyMetaFileSchema } from './schema';
 
 type GraphNode = {
@@ -65,134 +67,6 @@ export type BuildDependencyMetaResult = {
   stats?: { modules: number; edges: number; dirty: number };
 };
 
-const toPosix = (p: string): string => p.replace(/\\/g, '/');
-
-const sha256Hex = (s: string): string =>
-  createHash('sha256').update(s).digest('hex');
-
-const ensureNoTraversal = (rel: string): boolean => {
-  const parts = toPosix(rel).split('/').filter(Boolean);
-  return !parts.some((s) => s === '..');
-};
-
-const tryReadJson = async (
-  abs: string,
-): Promise<Record<string, unknown> | null> => {
-  try {
-    const raw = await readFile(abs, 'utf8');
-    const parsed = JSON.parse(raw) as unknown;
-    return parsed && typeof parsed === 'object'
-      ? (parsed as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
-};
-
-const findNearestPackageRoot = async (
-  fileAbs: string,
-): Promise<string | null> => {
-  // Walk upward until we find a package.json. Stop at filesystem root.
-  let cursor = path.dirname(fileAbs);
-  for (let i = 0; i < 64; i += 1) {
-    const p = path.join(cursor, 'package.json');
-    const obj = await tryReadJson(p);
-    if (
-      obj &&
-      typeof obj.name === 'string' &&
-      typeof obj.version === 'string'
-    ) {
-      return cursor;
-    }
-    const parent = path.dirname(cursor);
-    if (parent === cursor) break;
-    cursor = parent;
-  }
-  return null;
-};
-
-const normalizeNpmExternal = async (
-  cwd: string,
-  stanPath: string,
-  sourceAbs: string,
-): Promise<{
-  nodeId: string;
-  src: NodeSource;
-} | null> => {
-  const pkgRoot = await findNearestPackageRoot(sourceAbs);
-  if (!pkgRoot) return null;
-  const pkgJson = await tryReadJson(path.join(pkgRoot, 'package.json'));
-  const pkgName = typeof pkgJson?.name === 'string' ? pkgJson.name : null;
-  const pkgVersion =
-    typeof pkgJson?.version === 'string' ? pkgJson.version : null;
-  if (!pkgName || !pkgVersion) return null;
-
-  const relInPkg = toPosix(path.relative(pkgRoot, sourceAbs));
-  if (!relInPkg || relInPkg.startsWith('..') || !ensureNoTraversal(relInPkg)) {
-    return null;
-  }
-
-  // Note: pkgName may include "@scope/pkg" which becomes nested directories.
-  const nodeId = `${toPosix(stanPath)}/context/npm/${toPosix(pkgName)}/${toPosix(pkgVersion)}/${relInPkg}`;
-  if (!ensureNoTraversal(nodeId)) return null;
-  return {
-    nodeId,
-    src: {
-      kind: 'npm',
-      sourceAbs: toPosix(sourceAbs),
-      pkgName,
-      pkgVersion,
-      pathInPackage: relInPkg,
-    },
-  };
-};
-
-const normalizeAbsExternal = (
-  stanPath: string,
-  sourceAbs: string,
-): { nodeId: string; src: NodeSource; locatorAbs: string } => {
-  const locatorAbs = toPosix(sourceAbs);
-  const base = path.posix.basename(locatorAbs);
-  const idHash = sha256Hex(locatorAbs);
-  const nodeId = `${toPosix(stanPath)}/context/abs/${idHash}/${base}`;
-  return {
-    nodeId,
-    src: { kind: 'abs', sourceAbs: locatorAbs, locatorAbs },
-    locatorAbs,
-  };
-};
-
-const normalizeRepoLocal = (cwd: string, id: string): string | null => {
-  const raw = toPosix(id).replace(/^\.\/+/, '');
-  // If the graph returns an absolute path for a repo-local file, fold it to repo-relative.
-  if (path.isAbsolute(id)) {
-    const rel = toPosix(path.relative(cwd, id));
-    if (!rel || rel.startsWith('..') || !ensureNoTraversal(rel)) return null;
-    return rel;
-  }
-  if (!raw || raw.startsWith('..') || !ensureNoTraversal(raw)) return null;
-  return raw;
-};
-
-const normalizeMetadata = (m?: {
-  size?: number;
-  hash?: string;
-}): DependencyMetaNodeMetadata | undefined => {
-  if (!m) return undefined;
-  const out: DependencyMetaNodeMetadata = {};
-  if (typeof m.size === 'number' && Number.isFinite(m.size) && m.size >= 0)
-    out.size = Math.floor(m.size);
-  if (typeof m.hash === 'string' && m.hash.length > 0) out.hash = m.hash;
-  return Object.keys(out).length ? out : undefined;
-};
-
-const sortRecordKeys = <T>(obj: Record<string, T>): Record<string, T> => {
-  const out: Record<string, T> = {};
-  for (const k of Object.keys(obj).sort((a, b) => a.localeCompare(b)))
-    out[k] = obj[k];
-  return out;
-};
-
 export const buildDependencyMeta = async (
   args: BuildDependencyMetaArgs,
 ): Promise<BuildDependencyMetaResult> => {
@@ -233,9 +107,9 @@ export const buildDependencyMeta = async (
     maxErrors,
   })) as { graph?: Graph; stats?: unknown; errors?: unknown };
 
-  const graph: Graph = raw?.graph ?? {};
+  const graph: Graph = raw.graph ?? {};
   const stats =
-    raw?.stats && typeof raw.stats === 'object'
+    raw.stats && typeof raw.stats === 'object'
       ? (raw.stats as { modules?: number; edges?: number; dirty?: number })
       : undefined;
   const statsOut =
@@ -246,7 +120,7 @@ export const buildDependencyMeta = async (
       ? { modules: stats.modules, edges: stats.edges, dirty: stats.dirty }
       : undefined;
 
-  if (Array.isArray(raw?.errors) && raw.errors.length) {
+  if (Array.isArray(raw.errors) && raw.errors.length) {
     for (const e of raw.errors)
       if (typeof e === 'string' && e.trim()) warnings.push(e.trim());
   }
@@ -292,14 +166,27 @@ export const buildDependencyMeta = async (
     if (kind === 'external') {
       const abs = path.isAbsolute(oldId) ? oldId : path.resolve(cwd, oldId);
       // Prefer npm normalization when a package boundary exists; else treat as abs.
-      const npm = await normalizeNpmExternal(cwd, stanPath, abs);
+      const npm = await normalizeNpmExternal(stanPath, abs);
       if (npm) {
         idMap.set(oldId, npm.nodeId);
-        sources[npm.nodeId] = npm.src;
+        sources[npm.nodeId] = {
+          kind: 'npm',
+          sourceAbs: npm.sourceAbsPosix,
+          pkgName: npm.pkgName,
+          pkgVersion: npm.pkgVersion,
+          pathInPackage: npm.pathInPackage,
+        };
       } else {
-        const { nodeId, src } = normalizeAbsExternal(stanPath, abs);
+        const { nodeId, locatorAbs, sourceAbsPosix } = normalizeAbsExternal(
+          stanPath,
+          abs,
+        );
         idMap.set(oldId, nodeId);
-        sources[nodeId] = src;
+        sources[nodeId] = {
+          kind: 'abs',
+          sourceAbs: sourceAbsPosix,
+          locatorAbs,
+        };
       }
       continue;
     }
@@ -313,11 +200,11 @@ export const buildDependencyMeta = async (
 
   if (droppedBuiltin > 0)
     warnings.push(
-      `dependency graph: omitted ${droppedBuiltin} builtin node(s) from persisted meta`,
+      `dependency graph: omitted ${droppedBuiltin.toString()} builtin node(s) from persisted meta`,
     );
   if (droppedMissing > 0)
     warnings.push(
-      `dependency graph: omitted ${droppedMissing} missing node(s) from persisted meta`,
+      `dependency graph: omitted ${droppedMissing.toString()} missing node(s) from persisted meta`,
     );
 
   // 2) Build normalized nodes map.
@@ -370,9 +257,9 @@ export const buildDependencyMeta = async (
       kind: 'runtime' | 'type' | 'dynamic';
       resolution?: 'explicit' | 'implicit';
     }> = [];
-    for (const e of list ?? []) {
-      const tOld = typeof e?.target === 'string' ? e.target : null;
-      const kind = e?.kind;
+    for (const e of list) {
+      const tOld = typeof e.target === 'string' ? e.target : null;
+      const kind = e.kind;
       if (!tOld) continue;
       const t = idMap.get(tOld) ?? null;
       if (!t || !keep.has(t)) continue;
@@ -387,7 +274,7 @@ export const buildDependencyMeta = async (
     next.sort((a, b) =>
       a.target === b.target
         ? a.kind === b.kind
-          ? String(a.resolution ?? '').localeCompare(String(b.resolution ?? ''))
+          ? (a.resolution ?? '').localeCompare(b.resolution ?? '')
           : a.kind.localeCompare(b.kind)
         : a.target.localeCompare(b.target),
     );
