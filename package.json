@@ -151,7 +151,7 @@
     "release:pre": "npm run release -- --no-git.requireBranch --github.prerelease --preRelease",
     "release": "dotenvx run -f .env.local -- release-it",
     "relink": "npm uninstall -g @karmaniverous/stan-core && npm run build && npm link",
-    "test": "vitest --run --coverage --silent",
+    "test": "vitest --run --silent",
     "typecheck": "tsc"
   },
   "type": "module",
