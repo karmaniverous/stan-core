@@ -6,6 +6,68 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- Dependency graph mode (engine): file formats + types
+  - Add Zod schemas + TS types for:
+    - `.stan/context/dependency.meta.json` (assistant-facing; includes `description`; includes `locatorAbs` only for abs nodes)
+    - `.stan/context/dependency.state.json` (assistant-authored; include/exclude entries with depth + edgeKinds)
+  - Keep schemas strict and deterministic (stable key ordering in outputs where applicable).
+
+- Dependency graph mode (engine): normalize + embed dependency meta
+  - Integrate `@karmaniverous/stan-context` as an optional runtime integration seam.
+  - When graph generation is invoked by the caller (CLI context mode):
+    - Require TypeScript to be present; throw immediately if unavailable.
+    - Generate the dependency graph and normalize node IDs:
+      - repo-local nodes remain repo-relative
+      - npm nodes normalize to `.stan/context/npm/<pkg>/<ver>/<pathInPackage>`
+      - abs nodes normalize to `.stan/context/abs/<sha256(sourceAbs)>/<basename>` and include `locatorAbs` in meta
+    - Write `.stan/context/dependency.meta.json` deterministically.
+
+- Dependency graph mode (engine): compute selection closure from state
+  - Implement deterministic closure:
+    - state entry kinds:
+      - `string`
+      - `[nodeId, depth]`
+      - `[nodeId, depth, edgeKinds[]]`
+    - defaults: depth=0; edgeKinds=`['runtime','type','dynamic']`
+    - traversal: outgoing edges only; deterministic ordering; cycle-safe
+    - excludes win (subtract using same traversal semantics)
+  - Policy: dependency expansion overrides `.gitignore` and configured excludes, but never reserved denials or binary exclusion.
+
+- Dependency graph mode (engine): stage external context under `.stan/context/**`
+  - Implement staging that copies required external bytes into `.stan/context/...` prior to archiving.
+  - No persistent `dependency.map.json`:
+    - stage npm/abs nodes using resolved paths available during graph generation and validate staged bytes hash to `metadata.hash`
+  - Ensure `.stan/context/**` remains gitignored but is included in archives when dependency mode is enabled.
+
+- Dependency graph mode (engine): meta archive support
+  - Add an engine surface that allows callers to create `.stan/output/archive.meta.tar` (context-mode thread opener):
+    - includes system docs + `.stan/context/dependency.meta.json`
+    - excludes `.stan/context/dependency.state.json`
+    - excludes staged `.stan/context/npm/**` and `.stan/context/abs/**` payloads
+    - excludes `.stan/system/.docs.meta.json`
+  - Ensure creation is deterministic and respects binary exclusion policy.
+
+- Imports safety (engine + tooling invariants)
+  - Enforce “`.stan/imports/**` is read-only” at engine boundaries where applicable:
+    - refuse File Ops targeting `<stanPath>/imports/**`
+    - refuse unified diff targets under `<stanPath>/imports/**`
+  - (Assistant behavior is already documented; this adds an engine safety net.)
+
+- Undo/redo validation seam (engine; CLI calls)
+  - Provide a validation API to support strict undo/redo:
+    - compute selected node set from restored meta+state
+    - for npm nodes: locate `<pkg>@<ver>` candidates in current install and validate per-file sha256 against `metadata.hash`
+    - for abs nodes: hash `locatorAbs` and compare to `metadata.hash`
+    - fail fast with structured mismatches
+  - Note: strict mismatch detection should fail even if cached archives contain older staged bytes (mismatch is environment incompatibility).
+
+- Tests (engine)
+  - Unit tests for:
+    - state parsing + closure determinism (depth + edgeKinds + excludes)
+    - nodeId normalization rules (npm + abs)
+    - staging copies + hash verification (fixture trees)
+    - undo validation mismatch cases (npm version/path mismatch; abs missing/mismatch)
+
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during future work or CLI alignment.
   - Keep modules ≤ 300 LOC.
@@ -59,26 +121,20 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated patch cleaner/extractor to accept both backtick and tilde fenced payloads, and added focused tests to prevent regressions.
 
 - Patch ingestion: avoid false close on " ~~~~" context lines
-  - Fixed unified-diff fence extraction to avoid treating diff context lines
-    that start with a space as candidate closing fences (tilde and backtick).
-  - Added a regression test and aligned remaining Response Format wording to
-    the tilde fence hygiene rule.
+  - Fixed unified-diff fence extraction to avoid treating diff context lines that start with a space as candidate closing fences (tilde and backtick).
+  - Added a regression test and aligned remaining Response Format wording to the tilde fence hygiene rule.
 
 - File Ops: implement cp
-  - Added `cp <src> <dest>` support (recursive, no overwrite, creates parents),
-    updated validation, and added execution coverage.
+  - Added `cp <src> <dest>` support (recursive, no overwrite, creates parents), updated validation, and added execution coverage.
 
 - Packaging: make the library ESM-only
   - Stop publishing `dist/cjs` and remove the `exports.require` condition.
   - Point `main` and `types` at the ESM build outputs.
-  - Update README and the local assistant guide to avoid subpath imports and
-    to explicitly document ESM-only usage.
+  - Update README and the local assistant guide to avoid subpath imports and to explicitly document ESM-only usage.
 
 - Docs: align requirements with ESM-only packaging
   - Update `.stan/system/stan.requirements.md` to reflect ESM-only outputs.
 
 - Docs: specify dependency graph mode contracts
-  - Added baseline system-prompt guidance for dependency graph mode and made
-    `.stan/imports/**` read-only as a baseline rule.
-  - Documented `archive.meta.tar` output and dependency artifacts under
-    `.stan/context/` (meta + state + staged externals).
+  - Added baseline system-prompt guidance for dependency graph mode and made `.stan/imports/**` read-only as a baseline rule.
+  - Documented `archive.meta.tar` output and dependency artifacts under `.stan/context/` (meta + state + staged externals).
