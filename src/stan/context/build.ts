@@ -1,4 +1,7 @@
-/* src/stan/context/build.ts
+/**
+ * Builds dependency.meta.json (normalize nodes/edges + sources map); dynamic
+ * imports; filesystem reads only; no console output; used in context mode.
+ *
  * Build assistant-facing dependency.meta.json for dependency graph mode.
  *
  * Requirements:
@@ -10,6 +13,7 @@
  *   - abs/outside-root: <stanPath>/context/abs/<sha256(sourceAbs)>/<basename>
  * - Must omit builtins and missing nodes from persisted meta (surface as warnings).
  * - Must produce deterministic JSON-serializable nodes/edges and validate with dependencyMetaFileSchema.
+ * @module
  */
 import path from 'node:path';
 

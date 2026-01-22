@@ -1,5 +1,7 @@
-/* src/stan/patch/diag/util.ts
- * Shared diagnostics helpers to keep formatter/service logic DRY.
+/**
+ * Renders concise diagnostics lines for patch failures; pure string helpers;
+ * no IO; shared by formatters and adapters.
+ * @module
  */
 
 export type AttemptLabel = string;

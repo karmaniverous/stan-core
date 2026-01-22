@@ -1,6 +1,6 @@
-// src/stan/patch/format.ts
 /**
- * Central formatter for patch failure outputs.
+ * Formats patch failure diagnostics (git attempts + jsdiff reasons + File Ops);
+ * pure string formatting; no filesystem IO; shared across repos.
  * Unified for all repos:
  * - diff: identification line + diagnostics envelope (START/END).
  *         Attempts summary: one line per git attempt in cascade order:
@@ -8,6 +8,7 @@
  *         Always append concise “jsdiff: <path>: <reason>” lines when jsdiff ran.
  * - file-ops: “The File Ops patch failed.” + diagnostics envelope containing
  *             parse/exec failures; no action‑request line.
+ * @module
  */
 
 export type FailureContext = 'downstream' | 'stan';

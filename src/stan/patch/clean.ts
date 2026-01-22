@@ -1,3 +1,8 @@
+/**
+ * Detects and cleans unified-diff payloads from chat/clipboard; unwraps fences;
+ * extracts first diff; normalizes EOL; pure string processing; no IO.
+ * @module
+ */
 import { ensureFinalLF } from '@/stan/text/eol';
 
 import { extractFirstUnifiedDiff, normalizePatchText } from './common/diff';

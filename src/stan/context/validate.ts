@@ -1,4 +1,7 @@
-/* src/stan/context/validate.ts
+/**
+ * Validates selected dependency nodes for undo/redo (npm pkg@version + abs
+ * locator hash/size checks); filesystem IO only; no console output.
+ *
  * Strict dependency selection validation for undo/redo.
  *
  * Requirements:
@@ -11,6 +14,7 @@
  *   - hash-check locatorAbs against meta.nodes[nodeId].metadata.hash
  * - Fail-fast is supported via validateDependencySelectionOrThrow.
  * - No console I/O; deterministic ordering.
+ * @module
  */
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';

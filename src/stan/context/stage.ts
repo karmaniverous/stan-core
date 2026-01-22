@@ -1,4 +1,7 @@
-/* src/stan/context/stage.ts
+/**
+ * Stages external dependency bytes into <stanPath>/context/{npm,abs}/** and
+ * verifies sha256/size; filesystem IO only; no console output.
+ *
  * Stage external dependency bytes under <stanPath>/context/** prior to archiving.
  *
  * Requirements:
@@ -8,6 +11,7 @@
  * - Verify sha256 (and size when present) matches meta.nodes[nodeId].metadata.
  * - Fail fast with a clear error message on mismatch/missing source.
  * - No console I/O; return structured results.
+ * @module
  */
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';

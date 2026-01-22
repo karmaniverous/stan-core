@@ -1,3 +1,8 @@
+/**
+ * Runs git-apply attempt cascades and captures stdout/stderr per attempt;
+ * spawns a child process; no filesystem IO; used by patch pipeline.
+ * @module
+ */
 import { spawn } from 'node:child_process';
 
 // Attempt/diagnostic types

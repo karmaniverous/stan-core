@@ -1,4 +1,7 @@
-/* src/stan/context/schema.ts
+/**
+ * Defines dependency graph meta/state schemas (Zod) for context mode; pure
+ * validation/types; no filesystem IO; deterministic formats.
+ *
  * Dependency graph mode: on-disk JSON formats for:
  * - .stan/context/dependency.state.json (assistant-authored selection intent)
  * - .stan/context/dependency.meta.json (assistant-facing dependency graph)
@@ -8,6 +11,7 @@
  * - State entries support string | [nodeId, depth] | [nodeId, depth, edgeKinds[]]
  *   with defaults depth=0, edgeKinds=['runtime','type','dynamic'].
  * - Meta may include locatorAbs ONLY for abs/outside-root nodes.
+ * @module
  */
 
 import { z } from 'zod';

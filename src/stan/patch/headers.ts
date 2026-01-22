@@ -1,5 +1,9 @@
-/* src/stan/patch/headers.ts
+/**
+ * Extracts repo-relative target paths from unified diffs; pure parsing; no
+ * filesystem IO; used by patch pipeline diagnostics and tooling.
+ *
  * Extract header-derived candidate paths from unified diff.
+ * @module
  */
 /**
  * Extract unique repo‑relative file paths from unified diff headers.

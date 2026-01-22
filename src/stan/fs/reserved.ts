@@ -1,5 +1,7 @@
-/* src/stan/fs/reserved.ts
- * Helpers for reserved workspace paths under <stanPath>.
+/**
+ * Defines reserved workspace path rules (diff/patch/output archives); pure
+ * helpers; no filesystem IO; used by selection and tar filtering.
+ * @module
  */
 import {
   ARCHIVE_DIFF_TAR,

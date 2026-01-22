@@ -1,5 +1,7 @@
-/* src/stan/context/index.ts
- * Dependency graph mode primitives.
+/**
+ * Barrel exports for dependency graph mode primitives; re-exports types and
+ * helpers; no side effects beyond re-exports.
+ * @module
  */
 
 export type {

@@ -1,9 +1,13 @@
-/* src/stan/context/normalize.ts
+/**
+ * Normalizes dependency graph node IDs and metadata (POSIX, sha256, guards);
+ * pure helpers; no filesystem IO; shared by context-mode modules.
+ *
  * Small, reusable normalization helpers for dependency graph mode.
  *
  * Requirements:
  * - Deterministic normalization (POSIX paths, traversal guards).
  * - Keep modules small (<300 LOC); used by build/stage/validate.
+ * @module
  */
 import { createHash } from 'node:crypto';
 import path from 'node:path';

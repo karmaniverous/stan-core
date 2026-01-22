@@ -1,6 +1,10 @@
-/* src/stan/system/assemble.ts
+/**
+ * Assembles <stanPath>/system/parts/*.md into stan.system.md; filesystem IO
+ * only; deterministic ordering; no console output.
+ *
  * Assemble <stanPath>/system/parts/*.md into <stanPath>/system/stan.system.md.
  * Emits no console logs; callers decide what to print.
+ * @module
  */
 import { existsSync } from 'node:fs';
 import { readdir, readFile, writeFile } from 'node:fs/promises';

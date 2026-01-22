@@ -1,4 +1,7 @@
-/* src/stan/patch/file-ops.ts
+/**
+ * Parses and executes File Ops pre-ops (mv/cp/rm/rmdir/mkdirp); filesystem IO;
+ * enforces repo-relative safety rules; no console output.
+ *
  * File Ops (pre-ops) parser and executor.
  * Verbs:
  * - mv <src> <dest>
@@ -13,6 +16,7 @@
  * - rm: files or directories (recursive).
  * - rmdir: empty directories only (safety).
  * - Dry-run mode validates constraints without changing the filesystem.
+ * @module
  */
 import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';

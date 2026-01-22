@@ -1,4 +1,8 @@
-// src/stan/patch/parse.ts
+/**
+ * Parses unified diffs to derive per-file metadata and strip candidates;
+ * pure parsing; no filesystem IO; used by patch tooling/diagnostics.
+ * @module
+ */
 import { parsePatch } from 'diff';
 
 const stripAB = (p?: string | null): { path?: string; hadAB: boolean } => {

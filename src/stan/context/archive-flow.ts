@@ -1,4 +1,7 @@
-/* src/stan/context/archive-flow.ts
+/**
+ * Orchestrates dependency-graph archive flows (stage context + add anchors);
+ * calls archive/diff helpers; filesystem IO only; no console output.
+ *
  * Dependency graph mode: orchestration helpers for CLI-facing archive flows.
  *
  * Requirements:
@@ -6,6 +9,7 @@
  * - Prefer staging ONLY the selected nodeId set derived from dependency state closure to avoid bloat.
  * - Ensure <stanPath>/context/** is included in archives even when gitignored (use anchors).
  * - No console I/O; keep behavior deterministic.
+ * @module
  */
 import type { CreateArchiveOptions } from '../archive';
 import { createArchive } from '../archive';

@@ -1,4 +1,7 @@
-/* src/stan/context/state.ts
+/**
+ * Computes dependency selection closure from meta+state (depth + edgeKinds);
+ * deterministic BFS; pure graph traversal; no filesystem IO.
+ *
  * Dependency graph mode: compute selected node IDs from:
  * - dependency.meta.json edges
  * - dependency.state.json include/exclude entries
@@ -8,6 +11,7 @@
  * - Traverse outgoing edges only, restricted by edgeKinds.
  * - Deterministic selection: stable ordering across runs for identical inputs.
  * - Excludes win: subtract after includes using same traversal semantics.
+ * @module
  */
 
 import type {

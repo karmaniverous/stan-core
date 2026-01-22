@@ -1,9 +1,13 @@
-/* src/stan/imports/stage.ts
+/**
+ * Stages external artifacts under <stanPath>/imports/<label>/...; filesystem IO
+ * only; deterministic label sanitization; no console output.
+ *
  * Stage external artifacts under <stanPath>/imports/<label>/... just before archiving.
  * - Labels: allow A–Z a–z 0–9 @ / _ - ; forbid “..”; sanitize other chars to "_".
  * - Globs: resolve with fast-glob; allow absolute/../ patterns; include dot files.
  * - Mapping: dest = <stanPath>/imports/<label>/<tail>; tail = path relative to glob-parent(pattern).
  * - Engine remains silent; optional onStage(label, files[]) callback surfaces results.
+ * @module
  */
 import { copyFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';

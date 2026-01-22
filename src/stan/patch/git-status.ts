@@ -1,8 +1,12 @@
-/* src/stan/patch/git-status.ts
+/**
+ * No-op staged overlap check (retained for API stability); no filesystem IO;
+ * no console output; async signature preserved.
+ *
  * Staged-overlap check (disabled).
  *
  * Rationale: warning adds noise without actionable value; users can
  * manage staging themselves. Retained as a no-op for API stability.
+ * @module
  */
 
 export const maybeWarnStaged = async (

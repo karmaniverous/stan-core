@@ -1,5 +1,9 @@
-/* src/stan/patch/common/file-ops.ts
+/**
+ * Extracts unfenced "### File Ops" blocks from assistant replies; pure string
+ * parsing; no filesystem IO; shared by validators and executors.
+ *
  * Shared extractor for the unfenced "### File Ops" block.
+ * @module
  */
 
 /** Extract unfenced File Ops body: lines after "### File Ops" up to the next heading or EOF. */

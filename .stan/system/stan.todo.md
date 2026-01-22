@@ -175,4 +175,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Wired the stan-context ESLint rule at warn-level to start enforcement without breaking CI; plan to promote to error after rollout.
 - Lint/docs: module docblock formatting rule
   - Documented the required module docblock structure (multi-line JSDoc, tag after prose, wrap code comments at 80) and began applying it to core engine modules without disabling `stan-context/require-module-description`.
-- Docs: clarify module docblock merge behavior (tag last)
+- Docs: clarify module docblock merge behavior (tag last)
+- Lint: silence module-doc warnings for tests; fix runtime modules

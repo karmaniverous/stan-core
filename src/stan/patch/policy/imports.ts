@@ -1,8 +1,12 @@
-/* src/stan/patch/policy/imports.ts
+/**
+ * Enforces imports read-only policy (<stanPath>/imports/**); pure path checks;
+ * no filesystem IO; used by patch and File Ops guards.
+ *
  * Imports protection policy:
  * - <stanPath>/imports/** is staged context and is read-only.
  * - The engine must refuse File Ops and unified-diff targets that touch it
  *   when the caller provides a stanPath.
+ * @module
  */
 import { toPosix } from '@/stan/path/repo';
 

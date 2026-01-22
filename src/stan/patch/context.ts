@@ -1,3 +1,8 @@
+/**
+ * Resolves patch context (repo root + stanPath + patch workspace paths) from
+ * the nearest config; filesystem reads only; no console output.
+ * @module
+ */
 import path from 'node:path';
 
 import { findConfigPathSync, loadConfig } from '@/stan/config';

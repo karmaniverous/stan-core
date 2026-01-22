@@ -1,4 +1,8 @@
-/* src/stan/patch/util/fs.ts */
+/**
+ * Patch fs helpers (mkdirp parent dirs); thin wrappers; filesystem IO only;
+ * best-effort behavior; no console output.
+ * @module
+ */
 import path from 'node:path';
 
 import { ensureDir } from 'fs-extra';

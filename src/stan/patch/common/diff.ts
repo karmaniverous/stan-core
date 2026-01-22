@@ -1,5 +1,9 @@
-/* src/stan/patch/common/diff.ts
+/**
+ * Unified diff helpers (detection, fence extraction, normalization); pure
+ * string processing; no filesystem IO; shared by patch ingestion.
+ *
  * Unified diff helpers shared by detect/clean.
+ * @module
  */
 import { ensureFinalLF, toLF } from '@/stan/text/eol';
 

@@ -1,7 +1,11 @@
-/* src/stan/context/npm.ts
+/**
+ * Normalizes npm external node IDs to staged <stanPath>/context/npm/** paths;
+ * reads package.json; filesystem IO only; no console output.
+ *
  * npm external normalization:
  * - For an external file, find nearest package.json and derive:
  *   <stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>
+ * @module
  */
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';

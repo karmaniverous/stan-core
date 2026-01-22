@@ -1,9 +1,13 @@
-/* src/stan/context/write.ts
+/**
+ * Writes dependency.meta.json under <stanPath>/context/; filesystem IO only;
+ * deterministic JSON formatting; no console output.
+ *
  * Write dependency.meta.json deterministically under <stanPath>/context/.
  *
  * Requirements:
  * - Write to <stanPath>/context/dependency.meta.json with stable JSON formatting.
  * - Do not log; callers surface any warnings/errors.
+ * @module
  */
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';

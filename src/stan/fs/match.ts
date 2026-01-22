@@ -1,8 +1,11 @@
-/* src/stan/fs/match.ts
- * Engine-parity glob matcher helper for external callers (e.g., CLI plan previews).
+/**
+ * Compiles engine-parity glob/prefix matchers; pure helper; no filesystem IO;
+ * used by callers (e.g., CLI plan previews).
+ *
  * - POSIX path normalization
  * - dot=true semantics
  * - Non-glob patterns treated as path prefixes
+ * @module
  */
 import picomatch from 'picomatch';
 
