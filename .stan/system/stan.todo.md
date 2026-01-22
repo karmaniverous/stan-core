@@ -148,4 +148,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Lint: fix build.ts unnecessary condition checks
   - Fixed two `@typescript-eslint/no-unnecessary-condition` errors in
-    `src/stan/context/build.ts` by tightening types and using `Array#at(-1)`.
+    `src/stan/context/build.ts` by tightening types and using `Array#at(-1)`.
+
+- Typecheck: restore sources Record typing
+  - Fixed TS2322 in `src/stan/context/build.ts` by keeping `sources` typed as a
+    `Record<string, NodeSource>` and gating lookups with `hasOwnProperty`.

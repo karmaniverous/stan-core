@@ -130,7 +130,7 @@ export const buildDependencyMeta = async (
 
   // 1) Normalize nodes and build ID mapping oldId -> newId (or null if dropped).
   const idMap = new Map<string, string | null>();
-  const sources: Partial<Record<string, NodeSource>> = {};
+  const sources: Record<string, NodeSource> = {};
 
   let droppedBuiltin = 0;
   let droppedMissing = 0;
@@ -230,8 +230,10 @@ export const buildDependencyMeta = async (
 
     // Abs nodes: attach locatorAbs (required for strict undo validation later)
     if (newId.startsWith(`${toPosix(stanPath)}/context/abs/`)) {
-      const src = sources[newId];
-      if (src && src.kind === 'abs') node.locatorAbs = src.locatorAbs;
+      if (Object.prototype.hasOwnProperty.call(sources, newId)) {
+        const src = sources[newId];
+        if (src.kind === 'abs') node.locatorAbs = src.locatorAbs;
+      }
     }
 
     nodesOut[newId] = node;
