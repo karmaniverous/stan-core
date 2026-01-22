@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { withMockTarCapture } from '../test/helpers';
+import { withMockTarCapture } from '../../test/helpers';
 const { calls } = withMockTarCapture('TAR');
 
 import { createMetaArchive } from './meta';

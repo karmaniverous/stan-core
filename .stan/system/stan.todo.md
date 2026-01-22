@@ -130,4 +130,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     (system files + `.stan/context/dependency.meta.json` only).
   - Excludes `.stan/system/.docs.meta.json`, dependency state, and staged
     payloads by omission.
-  - Added a focused unit test to pin down archive selection behavior.
+  - Added a focused unit test to pin down archive selection behavior.
+
+- Chore: fix meta archive test helper import
+  - Corrected the test helper import path in `src/stan/archive/meta.test.ts`.
