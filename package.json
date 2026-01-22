@@ -24,6 +24,7 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.4",
     "@eslint/js": "^9.39.2",
+    "@karmaniverous/stan-context": "^0.1.0",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^6.1.0",
