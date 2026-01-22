@@ -3,6 +3,11 @@
  */
 
 export type {
+  BuildDependencyMetaArgs,
+  BuildDependencyMetaResult,
+} from './build';
+export { buildDependencyMeta } from './build';
+export type {
   DependencyEdgeType,
   DependencyMetaEdge,
   DependencyMetaFile,
@@ -13,3 +18,4 @@ export type {
 } from './schema';
 export { dependencyMetaFileSchema, parseDependencyStateFile } from './schema';
 export { computeSelectedNodeIds, expandEntry } from './state';
+export { writeDependencyMetaFile } from './write';

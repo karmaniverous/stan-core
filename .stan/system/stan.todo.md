@@ -6,15 +6,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Dependency graph mode (engine): normalize + embed dependency meta
-  - Integrate `@karmaniverous/stan-context` as an optional runtime integration seam.
-  - When graph generation is invoked by the caller (CLI context mode):
-    - Require TypeScript to be present; throw immediately if unavailable.
-    - Generate the dependency graph and normalize node IDs:
-      - repo-local nodes remain repo-relative
-      - npm nodes normalize to `.stan/context/npm/<pkg>/<ver>/<pathInPackage>`
-      - abs nodes normalize to `.stan/context/abs/<sha256(sourceAbs)>/<basename>` and include `locatorAbs` in meta
-    - Write `.stan/context/dependency.meta.json` deterministically.
+- Dependency graph mode (engine): stage external context under `.stan/context/**`
+  - Consume normalized dependency meta output from `buildDependencyMeta`.
+  - Stage required external bytes (npm + abs) into `.stan/context/...` prior to archiving.
+  - Hash-verify staged bytes match `metadata.hash` in meta; fail fast on mismatch.
 
 - Dependency graph mode (engine): stage external context under `.stan/context/**`
   - Implement staging that copies required external bytes into `.stan/context/...` prior to archiving.
@@ -136,4 +131,12 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Chore: fix imports-guard lint and test
   - src/stan/patch/run/pipeline.ts: remove unnecessary `??` on regex capture groups (eslint `no-unnecessary-condition`).
-  - src/stan/patch/imports-policy.test.ts: create fixture parent dirs before writing into `.stan/imports/...`.
+  - src/stan/patch/imports-policy.test.ts: create fixture parent dirs before writing into `.stan/imports/...`.
+
+- Dependency graph mode: build + write dependency.meta.json
+  - Added a context-mode API that dynamically imports TypeScript and stan-context only when invoked, and throws with clear errors if missing.
+  - Implemented deterministic normalization for external nodes:
+    - npm externals -> `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
+    - abs externals -> `.stan/context/abs/<sha256(locatorAbs)>/<basename>` with `locatorAbs` stored for future strict undo validation
+  - Omitted builtin and missing/unresolved nodes from persisted meta, surfacing them as warnings instead.
+  - Added focused unit tests and updated the local assistant guide.

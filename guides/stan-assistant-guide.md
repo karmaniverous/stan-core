@@ -192,6 +192,35 @@ await writeArchiveSnapshot({
 
 When the CLI enables “context mode”, the engine can generate a dependency graph and use an assistant-authored state file to expand the archived context.
 
+### Building and writing dependency meta (engine API)
+
+The engine can build and persist the assistant-facing dependency meta file:
+
+```ts
+import {
+  buildDependencyMeta,
+  writeDependencyMetaFile,
+} from '@karmaniverous/stan-core';
+
+const cwd = process.cwd();
+const stanPath = '.stan';
+
+const built = await buildDependencyMeta({
+  cwd,
+  stanPath,
+  selection: { includes: [], excludes: [], anchors: [] },
+});
+
+await writeDependencyMetaFile({ cwd, stanPath, meta: built.meta });
+// writes: <stanPath>/context/dependency.meta.json
+```
+
+Dependency requirements (loaded only when invoked):
+
+- `buildDependencyMeta` dynamically imports `typescript` and throws if it cannot be imported.
+- `buildDependencyMeta` dynamically imports `@karmaniverous/stan-context` and throws if it is not installed.
+- This keeps non-context usage lean: these dependencies are not loaded unless the caller invokes context mode.
+
 Artifacts (under `.stan/context/`):
 
 - `dependency.meta.json` — assistant-facing graph meta:
@@ -211,6 +240,10 @@ Archive output:
   - It includes system files + dependency meta.
   - It excludes dependency state and staged payloads.
   - It excludes `.stan/system/.docs.meta.json`.
+
+Note:
+
+- Builtin (`node:*`) and missing/unresolved nodes are omitted from persisted `dependency.meta.json`; callers may surface them as warnings.
 
 State file schema (v1):
 
