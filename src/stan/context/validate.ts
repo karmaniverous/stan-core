@@ -415,7 +415,6 @@ export const validateDependencySelectionOrThrow = async (args: {
 }): Promise<void> => {
   const res = await validateDependencySelection(args);
   if (res.ok) return;
-  const first = res.mismatches[0];
   const msg =
     'dependency selection validation failed:\n' +
     res.mismatches

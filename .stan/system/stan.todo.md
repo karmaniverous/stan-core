@@ -159,4 +159,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added `validateDependencySelection(...)` to validate selected external
     dependency nodes against the current environment (npm package@version and
     abs locator hash checks) and fail fast on mismatches.
-  - Added focused unit tests and documented the API in the assistant guide.
+  - Added focused unit tests and documented the API in the assistant guide.
+
+- Fix: strict undo validation test + lint
+  - Removed an unused local in `validateDependencySelectionOrThrow`.
+  - Adjusted the abs mismatch test fixture to keep size constant so the mismatch
+    reason is deterministically `hash-mismatch`.

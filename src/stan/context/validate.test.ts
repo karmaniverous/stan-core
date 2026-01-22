@@ -142,7 +142,7 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
     const stanPath = '.stan';
     try {
       const absFile = path.join(outside, 'a.d.ts');
-      await writeFile(absFile, 'changed\n', 'utf8');
+      await writeFile(absFile, 'changed0\n', 'utf8');
 
       const nodeId = `${stanPath}/context/abs/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/a.d.ts`;
       const meta = {
