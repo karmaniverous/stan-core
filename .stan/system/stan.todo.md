@@ -153,4 +153,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Dependency graph mode: stage external context bytes
   - Added `stageDependencyContext(...)` to copy and sha256-verify external node
     bytes into `.stan/context/{npm,abs}/...` for archiving.
-  - Added focused unit tests and documented the staging step in the assistant guide.
+  - Added focused unit tests and documented the staging step in the assistant guide.
+
+- Lint: fix stageDependencyContext unnecessary-condition
+  - Adjusted `stageDependencyContext` meta typing and guards to satisfy
+    `@typescript-eslint/no-unnecessary-condition` without changing behavior.

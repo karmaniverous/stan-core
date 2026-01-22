@@ -16,7 +16,7 @@ import path from 'node:path';
 import { ensureDir, remove } from 'fs-extra';
 
 import type { NodeSource } from './build';
-import type { DependencyMetaFile } from './schema';
+import type { DependencyMetaNode } from './schema';
 
 const toPosix = (p: string): string => p.replace(/\\/g, '/');
 
@@ -49,7 +49,7 @@ export type StageDependencyContextArgs = {
   cwd: string;
   stanPath: string;
   /** Parsed dependency meta (usually produced by buildDependencyMeta). */
-  meta: Pick<DependencyMetaFile, 'nodes'>;
+  meta: { nodes: Record<string, DependencyMetaNode | undefined> };
   /**
    * Optional source map (usually from buildDependencyMeta). If absent, abs
    * nodes can still be staged via meta.nodes[nodeId].locatorAbs.
@@ -83,7 +83,7 @@ export type StageDependencyContextResult = {
 const sourceAbsForNodeId = (
   nodeId: string,
   sources: Record<string, NodeSource> | undefined,
-  metaNodes: Pick<DependencyMetaFile, 'nodes'>['nodes'],
+  metaNodes: Record<string, DependencyMetaNode | undefined>,
 ): string | null => {
   const viaSources = sources ? sources[nodeId] : undefined;
   if (viaSources) {
@@ -125,13 +125,13 @@ export const stageDependencyContext = async (
     }
 
     const node = meta.nodes[nodeId];
-    const expectedHash = node?.metadata?.hash;
-    const expectedSize = node?.metadata?.size;
-    if (!node || !node.metadata || typeof expectedHash !== 'string') {
+    if (!node?.metadata || typeof node.metadata.hash !== 'string') {
       throw new Error(
         `dependency context staging: missing metadata.hash for nodeId "${nodeId}"`,
       );
     }
+    const expectedHash = node.metadata.hash;
+    const expectedSize = node.metadata.size;
 
     const sourceAbsRaw = sourceAbsForNodeId(nodeId, sources, meta.nodes);
     if (!sourceAbsRaw) {
