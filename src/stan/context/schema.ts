@@ -153,7 +153,7 @@ export const dependencyMetaFileSchema = z
     for (const id of Object.keys(v.nodes)) {
       if (!Object.prototype.hasOwnProperty.call(v.edges, id)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: `edges is missing key for nodeId "${id}"`,
           path: ['edges', id],
         });
@@ -166,7 +166,7 @@ export const dependencyMetaFileSchema = z
       if (typeof node.locatorAbs === 'string' && node.locatorAbs.length > 0) {
         if (!id.startsWith(absPrefix)) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: 'custom',
             message:
               'locatorAbs is only permitted for abs-staged nodeIds under ' +
               `"${absPrefix}"`,

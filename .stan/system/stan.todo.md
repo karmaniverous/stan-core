@@ -16,20 +16,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
       - abs nodes normalize to `.stan/context/abs/<sha256(sourceAbs)>/<basename>` and include `locatorAbs` in meta
     - Write `.stan/context/dependency.meta.json` deterministically.
 
-- Dependency graph mode (engine): closure primitives + tests are in place
-  - Next: wire closure into selection/staging and enforce reserved denials/binary exclusion policy at archive time.
-
-- Dependency graph mode (engine): compute selection closure from state
-  - Implement deterministic closure:
-    - state entry kinds:
-      - `string`
-      - `[nodeId, depth]`
-      - `[nodeId, depth, edgeKinds[]]`
-    - defaults: depth=0; edgeKinds=`['runtime','type','dynamic']`
-    - traversal: outgoing edges only; deterministic ordering; cycle-safe
-    - excludes win (subtract using same traversal semantics)
-  - Policy: dependency expansion overrides `.gitignore` and configured excludes, but never reserved denials or binary exclusion.
-
 - Dependency graph mode (engine): stage external context under `.stan/context/**`
   - Implement staging that copies required external bytes into `.stan/context/...` prior to archiving.
   - No persistent `dependency.map.json`:
@@ -142,4 +128,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - `.stan/context/dependency.state.json`
   - Implemented deterministic closure computation from meta+state (depth +
     edgeKinds; excludes win) with unit tests.
-  - Exported these primitives from the engine barrel for downstream integration.
+  - Exported these primitives from the engine barrel for downstream integration.
+
+- Chore: fix Zod deprecated issue-code usage
+  - Replaced deprecated `ZodIssueCode` constants with raw `"custom"` codes.
