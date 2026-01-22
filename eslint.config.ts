@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+import stanContext from '@karmaniverous/stan-context/eslint';
 import prettierConfig from 'eslint-config-prettier';
 import tsdoc from 'eslint-plugin-tsdoc';
 import vitest from '@vitest/eslint-plugin';
@@ -51,6 +52,7 @@ const config = [
     plugins: {
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
+      'stan-context': stanContext,
       tsdoc,
     },
     rules: {
@@ -64,6 +66,9 @@ const config = [
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       // TSDoc hygiene (quiet)
       'tsdoc/syntax': ['warn'],
+      // Module description enforcement (dependency graph quality).
+      // Start as warn to avoid breaking CI; promote to error once the repo is compliant.
+      ...stanContext.configs.recommended?.rules,
     },
   },
 
@@ -90,7 +95,10 @@ const config = [
     languageOptions: { parser: jsoncParser },
     plugins: { jsonc },
     rules: {
-      ...(jsonc.configs['recommended-with-json']?.rules as Record<string, unknown>),
+      ...(jsonc.configs['recommended-with-json']?.rules as Record<
+        string,
+        unknown
+      >),
     },
   },
 ];

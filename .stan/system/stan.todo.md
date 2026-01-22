@@ -11,6 +11,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     are exported in the public surface.
   - Re-run `npm run docs` and confirm 0 warnings.
 
+- Dependency graph quality (module descriptions)
+  - Roll out a module-head TSDoc block (`@module` or `@packageDocumentation`) for every code module, optimized for the first 160 characters.
+  - ESLint enforcement is wired at warn-level initially; promote to error once the repository is compliant.
+
 - Long-file cap compliance (≤ 300 LOC per module)
   - Identify and decompose any TS modules > 300 LOC before further edits.
   - Current known long file:
@@ -163,4 +167,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - `npm run build` succeeded (Rollup warnings observed; output produced).
   - `npm run docs` produced warnings to address (TypeDoc “referenced but not
     included” items).
-  - `npm run knip` reported only the expected optional peerDependency reference.
+  - `npm run knip` reported only the expected optional peerDependency reference.
+
+- Policy: module docs + TypeDoc/DX guidance
+  - Added system-prompt guidance to require module-head `@module`/`@packageDocumentation` docblocks and to optimize the first 160 chars for dependency-graph selection.
+  - Added generic policies for doc formatting (no manual hard-wrap), TypeScript DX/inference, and TypeDoc/TSDoc coverage.
+  - Wired the stan-context ESLint rule at warn-level to start enforcement without breaking CI; plan to promote to error after rollout.

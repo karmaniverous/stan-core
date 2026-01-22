@@ -393,6 +393,22 @@ diff --git a/src/example.ts b/src/example.ts
    - Do not proceed with analysis or patching until the user explicitly confirms the new documents are correct.
    - If the user confirms, proceed and treat the new signature as active for subsequent turns. If not, wait for the correct artifacts.
 
+# Documentation formatting policy (HARD RULE)
+
+- NEVER manually hard-wrap narrative Markdown or plain text content anywhere in the repository.
+- Paragraphs MUST be single logical lines; insert blank lines between paragraphs for structure.
+- Lists SHOULD use one logical item per line; nested lists are allowed.
+- Only preformatted/code blocks (fenced code, CLI excerpts, YAML/JSON examples) may wrap as needed.
+
+Append-only log exception:
+
+- Do NOT rewrite or reflow append-only logs (for example, the “Completed (recent)” section in `stan.todo.md`).
+- When an append-only log is required, preserve history and formatting; add new entries only as new lines at the end.
+
+Exceptions:
+
+- Exceptions are permitted only after a brief design discussion and rationale captured in the development plan.
+
 # Architecture: Services‑first (Ports & Adapters)
 
 Adopt a services‑first architecture with clear ports (interfaces) and thin adapters:
@@ -415,6 +431,48 @@ Adopt a services‑first architecture with clear ports (interfaces) and thin ada
   - Co‑locate tests with modules for discoverability.
 
 This matches the “Services‑first proposal required” step in the Default Task: propose contracts and adapter mappings before code.
+
+# TypeDoc/TSDoc policy (exported API)
+
+- All exported functions, classes, interfaces, types, and enums MUST have TypeDoc/TSDoc comments.
+- Every TypeDoc/TSDoc comment MUST include a summary description.
+- Function and method comments MUST document all parameters and the return type.
+- All generic type parameters in exported functions, classes, interfaces, and types MUST be documented.
+- All properties of exported interfaces and interface-like object types MUST have TSDoc comments.
+- CRITICAL: Do NOT convert `type` aliases to `interface` purely to support property comments; TypeDoc supports property comments on object types.
+- Use proper formatting for code elements (use backticks for code references).
+- Special characters in TypeDoc/TSDoc comments (for example, \<, \>, \{, \}) MUST be escaped with a backslash to avoid rendering issues.
+
+Exceptions:
+
+- Exceptions are permitted only after a brief design discussion and rationale captured in the development plan.
+
+# TypeScript (DX + inference + schema-first)
+
+- Code should be DRY and SOLID.
+- Prefer a services-first architecture: core logic in services behind ports; adapters remain thin.
+
+Type inference (CRITICAL):
+
+- Type casts are a code smell; ALWAYS prefer inference, discriminated unions, and type guards over casts.
+- Public APIs MUST support type inference without requiring downstream consumers to pass explicit type parameters.
+- Favor intuitive signatures and inferred types over verbose annotations; changes that degrade downstream inference require rework or a design adjustment before merging.
+- Type-only imports MUST use `import type` (or inline `type` specifiers for mixed imports).
+
+Schema-first architecture (when runtime schemas are used):
+
+- Prefer a schema-first design: runtime schema is the source of truth; types are derived from schema; validation/parsing is centralized.
+- Keep this guidance generic with respect to schema libraries (do not hard-code a specific schema tool into generic policies).
+
+Schema naming convention:
+
+- A schema value is a variable and MUST be lowerCamelCase and end in `Schema` (e.g., `myTypeSchema`).
+- The inferred TypeScript type MUST be PascalCase and MUST NOT include `Schema` (e.g., `MyType`).
+- Do not reuse the same identifier for both a schema and a type.
+
+Exceptions:
+
+- Exceptions are permitted only after a brief design discussion and rationale captured in the development plan.
 
 # Testing architecture
 
@@ -1122,6 +1180,46 @@ The meta archive is intended for the start of a thread:
 - Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting
   redundant `.stan/context/**` nodes unless the imported copy is incomplete or
   mismatched.
+
+# Dependency graph module descriptions (HARD RULE)
+
+Purpose:
+
+- Dependency graph node descriptions are a critical signal for selecting and traversing modules; they exist to help an assistant decide whether to include a module and whether to traverse its dependencies.
+
+Hard rule (every code module):
+
+- Every code module MUST begin with a TSDoc block using the appropriate tag:
+  - Use `@packageDocumentation` for package entrypoints intended as public surfaces.
+  - Use `@module` for normal modules.
+- The docblock MUST appear at the head of the module (before imports/exports).
+- The docblock MUST include prose (tag-only blocks are not acceptable).
+
+Truncation-aware authoring (optimize the first 160 chars):
+
+- Assume descriptions are truncated to the first 160 characters.
+- Pack the highest-signal selection/traversal information into the first 160 characters:
+  - What the module does (verb + object).
+  - Whether it performs IO or has side effects (fs/process/network/child_process).
+  - Whether it is a barrel/entrypoint, service, adapter, or pure helper.
+  - A traversal hint (for example, “traverse runtime deps”, “type-only surface”, “adapter boundary”).
+
+Examples:
+
+Good (high-signal first 160 chars):
+
+- “Validates dependency selections for undo/redo; reads files and hashes bytes; no network; traverse runtime+type deps only.”
+- “Barrel export for context mode public API; re-exports types/functions; no side effects; include when working on context APIs.”
+
+Bad (low-signal):
+
+- “Utilities.”
+- “Helper functions.”
+- “Stuff for STAN.”
+
+Enforcement (recommended):
+
+- Repositories SHOULD enable an ESLint rule to enforce presence of module descriptions so this never regresses.
 
 # Default Task (when files are provided with no extra prompt)
 

@@ -41,6 +41,7 @@ export {
   parseDependencyStateFile,
 } from './schema';
 export type {
+  StagedEntry,
   StageDependencyContextArgs,
   StageDependencyContextResult,
 } from './stage';
