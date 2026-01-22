@@ -6,16 +6,16 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Release readiness (engine repo)
-  - Run the full local suite and confirm clean output:
-    - `npm run build`
-    - `npm run docs`
-    - `npm run knip`
+- Docs hygiene (release readiness)
+  - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas
+    are exported in the public surface.
+  - Re-run `npm run docs` and confirm 0 warnings.
 
 - Long-file cap compliance (≤ 300 LOC per module)
   - Identify and decompose any TS modules > 300 LOC before further edits.
   - Current known long file:
-    - `src/stan/context/validate.ts` (needs split into smaller modules while keeping the public API stable)
+    - `src/stan/context/validate.ts` (must be split into smaller modules while
+      keeping the public API stable)
 
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during future work or CLI alignment.
@@ -158,3 +158,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - CI green: validate seam fixes confirmed
   - `lint`, `typecheck`, and `test` all pass after the undo validation fixes.
+
+- Release readiness: ran build/docs/knip checks
+  - `npm run build` succeeded (Rollup warnings observed; output produced).
+  - `npm run docs` produced warnings to address (TypeDoc “referenced but not
+    included” items).
+  - `npm run knip` reported only the expected optional peerDependency reference.

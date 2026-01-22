@@ -20,6 +20,7 @@ export type {
   BuildDependencyMetaArgs,
   BuildDependencyMetaResult,
 } from './build';
+export type { NodeSource } from './build';
 export { buildDependencyMeta } from './build';
 export type {
   DependencyEdgeType,
@@ -30,7 +31,19 @@ export type {
   DependencyStateFile,
   NormalizedDependencyStateEntry,
 } from './schema';
-export { dependencyMetaFileSchema, parseDependencyStateFile } from './schema';
+export {
+  dependencyEdgeTypeSchema,
+  dependencyMetaEdgeSchema,
+  dependencyMetaFileSchema,
+  dependencyMetaNodeSchema,
+  dependencyStateEntrySchema,
+  dependencyStateFileSchema,
+  parseDependencyStateFile,
+} from './schema';
+export type {
+  StageDependencyContextArgs,
+  StageDependencyContextResult,
+} from './stage';
 export { stageDependencyContext } from './stage';
 export { computeSelectedNodeIds, expandEntry } from './state';
 export type {
