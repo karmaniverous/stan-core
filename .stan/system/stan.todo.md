@@ -6,12 +6,16 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Tests (engine)
-  - Unit tests for:
-    - state parsing + closure determinism (depth + edgeKinds + excludes)
-    - nodeId normalization rules (npm + abs)
-    - staging copies + hash verification (fixture trees)
-    - undo validation mismatch cases (npm version/path mismatch; abs missing/mismatch)
+- Release readiness (engine repo)
+  - Run the full local suite and confirm clean output:
+    - `npm run build`
+    - `npm run docs`
+    - `npm run knip`
+
+- Long-file cap compliance (≤ 300 LOC per module)
+  - Identify and decompose any TS modules > 300 LOC before further edits.
+  - Current known long file:
+    - `src/stan/context/validate.ts` (needs split into smaller modules while keeping the public API stable)
 
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during future work or CLI alignment.
@@ -88,18 +92,15 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added strict Zod schemas and TS types for dependency meta/state formats:
     - `.stan/context/dependency.meta.json`
     - `.stan/context/dependency.state.json`
-  - Implemented deterministic closure computation from meta+state (depth +
-    edgeKinds; excludes win) with unit tests.
+  - Implemented deterministic closure computation from meta+state (depth + edgeKinds; excludes win) with unit tests.
   - Exported these primitives from the engine barrel for downstream integration.
 
 - Chore: fix Zod deprecated issue-code usage
   - Replaced deprecated `ZodIssueCode` constants with raw `"custom"` codes.
 
 - Dependency graph mode: add meta archive support
-  - Added `createMetaArchive(...)` to write `.stan/output/archive.meta.tar`
-    (system files + `.stan/context/dependency.meta.json` only).
-  - Excludes `.stan/system/.docs.meta.json`, dependency state, and staged
-    payloads by omission.
+  - Added `createMetaArchive(...)` to write `.stan/output/archive.meta.tar` (system files + `.stan/context/dependency.meta.json` only).
+  - Excludes `.stan/system/.docs.meta.json`, dependency state, and staged payloads by omission.
   - Added a focused unit test to pin down archive selection behavior.
 
 - Chore: fix meta archive test helper import
@@ -128,40 +129,32 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Fixed lint in context tests (no conditional expect; no unsafe return).
 
 - Lint: fix build.ts unnecessary condition checks
-  - Fixed two `@typescript-eslint/no-unnecessary-condition` errors in
-    `src/stan/context/build.ts` by tightening types and using `Array#at(-1)`.
+  - Fixed two `@typescript-eslint/no-unnecessary-condition` errors in `src/stan/context/build.ts` by tightening types and using `Array#at(-1)`.
 
 - Typecheck: restore sources Record typing
-  - Fixed TS2322 in `src/stan/context/build.ts` by keeping `sources` typed as a
-    `Record<string, NodeSource>` and gating lookups with `hasOwnProperty`.
+  - Fixed TS2322 in `src/stan/context/build.ts` by keeping `sources` typed as a `Record<string, NodeSource>` and gating lookups with `hasOwnProperty`.
 
 - Dependency graph mode: stage external context bytes
-  - Added `stageDependencyContext(...)` to copy and sha256-verify external node
-    bytes into `.stan/context/{npm,abs}/...` for archiving.
+  - Added `stageDependencyContext(...)` to copy and sha256-verify external node bytes into `.stan/context/{npm,abs}/...` for archiving.
   - Added focused unit tests and documented the staging step in the assistant guide.
 
 - Lint: fix stageDependencyContext unnecessary-condition
-  - Adjusted `stageDependencyContext` meta typing and guards to satisfy
-    `@typescript-eslint/no-unnecessary-condition` without changing behavior.
+  - Adjusted `stageDependencyContext` meta typing and guards to satisfy `@typescript-eslint/no-unnecessary-condition` without changing behavior.
 
 - Dependency graph mode: wire staging into archive flow
-  - Added archive-flow helpers that stage selected external context (from
-    dependency state closure when provided) and force archive inclusion via
-    `anchors: ['.stan/context/**']` so gitignored context is still archived.
+  - Added archive-flow helpers that stage selected external context (from dependency state closure when provided) and force archive inclusion via `anchors: ['.stan/context/**']` so gitignored context is still archived.
   - Added a focused test and documented the wrapper APIs in the assistant guide.
 
 - Fix: archive-flow test + lint hygiene
-  - Fixed the archive-flow test helper import path and removed `any`-typed
-    dynamic import usage; also cleaned up redundant/unused types in
-    `src/stan/context/archive-flow.ts`.
+  - Fixed the archive-flow test helper import path and removed `any`-typed dynamic import usage; also cleaned up redundant/unused types in `src/stan/context/archive-flow.ts`.
 
 - Dependency graph mode: strict undo validation seam
-  - Added `validateDependencySelection(...)` to validate selected external
-    dependency nodes against the current environment (npm package@version and
-    abs locator hash checks) and fail fast on mismatches.
+  - Added `validateDependencySelection(...)` to validate selected external dependency nodes against the current environment (npm package@version and abs locator hash checks) and fail fast on mismatches.
   - Added focused unit tests and documented the API in the assistant guide.
 
 - Fix: strict undo validation test + lint
   - Removed an unused local in `validateDependencySelectionOrThrow`.
-  - Adjusted the abs mismatch test fixture to keep size constant so the mismatch
-    reason is deterministically `hash-mismatch`.
+  - Adjusted the abs mismatch test fixture to keep size constant so the mismatch reason is deterministically `hash-mismatch`.
+
+- CI green: validate seam fixes confirmed
+  - `lint`, `typecheck`, and `test` all pass after the undo validation fixes.
