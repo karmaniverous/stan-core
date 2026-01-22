@@ -2,6 +2,7 @@
  * Barrel exports for the stan engine.
  */
 export * from './archive';
+export { createMetaArchive } from './archive/meta';
 export * from './config/index';
 export * from './diff';
 export * from './validate/response';

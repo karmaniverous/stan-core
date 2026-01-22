@@ -3,6 +3,7 @@
  */
 import {
   ARCHIVE_DIFF_TAR,
+  ARCHIVE_META_TAR,
   ARCHIVE_TAR,
   ARCHIVE_WARNINGS,
 } from '@/stan/archive/constants';
@@ -29,6 +30,7 @@ export const isOutputArchivePath = (stanPath: string, p: string): boolean => {
   return (
     norm(p) === `${base}/output/${ARCHIVE_TAR}` ||
     norm(p) === `${base}/output/${ARCHIVE_DIFF_TAR}` ||
+    norm(p) === `${base}/output/${ARCHIVE_META_TAR}` ||
     norm(p) === `${base}/output/${ARCHIVE_WARNINGS}`
   );
 };

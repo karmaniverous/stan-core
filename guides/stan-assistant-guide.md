@@ -236,6 +236,23 @@ Selection semantics:
   - overrides `.gitignore` and configured excludes,
   - but never overrides reserved workspace denials or binary exclusion.
 
+### Meta archive (thread opener)
+
+When context mode is enabled by a caller (typically stan-cli), the engine can
+create a small thread-opener archive at `.stan/output/archive.meta.tar`:
+
+```ts
+import { createMetaArchive } from '@karmaniverous/stan-core';
+
+const p = await createMetaArchive(process.cwd(), '.stan');
+// p === <abs>/.stan/output/archive.meta.tar
+```
+
+Contract:
+- Includes `<stanPath>/system/**` excluding `<stanPath>/system/.docs.meta.json`.
+- Includes `<stanPath>/context/dependency.meta.json`.
+- Excludes dependency state and staged payloads under `<stanPath>/context/**` by omission.
+
 ### Patch application pipeline
 
 Use this when you already have a unified diff text (string).

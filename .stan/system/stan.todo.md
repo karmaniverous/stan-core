@@ -22,14 +22,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
     - stage npm/abs nodes using resolved paths available during graph generation and validate staged bytes hash to `metadata.hash`
   - Ensure `.stan/context/**` remains gitignored but is included in archives when dependency mode is enabled.
 
-- Dependency graph mode (engine): meta archive support
-  - Add an engine surface that allows callers to create `.stan/output/archive.meta.tar` (context-mode thread opener):
-    - includes system docs + `.stan/context/dependency.meta.json`
-    - excludes `.stan/context/dependency.state.json`
-    - excludes staged `.stan/context/npm/**` and `.stan/context/abs/**` payloads
-    - excludes `.stan/system/.docs.meta.json`
-  - Ensure creation is deterministic and respects binary exclusion policy.
-
 - Imports safety (engine + tooling invariants)
   - Enforce “`.stan/imports/**` is read-only” at engine boundaries where applicable:
     - refuse File Ops targeting `<stanPath>/imports/**`
@@ -131,4 +123,11 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Exported these primitives from the engine barrel for downstream integration.
 
 - Chore: fix Zod deprecated issue-code usage
-  - Replaced deprecated `ZodIssueCode` constants with raw `"custom"` codes.
+  - Replaced deprecated `ZodIssueCode` constants with raw `"custom"` codes.
+
+- Dependency graph mode: add meta archive support
+  - Added `createMetaArchive(...)` to write `.stan/output/archive.meta.tar`
+    (system files + `.stan/context/dependency.meta.json` only).
+  - Excludes `.stan/system/.docs.meta.json`, dependency state, and staged
+    payloads by omission.
+  - Added a focused unit test to pin down archive selection behavior.
