@@ -1,11 +1,8 @@
-/* src/stan/archive/meta.ts
- * Create a "meta" archive intended as a small thread opener in dependency
- * graph mode:
- * - Includes all <stanPath>/system/** files, excluding <stanPath>/system/.docs.meta.json
- * - Includes <stanPath>/context/dependency.meta.json
- * - Excludes <stanPath>/context/dependency.state.json and staged payloads by omission
- *
- * This function is engine-only (no CLI/TTY). Callers decide when to invoke it.
+/**
+ * Creates a minimal "meta" archive (system + dependency meta only) intended as
+ * a thread opener for dependency graph mode; performs filesystem IO; no console
+ * output.
+ * @module
  */
 
 import { existsSync } from 'node:fs';

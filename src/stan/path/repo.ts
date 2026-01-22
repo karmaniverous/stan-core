@@ -1,5 +1,7 @@
-/* src/stan/path/repo.ts
- * Repo-relative path helpers (POSIX normalization and guards).
+/**
+ * Repo-relative path helpers (POSIX normalization, traversal guards, safe
+ * resolution checks); pure helpers.
+ * @module
  */
 import path from 'node:path';
 

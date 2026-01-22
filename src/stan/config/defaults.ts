@@ -1,5 +1,7 @@
-/* src/stan/config/defaults.ts
- * Public defaults for STAN configuration.
+/**
+ * Public defaults for STAN configuration (e.g. default `stanPath`); pure
+ * constants (no side effects).
+ * @module
  */
 
 /** Public default STAN path for consumers and internal use. */

@@ -1,6 +1,7 @@
-/* src/stan/config/schema.ts
- * Minimal zod schema for stan.config.* (engine-only).
- * Strict validation for keys inside the `stan-core` block.
+/**
+ * Zod schema for the `stan-core` config block; strict validation and derived
+ * types for consumers; pure runtime parsing.
+ * @module
  */
 import { z } from 'zod';
 

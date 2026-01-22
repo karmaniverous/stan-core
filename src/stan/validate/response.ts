@@ -1,8 +1,8 @@
-/** src/stan/validate/response.ts
- * Response-format validator for assistant replies.
- *
- * Also validates optional "### File Ops" pre-ops block (verbs/arity/path rules).
- *
+/**
+ * Validates assistant reply format (patch blocks, commit message, optional File
+ * Ops) and returns structured errors; pure string parsing; no IO; used by
+ * tooling.
+ * @module
  * Checks (initial):
  * - One Patch per file.
  * - Each Patch block contains exactly one "diff --git a/<path> b/<path>" header.
@@ -26,8 +26,11 @@ export type Block = {
 };
 
 export type ValidationResult = {
+  /** True when validation passed without errors. */
   ok: boolean;
+  /** Hard failures that should block acceptance of the response. */
   errors: string[];
+  /** Non-blocking advisory warnings (reserved for future use). */
   warnings: string[];
 };
 

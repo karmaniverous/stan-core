@@ -1,11 +1,7 @@
-/* src/stan/paths.ts
- * Global path mapping for stanPath-based directories.
- * - root: <stanPath>
- * - system: <stanPath>/system
- * - output: <stanPath>/output
- * - diff: <stanPath>/diff
- * - dist: <stanPath>/dist
- * - patch: <stanPath>/patch
+/**
+ * Computes absolute/relative workspace paths derived from `stanPath`
+ * (system/output/diff/patch/dist/imports); pure path math.
+ * @module
  */
 import { resolve } from 'node:path';
 

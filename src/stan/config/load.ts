@@ -1,5 +1,7 @@
-/* src/stan/config/load.ts
- * Load/parse STAN configuration and resolve stanPath.
+/**
+ * Loads/parses `stan-core` config from `stan.config.*` and resolves `stanPath`;
+ * reads files from disk; throws on schema errors.
+ * @module
  */
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';

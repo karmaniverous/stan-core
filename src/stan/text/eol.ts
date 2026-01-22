@@ -1,5 +1,6 @@
-/* src/stan/text/eol.ts
- * EOL normalization helpers.
+/**
+ * EOL normalization helpers for patch/text processing; pure string transforms.
+ * @module
  */
 export const toLF = (s: string): string =>
   s.replace(/\r\n/g, '\n').replace(/\r/g, '\n');

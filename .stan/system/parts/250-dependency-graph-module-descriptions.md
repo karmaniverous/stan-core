@@ -21,6 +21,24 @@ Truncation-aware authoring (optimize the first 160 chars):
   - Whether it is a barrel/entrypoint, service, adapter, or pure helper.
   - A traversal hint (for example, “traverse runtime deps”, “type-only surface”, “adapter boundary”).
 
+Docblock structure and formatting (HARD RULE)
+
+- The module docblock MUST be a proper multi-line JSDoc/TSDoc block, not a single-line `/** @module ... */` inline tag.
+- The tag MUST appear under the prose content (tag goes after content), and MUST be on its own line.
+- Prose in code comments MUST be wrapped at 80 characters (this does not conflict with the Markdown no-wrap policy, which applies to Markdown/text only).
+- If the file already has a top-of-file header comment, merge that intent into the tagged docblock so the tagged docblock remains the first comment in the file.
+- Keep the first ~160 characters high-signal for dependency-graph navigation (what/IO/role/traversal hints).
+
+Canonical example (correct)
+
+```ts
+/**
+ * Validates assistant reply format (patch blocks, commit message, optional
+ * File Ops); pure string parsing; no IO; used by tooling.
+ * @module
+ */
+```
+
 Examples:
 
 Good (high-signal first 160 chars):

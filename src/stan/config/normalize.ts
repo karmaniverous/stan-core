@@ -1,5 +1,7 @@
-/* src/stan/config/normalize.ts
- * Normalization helpers for config parsing and CLI defaults.
+/**
+ * Normalization helpers for config parsing and CLI defaults; pure helpers (no
+ * IO).
+ * @module
  */
 
 export const normalizeMaxUndos = (v: unknown): number => {

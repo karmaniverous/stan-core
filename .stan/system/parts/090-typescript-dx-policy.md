@@ -2,6 +2,7 @@
 
 - Code should be DRY and SOLID.
 - Prefer a services-first architecture: core logic in services behind ports; adapters remain thin.
+- Wrap prose in code comments (JSDoc/TSDoc) at 80 characters; place `@module`/`@packageDocumentation` tags after prose content within the same docblock.
 
 Type inference (CRITICAL):
 

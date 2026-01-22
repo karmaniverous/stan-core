@@ -1,4 +1,6 @@
-/** Library entry point.
- * See <stanPath>/system/stan.project.md for global and cross‑cutting requirements.
+/**
+ * Library entry point for `@karmaniverous/stan-core`; re-exports the engine API
+ * (archive/diff/patch/config/context) for consumers; no side effects.
+ * @packageDocumentation
  */
 export * from './stan';

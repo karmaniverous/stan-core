@@ -1,10 +1,9 @@
 /**
- * Diff helpers for the stan tool (updated for stanPath layout).
- *
- * - Always create <baseName>.diff.tar under <stanPath>/output whenever the archive script runs.
- * - Snapshot lives under <stanPath>/diff/.archive.snapshot.json.
- * - Sentinel lives under <stanPath>/diff/.stan_no_changes.
+ * Creates diff archives and manages snapshot state; computes sha256 file hashes;
+ * writes snapshot/sentinel files; performs filesystem IO; no console output.
+ * @module
  */
+
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';

@@ -172,4 +172,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Policy: module docs + TypeDoc/DX guidance
   - Added system-prompt guidance to require module-head `@module`/`@packageDocumentation` docblocks and to optimize the first 160 chars for dependency-graph selection.
   - Added generic policies for doc formatting (no manual hard-wrap), TypeScript DX/inference, and TypeDoc/TSDoc coverage.
-  - Wired the stan-context ESLint rule at warn-level to start enforcement without breaking CI; plan to promote to error after rollout.
+  - Wired the stan-context ESLint rule at warn-level to start enforcement without breaking CI; plan to promote to error after rollout.
+- Lint/docs: module docblock formatting rule
+  - Documented the required module docblock structure (multi-line JSDoc, tag after prose, wrap code comments at 80) and began applying it to core engine modules without disabling `stan-context/require-module-description`.

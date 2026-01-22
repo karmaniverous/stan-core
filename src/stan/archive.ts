@@ -1,15 +1,10 @@
-/* src/stan/archive.ts
- * Create a project archive under the output directory.
- * REQUIREMENTS (updated):
- * - Create <stanPath>/output/archive.tar from project root, excluding node_modules/.git and (by default) stanPath.
- * - Options:
- *   - includeOutputDir?: when true, include the <stanPath>/output directory contents while excluding stanPath/diff and the archive files.
- *   - fileName?: override base name (must end with .tar).
- * - Honor includes/excludes from config (globs supported; includes override excludes).
- * - Return the absolute path to the created tarball.
- * - Maintain previous-archive copy at <stanPath>/diff/archive.prev.tar.
- * - UPDATED: Do NOT write archive warnings to a file; log them to the console instead.
+/**
+ * Creates full archives (`archive.tar`) from selected repo files; excludes
+ * binaries, surfaces warnings via callback, and maintains `archive.prev.tar`;
+ * performs filesystem IO; no console output.
+ * @module
  */
+
 import { existsSync } from 'node:fs';
 import { copyFile } from 'node:fs/promises';
 import { resolve } from 'node:path';

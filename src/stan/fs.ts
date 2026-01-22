@@ -1,5 +1,8 @@
-/** Shared filesystem helpers for STAN archiving & diffing.
- * See <stanPath>/system/stan.project.md for global & cross‑cutting requirements.
+/**
+ * Lists/filters repo files for archiving and snapshots (gitignore + includes/
+ * excludes + anchors + reserved rules) and ensures STAN workspace dirs;
+ * filesystem IO only.
+ * @module
  */
 
 import { existsSync } from 'node:fs';

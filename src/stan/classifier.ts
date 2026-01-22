@@ -1,8 +1,7 @@
-/** src/stan/classifier.ts
- * Archive-time classifier:
- * - Exclude binary files from the archive.
- * - Flag large text (by size and/or LOC) without excluding it.
- * - Generate a warnings body for <stanPath>/output/archive.warnings.txt.
+/**
+ * Classifies files for archiving (exclude binaries, flag large text) and builds
+ * a warnings body; filesystem IO only; no console output.
+ * @module
  */
 import { open, readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';

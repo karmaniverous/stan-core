@@ -1,5 +1,7 @@
-/* src/stan/config/common.ts
- * Shared helpers for config parsing.
+/**
+ * Shared helpers for config parsing (YAML/JSON + Zod error formatting); pure
+ * helpers (no filesystem IO).
+ * @module
  */
 import YAML from 'yaml';
 import { ZodError } from 'zod';

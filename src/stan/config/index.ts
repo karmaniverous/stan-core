@@ -1,5 +1,7 @@
-/* src/stan/config/index.ts
- * Public API barrel for STAN config modules.
+/**
+ * Public API barrel for config discovery/loading and workspace initialization;
+ * no side effects beyond re-exports.
+ * @module
  */
 export { DEFAULT_OPEN_COMMAND, DEFAULT_STAN_PATH } from './defaults';
 export { findConfigPathSync } from './discover';

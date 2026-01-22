@@ -1,6 +1,8 @@
-/* src/stan/patch/run/pipeline.ts
- * Worktree-first patch application pipeline: git apply attempts across p1→p0, then jsdiff fallback.
- * Refuses to modify <stanPath>/imports/** (protected staged context) when stanPath is provided.
+/**
+ * Applies unified diffs via git-apply cascade then jsdiff fallback; blocks
+ * writes to protected `<stanPath>/imports/**`; may write sandbox outputs and
+ * touches filesystem; no console output.
+ * @module
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';

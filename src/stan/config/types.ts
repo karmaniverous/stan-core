@@ -1,5 +1,7 @@
-/* src/stan/config/types.ts
- * Minimal ContextConfig for engine-only configuration.
+/**
+ * Public types for the engine config surface (`stan-core` block); used by
+ * loaders and callers; no runtime code.
+ * @module
  */
 
 export type ContextConfig = {

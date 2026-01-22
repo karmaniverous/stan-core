@@ -1,5 +1,7 @@
-/* src/stan/config/discover.ts
- * Locate the nearest stan.config.* starting from a cwd.
+/**
+ * Locates the nearest `stan.config.*` by walking package roots; filesystem
+ * reads only; deterministic resolution for callers.
+ * @module
  */
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';

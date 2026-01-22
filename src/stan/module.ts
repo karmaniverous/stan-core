@@ -1,5 +1,7 @@
-/* src/stan/module.ts
- * Module root & packaged artifact helpers.
+/**
+ * Locates the module root and packaged prompt artifacts (dist/stan.system.md);
+ * filesystem reads only; no side effects beyond resolution.
+ * @module
  */
 import { existsSync } from 'node:fs';
 import path from 'node:path';

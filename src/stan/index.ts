@@ -1,5 +1,7 @@
 /**
- * Barrel exports for the stan engine.
+ * Barrel exports for the STAN engine API; re-exports archive/diff/patch/config/
+ * context helpers; no side effects beyond re-exports.
+ * @module
  */
 export * from './archive';
 export { createMetaArchive } from './archive/meta';

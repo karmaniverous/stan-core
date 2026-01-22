@@ -1,5 +1,7 @@
-/* src/stan/archive/util.ts
- * Shared helpers for archive/diff creation.
+/**
+ * Shared helpers for archive/diff creation (tar filters, output inclusion,
+ * warnings surfacing); pure helpers.
+ * @module
  */
 
 import {

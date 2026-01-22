@@ -1,5 +1,7 @@
-/* src/stan/archive/constants.ts
- * Centralized archive naming.
+/**
+ * Centralized archive naming constants (full/diff/meta/prev); pure values used
+ * across archiving flows.
+ * @module
  */
 export const ARCHIVE_BASENAME = 'archive';
 export const ARCHIVE_TAR = 'archive.tar';

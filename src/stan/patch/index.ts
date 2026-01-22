@@ -1,5 +1,7 @@
-/* src/stan/patch/index.ts
- * Public API surface for patch engine (no CLI/TTY concerns).
+/**
+ * Public API surface for patch application and File Ops parsing/execution;
+ * re-exports patch pipeline and helpers; no CLI/TTY concerns.
+ * @module
  */
 export { detectAndCleanPatch } from './clean';
 export type { FileOp } from './file-ops';

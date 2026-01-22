@@ -1,5 +1,7 @@
-/* src/stan/config/output.ts
- * Ensure STAN workspace subdirectories and manage output/diff.
+/**
+ * Ensures STAN workspace dirs (output/diff/patch) and manages output clearing;
+ * performs filesystem IO; deterministic behavior.
+ * @module
  */
 import { existsSync, rmSync } from 'node:fs';
 import { copyFile, readdir } from 'node:fs/promises';
