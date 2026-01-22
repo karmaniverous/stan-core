@@ -19,7 +19,7 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
   beforeEach(async () => {
     dir = await mkdtemp(path.join(os.tmpdir(), 'stan-ctx-arch-'));
     // Capture tar calls; dynamic import to avoid SSR/mock ordering issues.
-    const helpers = (await import('../../test/helpers')) as typeof import('../../test/helpers');
+    const helpers = await import('../../test/helpers');
     const state = helpers.withMockTarCapture('TAR');
     calls = state.calls;
     calls.length = 0;

@@ -276,6 +276,35 @@ const diff = await createArchiveDiffWithDependencyContext({
 });
 ```
 
+### Strict undo/redo validation seam (engine API)
+
+Undo/redo must fail fast if the restored dependency selection cannot be satisfied
+by the *current environment*.
+
+The engine provides:
+
+```ts
+import { validateDependencySelection } from '@karmaniverous/stan-core';
+
+const res = await validateDependencySelection({
+  cwd,
+  stanPath,
+  meta,  // dependency.meta.json contents
+  state, // dependency.state.json contents (raw)
+});
+if (!res.ok) {
+  // res.mismatches contains per-node reasons (npm vs abs)
+}
+```
+
+Contract (v1):
+- Computes selected node IDs from meta+state closure (excludes win).
+- Validates external nodes only:
+  - npm nodes under `<stanPath>/context/npm/**` by locating `<pkgName>@<pkgVersion>`
+    in the current install and hashing `<pathInPackage>`.
+  - abs nodes under `<stanPath>/context/abs/**` by hashing `locatorAbs`.
+- Returns deterministic, structured mismatches for adapters to surface.
+
 Dependency requirements (loaded only when invoked):
 
 - `buildDependencyMeta` dynamically imports `typescript` and throws if it cannot be imported.

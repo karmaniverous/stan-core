@@ -6,14 +6,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Undo/redo validation seam (engine; CLI calls)
-  - Provide a validation API to support strict undo/redo:
-    - compute selected node set from restored meta+state
-    - for npm nodes: locate `<pkg>@<ver>` candidates in current install and validate per-file sha256 against `metadata.hash`
-    - for abs nodes: hash `locatorAbs` and compare to `metadata.hash`
-    - fail fast with structured mismatches
-  - Note: strict mismatch detection should fail even if cached archives contain older staged bytes (mismatch is environment incompatibility).
-
 - Tests (engine)
   - Unit tests for:
     - state parsing + closure determinism (depth + edgeKinds + excludes)
@@ -161,4 +153,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Fix: archive-flow test + lint hygiene
   - Fixed the archive-flow test helper import path and removed `any`-typed
     dynamic import usage; also cleaned up redundant/unused types in
-    `src/stan/context/archive-flow.ts`.
+    `src/stan/context/archive-flow.ts`.
+
+- Dependency graph mode: strict undo validation seam
+  - Added `validateDependencySelection(...)` to validate selected external
+    dependency nodes against the current environment (npm package@version and
+    abs locator hash checks) and fail fast on mismatches.
+  - Added focused unit tests and documented the API in the assistant guide.
