@@ -25,12 +25,12 @@ Docblock structure and formatting (HARD RULE)
 
 - The module docblock MUST be a proper multi-line JSDoc/TSDoc block, not a single-line `/** @module ... */` inline tag.
 - The tag MUST appear under the prose content (tag goes after content), and MUST be on its own line.
+- When merging existing top-of-file prose into a new `@module`/`@packageDocumentation` docblock, the tag line MUST remain at the bottom of the merged docblock content (after all prose).
 - Prose in code comments MUST be wrapped at 80 characters (this does not conflict with the Markdown no-wrap policy, which applies to Markdown/text only).
 - If the file already has a top-of-file header comment, merge that intent into the tagged docblock so the tagged docblock remains the first comment in the file.
 - Keep the first ~160 characters high-signal for dependency-graph navigation (what/IO/role/traversal hints).
 
-Canonical example (correct)
-
+Canonical example (correct)
 ```ts
 /**
  * Validates assistant reply format (patch blocks, commit message, optional
