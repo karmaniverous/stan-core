@@ -1,7 +1,7 @@
 /**
  * Computes context-mode allowlist plans (Base + dependency closure), applying
  * explicit excludes as hard denials and identifying stageable external nodeIds
- * under <stanPath>/context/{npm,abs}; filesystem IO only; no console output.
+ * under <stanPath>/context/npm/** and <stanPath>/context/abs/**; filesystem IO only; no console output.
  * @module
  */
 
@@ -52,7 +52,7 @@ const isRepoRootFile = (rel: string): boolean => !toPosix(rel).includes('/');
 const readJsonIfPresent = async (
   cwd: string,
   rel: string,
-): Promise<unknown | null> => {
+): Promise<unknown> => {
   const abs = resolve(cwd, rel);
   if (!existsSync(abs)) return null;
   try {
@@ -151,19 +151,19 @@ export const computeContextAllowlistPlan = async (args: {
   // - prefer explicit state passed by caller
   // - else load dependency.state.json from disk when present
   let usedDiskState = false;
-  let stateRaw: unknown | null =
-    typeof args.state !== 'undefined' ? args.state : null;
+  let stateRaw: unknown = typeof args.state !== 'undefined' ? args.state : null;
   if (typeof args.state === 'undefined' && depStateExists) {
     stateRaw = await readJsonIfPresent(cwd, depStateRel);
     usedDiskState = true;
   }
+  const hasStateRaw = stateRaw !== null;
 
   const isExcluded = makeGlobMatcher(excludes);
   const isReserved = (p: string): boolean =>
     isReservedWorkspacePath(stanRel, p) || isOutputArchivePath(stanRel, p);
 
   let selectedNodeIds: string[] = [];
-  if (stateRaw) {
+  if (hasStateRaw) {
     const parsed = parseDependencyStateFile(stateRaw);
     selectedNodeIds = computeSelectedNodeIds({
       meta,

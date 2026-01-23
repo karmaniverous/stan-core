@@ -216,3 +216,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added allowlist-based full+diff archivers and a context allowlist planner (Base + dependency closure) with explicit excludes as hard denials and reserved denials enforced.
   - Extended `archive.meta.tar` to include repo-root base files and `dependency.state.json` when present (still excludes staged payloads and `.docs.meta.json`).
   - Added dependency-mode option to the response validator to require either a `dependency.state.json` patch or the exact “dependency.state.json: no change” signal and to reject no-op state patches.
+- Fix: context allowlist lint hygiene
+  - Removed redundant `unknown | null` unions that tripped `@typescript-eslint/no-redundant-type-constituents`.
+  - Adjusted TSDoc text to avoid unescaped `{}` braces so `tsdoc/syntax` does not warn.

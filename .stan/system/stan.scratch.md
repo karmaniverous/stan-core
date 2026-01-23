@@ -4,7 +4,8 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- Implement `--context` allowlist-only archiving (Base + dependency closure) and wire it into the CLI flow.
+- Keep `--context` allowlist-only archiving building blocks green (lint/typecheck/tests).
+- Wire context-mode allowlist-only archiving (Base + dependency closure) into stan-cli.
 - Enforce dependency-state update discipline in dependency graph mode via validator options (CLI must pass the mode flag).
 - Add deterministic budgeting/report outputs so assistants can expand/prune selection predictably.
 
@@ -18,6 +19,7 @@ Last updated: 2026-01-23Z
   - allowlist planning (`computeContextAllowlistPlan`)
   - context-mode orchestration (stage selected externals, then archive from allowlist)
 - Response validation has an optional dependency-mode rule: require either a `dependency.state.json` patch or the exact “dependency.state.json: no change” bullet under `## Input Data Changes`, and reject no-op state patches.
+- Current blocker was lint in `src/stan/context/allowlist.ts` (redundant `unknown` unions + TSDoc braces); fix applied.
 
 ## Open questions
 
