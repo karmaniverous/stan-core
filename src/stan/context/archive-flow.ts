@@ -1,5 +1,5 @@
 /**
- * Orchestrates dependency-graph archive flows (stage context + add anchors);
+ * Orchestrates dependency-graph archive flows (stage context + force includes);
  * calls archive/diff helpers; filesystem IO only; no console output.
  *
  * Dependency graph mode: orchestration helpers for CLI-facing archive flows.

@@ -39,11 +39,11 @@ export type CreateArchiveOptions = {
    * Written to `stanPath/output/<fileName>`.
    */
   fileName?: string;
-  /** Allow‑list globs; when provided, overrides excludes. */
+  /** Additive allow‑list globs (can re-include gitignored files); excludes and reserved denials still win. */
   includes?: string[];
   /**
-   * Deny‑list globs. Defaults include `.git`, `node_modules`, and STAN
-   * workspace rules. These are applied only when `includes` is empty.
+   * Deny‑list globs (hard denials). These always apply and take precedence over
+   * includes.
    */
   excludes?: string[];
   /** Optional callback for archive classifier warnings (engine remains silent by default). */
@@ -81,7 +81,7 @@ const getClassifyForArchive = async (): Promise<
  * const tarPath = await createArchive(process.cwd(), '.stan', {
  *   includeOutputDir: false,
  *   excludes: ['**\/.tsbuild/**'],
- *   anchors: ['README.md', 'docs/index.md'], // re-include anchors
+ *   includes: ['README.md', 'docs/index.md'], // re-include even if gitignored
  * });
  * ```
  */

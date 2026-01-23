@@ -2,16 +2,17 @@
 
 # @karmaniverous/stan-core (engine)
 
-[![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) <!-- TYPEDOC_EXCLUDE --> [![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/stan-core) [![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/CHANGELOG.md)<!-- /TYPEDOC_EXCLUDE --> [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/LICENSE.md)
+[![npm version](https://img.shields.io/npm/v/@karmaniverous/stan-core.svg)](https://www.npmjs.com/package/@karmaniverous/stan-core) ![Node Current](https://img.shields.io/node/v/@karmaniverous/stan-core) <!-- TYPEDOC_EXCLUDE --> [![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/stan-core) [![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/CHANGELOG.md)<!-- /TYPEDOC_EXCLUDE --> [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/stan-core/tree/main/LICENSE)
 
 This package exposes the STAN engine as a library:
 
 - File selection (gitignore + includes/excludes + reserved workspace rules)
 - Archiving: full archive.tar and diff archive.diff.tar (binary screening)
 - Patch engine: worktree‑first git apply cascade with jsdiff fallback
-- File Ops: safe mv/rm/rmdir/mkdirp block as “pre‑ops”
+- File Ops: safe mv/cp/rm/rmdir/mkdirp block as “pre‑ops”
 - Config loading/validation (top‑level `stan-core` in stan.config.yml|json)
 - Imports staging under <stanPath>/imports/<label>/…
+- Imports safety: patch + File Ops refuse to modify <stanPath>/imports/** when the correct stanPath is provided
 - Response‑format validator (optional)
 
 For the CLI and TTY runner, see @karmaniverous/stan-cli.
@@ -166,6 +167,16 @@ Core file selection applies in this order:
   - binary screening during archive classification.
 - `includes` are additive and can re-include paths ignored by `.gitignore`.
 - `excludes` are hard denials and override `includes`.
+
+## Meta archive (context-mode thread opener)
+
+When dependency graph mode is enabled, the engine can create a small `archive.meta.tar` (via `createMetaArchive`) intended as a thread opener:
+
+- Includes `<stanPath>/system/**` (excluding `<stanPath>/system/.docs.meta.json`)
+- Includes `<stanPath>/context/dependency.meta.json` (required)
+- Includes `<stanPath>/context/dependency.state.json` when present
+- Includes repo-root (top-level) base files selected by current selection config
+- Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission
 
 ## Environment variables
 

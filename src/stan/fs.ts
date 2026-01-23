@@ -116,10 +116,6 @@ export type FilterOptions = {
  *     excludes always win).
  *   - Reserved exclusions still apply: `stanPath/diff` is always excluded;
  *     `stanPath/output` is excluded when `includeOutputDir` is false.
- * - `anchors` (high‑precedence re‑includes) — ADDITIVE with higher precedence:
- *   - When provided, matched files are ADDED after excludes and `.gitignore`,
- *     but anchors DO NOT override reserved denials (`diff/patch`) and DO NOT
- *     include `stanPath/output` when `includeOutputDir` is false.
  * Paths are compared using POSIX separators.
  * @param files - Repo‑relative paths to consider.
  * @param options - See {@link FilterOptions}.

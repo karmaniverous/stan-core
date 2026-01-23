@@ -4,17 +4,16 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- System prompt hygiene and de-duplication: consolidate overlapping rule blocks in `.stan/system/parts/*.md` to reduce drift.
-- Remove deprecated archive-shaping language (anchors/facets) from the system prompt; upcoming major will eliminate them.
-- Memorialize the File Ops “fenced for display, copied without fence markers” convention in `.stan/system/stan.project.md` so it is not treated as an implementation mismatch.
-- Keep the follow-through focus on stan-cli wiring for `onSelectionReport` presentation (engine stays presentation-free).
+- Documentation accuracy pass for stan-core: ensure README + `guides/stan-assistant-guide.md` + public TypeDoc comments match current implementation.
+- Remove stale “anchors” references (engine selection uses `includes`/`excludes`; no anchors API).
+- Correct meta archive docs: `archive.meta.tar` includes `dependency.state.json` when present and repo-root base files; staged payloads remain excluded by omission.
+- Ensure File Ops docs list current verbs (mv/cp/rm/rmdir/mkdirp) and imports read-only enforcement is documented correctly.
 
 ## Working model (high signal)
 
-- The system prompt monolith is assembled from `.stan/system/parts/*.md`; edit parts, then regenerate the monolith via tooling.
-- Dev plan maintenance: keep `.stan/system/stan.todo.md` under 300 lines by pruning whole oldest Completed entries; do not rewrite retained Completed entries; keep Completed as the final major section.
+- User-facing docs: README and `guides/stan-assistant-guide.md` must describe behavior as implemented (selection precedence, archive/diff/snapshot semantics, meta/context mode, patch pipeline, File Ops, validator switches).
+- TypeDoc-facing docs: exported JSDoc/TSDoc blocks must not mention removed concepts (anchors; “patch included in archives”).
 
 ## Open questions
 
-- Whether stan-cli should persist any selection report artifacts under `.stan/output/` (recommendation: no; present-only).
-- Whether the report schema needs an opt-in “verbose” mode (recommendation: keep minimal; warnings already carry file lists).
+- None for stan-core docs right now; follow-through remains on stan-cli presentation wiring for `onSelectionReport` (engine stays presentation-free).

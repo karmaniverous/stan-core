@@ -228,4 +228,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: consolidate prompt parts; drop anchors/facets
   - Memorialized the File Ops “fenced for display, copied without fence markers” convention in `.stan/system/stan.project.md`.
   - Consolidated duplicated rule blocks across `.stan/system/parts/*.md` to reduce drift and keep the monolith lean.
-  - Clarified dev plan pruning: keep `.stan/system/stan.todo.md` under 300 lines by pruning whole oldest Completed entries (do not rewrite retained entries).
+  - Clarified dev plan pruning: keep `.stan/system/stan.todo.md` under 300 lines by pruning whole oldest Completed entries (do not rewrite retained entries).
+- Docs: align user-facing docs with current engine behavior
+  - Updated README + `guides/stan-assistant-guide.md` to reflect current selection/archiving semantics (includes/excludes; no anchors API; meta archive includes dependency state when present).
+  - Corrected TypeDoc/JSDoc comments that drifted from implementation (no “patch included in archives”; no “anchors” options).
+  - Documented current File Ops verbs (including `cp`) and imports read-only enforcement.

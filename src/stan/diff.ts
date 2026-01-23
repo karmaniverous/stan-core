@@ -126,7 +126,6 @@ export async function writeArchiveSnapshot({
  * - Snapshot update behavior is controlled by updateSnapshot.
  * - When includeOutputDirInDiff === true, also include the entire <stanPath>/output tree
  *   (excluding <stanPath>/diff and the two archive files) regardless of change list length.
- * - Always include <stanPath>/patch in the diff archive.
  *
  * @param args - Object with:
  *   - cwd: Repo root.

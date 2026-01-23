@@ -51,14 +51,14 @@ stan-core:
 
 Given `stanPath = ".stan"`:
 
-- `.stan/system/` — prompts/docs (not owned by the engine’s runtime features, but included in archives)
+- `.stan/system/` — prompts/docs (meta archive always includes these; full/diff archives include them unless excluded by selection rules)
 - `.stan/system/stan.scratch.md` — assistant-authored short-term memory (top-of-thread context; actively rewritten)
 - `.stan/output/` — archive outputs (and optionally other outputs when “combine” behavior is used by a caller)
 - `.stan/diff/` — snapshot state:
   - `.archive.snapshot.json`
   - `.stan_no_changes` sentinel when diff has no changes
   - `archive.prev.tar` (previous full archive copy)
-- `.stan/patch/` — patch workspace (not intended for archiving; treated as reserved)
+- `.stan/patch/` — patch workspace (excluded from archives by policy; used by patch tooling)
 - `.stan/imports/` — staged imports (copy-in area for external artifacts)
 - `.stan/context/` — dependency-graph artifacts and staged external context (context mode only):
   - `dependency.meta.json` (assistant-facing graph meta)
@@ -422,7 +422,9 @@ Contract:
 
 - Includes `<stanPath>/system/**` excluding `<stanPath>/system/.docs.meta.json`.
 - Includes `<stanPath>/context/dependency.meta.json`.
-- Excludes dependency state and staged payloads under `<stanPath>/context/**` by omission.
+- Includes `<stanPath>/context/dependency.state.json` when it exists (assistant-authored selection intent).
+- Includes repo-root (top-level) base files selected by the current selection config.
+- Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
 
 ### Patch application pipeline
 
@@ -435,7 +437,7 @@ import {
 } from '@karmaniverous/stan-core';
 
 const cwd = process.cwd();
-const stanPath = '.stan';
+const stanPath = '.stan'; // always pass the correct workspace path for this repo
 
 const cleaned = detectAndCleanPatch(rawPatchText);
 
@@ -463,7 +465,7 @@ Contract:
 - The engine does not print diagnostics; callers inspect the returned structured outcome.
 - Imports safety:
   - `<stanPath>/imports/**` is protected staged context.
-  - When you provide `stanPath`, the engine refuses to apply diffs that target `<stanPath>/imports/**`.
+  - Always pass the correct `stanPath` so the protection rule is scoped correctly; the default is `.stan`.
 
 ### File Ops (pre-ops)
 
@@ -471,6 +473,7 @@ File Ops are a lightweight, safe structural operations layer (run before unified
 
 - `mkdirp <path>`
 - `mv <src> <dest>`
+- `cp <src> <dest>`
 - `rm <path>`
 - `rmdir <path>` (empty dirs only)
 
@@ -494,7 +497,7 @@ Contract:
 
 - Only repo-relative POSIX paths are allowed (no absolute paths; no `..` traversal).
 - `dryRun=true` validates without changing the filesystem.
-- When you provide `stanPath`, the engine refuses File Ops that target `<stanPath>/imports/**` (protected staged context).
+- When you provide `stanPath`, the File Ops parser/executor refuse ops that target `<stanPath>/imports/**` (protected staged context).
 
 ### Optional: response-format validation
 
@@ -506,6 +509,10 @@ if (!res.ok) throw new Error(res.errors.join('\n'));
 ```
 
 This is intended for tooling that enforces a predictable assistant reply format.
+
+Notes:
+
+- The validator supports a dependency-graph mode enforcement switch: `{ dependencyMode: true, stanPath }`, which requires either a Patch for `<stanPath>/context/dependency.state.json` or the exact no-change signal `- dependency.state.json: no change` under `## Input Data Changes`.
 
 ## Prompt helper utilities (dev workflows)
 

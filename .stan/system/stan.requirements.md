@@ -177,7 +177,8 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
       - `archive.diff.tar` (diff)
       - `archive.meta.tar` (meta; only when context mode is enabled)
         - The meta archive MUST include system files and dependency meta.
-        - The meta archive MUST exclude dependency state and staged payloads.
+        - The meta archive MUST include dependency state when it exists (assistant-authored selection intent).
+        - The meta archive MUST exclude staged payloads under `<stanPath>/context/{npm,abs}/**`.
         - The meta archive MUST exclude `<stanPath>/system/.docs.meta.json`.
   - Node IDs (graph + state)
     - Node IDs MUST be repo-relative POSIX paths.

@@ -16,7 +16,7 @@ import { makeStanDirs } from '@/stan/paths';
  *
  * Behavior:
  * - Always ensure `stanPath/output` and `stanPath/diff` exist.
- * - Also ensure `stanPath/patch` exists so archives can include it.
+ * - Also ensure `stanPath/patch` exists so patch tooling has a stable workspace.
  * - When `keep === false`, copy `output/archive.tar` to `diff/archive.prev.tar`
  *   if present, then clear only the `output` directory.
  *
