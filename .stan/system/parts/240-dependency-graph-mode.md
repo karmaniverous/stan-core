@@ -79,15 +79,13 @@ Semantics:
 
 ## Expansion precedence (dependency mode)
 
-Dependency expansion is intended to EXPAND the archive beyond the baseline
-selection.
+Dependency expansion is intended to expand the archive beyond the baseline selection by explicitly selecting additional node IDs via `dependency.state.json`.
 
-- Dependency expansion overrides:
-  - `.gitignore`
-  - configured excludes
-- Dependency expansion MUST NOT override:
-  - reserved denials: `.git/**`, `.stan/diff/**`, `.stan/patch/**`, and archive
-    outputs under `.stan/output/**`
+- Explicit dependency selection MAY override:
+  - `.gitignore` (gitignored files can be selected when explicitly requested)
+- Explicit dependency selection MUST NOT override:
+  - explicit `excludes` (hard denials)
+  - reserved denials: `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`, and archive outputs under `<stanPath>/output/**`
   - binary exclusion during archive classification
 
 ## Meta archive behavior (thread opener)
@@ -105,6 +103,4 @@ The meta archive is intended for the start of a thread:
 
 - Prefer shallow recursion and explicit exclusions over deep, unconstrained
   traversal. Increase depth deliberately when required.
-- Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting
-  redundant `.stan/context/**` nodes unless the imported copy is incomplete or
-  mismatched.
+- Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting redundant `.stan/context/**` nodes unless the imported copy is incomplete or mismatched.

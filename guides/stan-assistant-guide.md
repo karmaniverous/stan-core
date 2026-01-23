@@ -6,7 +6,7 @@ This guide is a compact, self-contained usage contract for `@karmaniverous/stan-
 
 `@karmaniverous/stan-core` is the **engine** behind STAN:
 
-- File selection (gitignore + includes/excludes + reserved workspace rules + anchors)
+- File selection (gitignore + includes/excludes + reserved workspace rules)
 - Archiving (full `archive.tar` and diff `*.diff.tar`)
 - Snapshotting (hash-based snapshot under `<stanPath>/diff`)
 - Dependency graph mode (context expansion; optional; context mode only)
@@ -78,11 +78,7 @@ These are always excluded from archives and cannot be forced back by includes/an
 - archive files under `<stanPath>/output` (e.g., `archive.tar`, `archive.diff.tar`)
 - binary screening during archive classification (binaries are excluded even if selected)
 
-Additionally:
-
-- `.stan/imports/**` is staged context and should be treated as read-only:
-  - never create, patch, or delete files under `.stan/imports/**`.
-  - the engine also enforces this when `stanPath` is provided to mutation APIs (Patch + File Ops), refusing ops/patches that target `<stanPath>/imports/**`.
+Additionally, `.stan/imports/**` is staged context and should be treated as read-only; the engine enforces this for mutation APIs when `stanPath` is provided.
 
 Additionally:
 
@@ -92,9 +88,6 @@ Additionally:
 
 - `includes` are **additive**: they can add paths even if `.gitignore` would ignore them.
 - `excludes` win over `includes`.
-- `anchors` are a **high-precedence re-include channel**:
-  - they are applied after excludes and `.gitignore`,
-  - but they still cannot override reserved denials or output exclusion (when output is not being included).
 
 ### Monorepo sub-package default exclusion
 
@@ -134,7 +127,6 @@ const tarAbs = await createArchive(process.cwd(), '.stan', {
   // optional selection overrides:
   includes: [],
   excludes: ['docs/**'],
-  anchors: ['README.md'], // re-include even if excluded (subject to reserved rules)
   onArchiveWarnings: (text) => {
     // surface “binaries excluded” / “large text flagged” to the caller
     console.log(text);
@@ -163,7 +155,6 @@ const { diffPath } = await createArchiveDiff({
   updateSnapshot: 'createIfMissing', // 'never' | 'createIfMissing' | 'replace'
   includeOutputDirInDiff: false,
   excludes: ['docs/**'],
-  anchors: ['docs/README.md'],
   onArchiveWarnings: (text) => console.log(text),
 });
 ```
@@ -185,7 +176,6 @@ await writeArchiveSnapshot({
   cwd: process.cwd(),
   stanPath: '.stan',
   excludes: ['docs/**'],
-  anchors: ['docs/README.md'],
 });
 ```
 

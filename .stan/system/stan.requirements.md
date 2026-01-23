@@ -96,7 +96,7 @@ Base definition (fixed, config-driven)
 Dependency graph universe vs archive selection
 
 - The dependency graph universe is the seed for the dependency map. It MUST be sufficiently broad to support later selection via state without requiring full-archive ingestion by the assistant.
-- For v1, the dependency graph universe SHOULD be the same selection used by the pre-context archiving flow (the existing STAN selection model driven by config includes/excludes/anchors and `.gitignore` semantics), even though the context-mode archive payload is allowlist-only.
+- For v1, the dependency graph universe SHOULD be the same selection used by the pre-context archiving flow (the existing STAN selection model driven by config includes/excludes and `.gitignore` semantics), even though the context-mode archive payload is allowlist-only.
 - Archive selection begins from Base only; it does not implicitly include the full graph universe.
 
 Excludes precedence (hard denials)
@@ -235,27 +235,14 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - `.gitignore` semantics,
     - `includes` (additive, override `.gitignore`),
     - `excludes` (take precedence over `includes`),
-    - `anchors` (high‑precedence re‑inclusion; see below; deprecated as the primary context-control mechanism when dependency graph mode is used),
     - reserved workspace rules (exclude `<stanPath>/diff` and `<stanPath>/patch`, conditionally exclude `<stanPath>/output`).
-  - Context Mode selection (peer to standard selection):
-    - When enabled, selection starts with a **Mandatory Base** (System files + Staged Imports + Dependency Graph).
-    - It then applies the **Context Overlay** from `<stanPath>/system/context.meta.json` (explicit file list).
-    - **Override Rule**: Explicit entries in the Context Overlay MUST override default denials (specifically `node_modules` and `.gitignore`) to allow the AI to select external type definitions.
-    - Configured `excludes` and Reserved Workspace rules still take precedence over the Context Overlay for safety.
-    - Deprecation note:
-      - Facet/anchor-based overlays are deprecated as the primary solution for context control; prefer dependency graph mode for expansion/targeting.
-  - Anchors channel (new):
-    - Core selection surfaces MUST accept an optional `anchors?: string[]` and re‑include matched paths after applying excludes and `.gitignore`.
-    - Anchors MUST NOT override reserved denials (`.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`, and archive outputs) and MUST NOT bypass binary screening.
-    - Surfaces:
-      - `filterFiles(files, { …, includes?, excludes?, anchors? })`
-      - `createArchive(cwd, stanPath, { …, includes?, excludes?, anchors? })`
-      - `createArchiveDiff({ …, includes?, excludes?, anchors?, … })`
-      - `writeArchiveSnapshot({ …, includes?, excludes?, anchors? })`
+  - Context mode selection (authoritative):
+    - In `--context`, archive selection is allowlist-only: Base + selected dependency closure (repo-local node IDs + staged externals), subject to reserved denials and binary exclusion.
+    - Explicit `excludes` are hard denials and MUST apply to Base and closure.
+    - Explicit dependency selection MAY override `.gitignore`, but MUST NOT override explicit excludes or reserved denials.
   - Precedence (documented behavior):
-    - `includes` override `.gitignore` (not `excludes`);
-    - `excludes` override `includes`;
-    - `anchors` override both `excludes` and `.gitignore`, subject to reserved denials and binary screening.
+    - `includes` override `.gitignore` (not `excludes`).
+    - `excludes` override `includes`.
 
 - Archiving and diffs
   - Create full and diff archives:
@@ -272,9 +259,6 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - Embed the graph JSON in the archive as `<stanPath>/context/dependency.meta.json`.
     - External node IDs MUST be normalized to staged `<stanPath>/context/...` paths.
     - Include `description` in the embedded meta for assistant prioritization.
-  - Overlay metadata (CLI):
-    - The CLI MUST write a machine‑readable `overlay` block to `<stanPath>/system/.docs.meta.json` each run capturing: `enabled`, per‑run overrides (`activated`/`deactivated`), final `effective` facet map, any `autosuspended` facets (ramp‑up safety), and optional `anchorsKept`.
-    - This metadata MUST be included in both full and diff archives so the assistant can distinguish selection/view changes from code churn across turns across turns.
 
 - Snapshotting
   - Compute per‑file content hashes for the filtered selection.
@@ -322,7 +306,7 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
 - Archive/diff/snapshot
   - `createArchive(cwd, stanPath, options): Promise<string>`
   - `createArchiveDiff(args): Promise<{ diffPath: string }>`
-  - `writeArchiveSnapshot({ cwd, stanPath, includes, excludes, anchors? }): Promise<string>`
+  - `writeArchiveSnapshot({ cwd, stanPath, includes, excludes }): Promise<string>`
   - Classification utility included as internal detail; warnings surfaced by archive APIs.
   - Optional callback: `onArchiveWarnings?: (text: string) => void` (where supported).
 - Patch engine

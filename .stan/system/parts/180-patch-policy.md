@@ -1,7 +1,7 @@
 # Patch Policy (system‑level)
 
 - Canonical patch path: /<stanPath>/patch/.patch; diagnostics: /<stanPath>/patch/.debug/
-  - This directory is gitignored but always included in both archive.tar and archive.diff.tar.
+  - This directory is gitignored and excluded from archives by policy.
 - Patches must be plain unified diffs.
 - Prefer diffs with a/ b/ prefixes and stable strip levels; include sufficient context.
 - Normalize to UTF‑8 + LF. Avoid BOM and zero‑width characters.

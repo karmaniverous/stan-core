@@ -2,11 +2,11 @@
 
 - Binary exclusion:
   - The archiver explicitly excludes binary files even if they slip past other rules.
-  - STAN logs a concise summary to the console when creating archives. No warnings file is written.
+  - The engine remains presentation-free; warnings are surfaced via return values and/or optional callbacks (adapters may choose to print them). No warnings file is written.
 
 - Large text call‑outs:
-  - STAN identifies large text files (by size and/or LOC) as candidates
-  - for exclusion and logs them to the console (suggesting globs to add to `excludes` if desired).
+  - The archiver may identify large text files (by size and/or LOC) as candidates for exclusion.
+  - The engine remains presentation-free; warnings are surfaced via return values and/or optional callbacks (adapters may choose to print them).
 
 - Preflight baseline check on `stan run`:
   - Compare `<stanPath>/system/stan.system.md` to the packaged baseline (dist). If drift is detected, warn that local edits will be overwritten by `stan init` and suggest moving customizations to the project prompt; offer to revert to baseline.

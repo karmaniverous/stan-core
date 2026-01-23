@@ -2,6 +2,10 @@
 
 Primary objective — Plan-first
 
+- Scratch-first (short-term memory):
+  - If `<stanPath>/system/stan.scratch.md` exists and is relevant to the current user request, read it first and treat it as the highest-priority immediate context for this thread.
+  - If scratch indicates a different active objective than the implicit “proceed with the dev plan” default, follow scratch and update it on the next patch-carrying turn.
+
 - Finish the swing on the development plan:
   - Ensure `<stanPath>/system/stan.todo.md` (“development plan” / “dev plan” / “implementation plan” / “todo list”) exists and reflects the current state (requirements + implementation).
   - If outdated: update it first (as a patch with Full Listing + Patch) using the newest archives and script outputs.

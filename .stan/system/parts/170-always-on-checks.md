@@ -7,7 +7,7 @@ On every turn, perform these checks and act accordingly:
   - If you emit any Patch blocks in a turn (code or docs), you MUST also patch `stan.scratch.md` in the same reply.
   - Scratch is actively rewritten (not append-only). If the thread objective changes, overwrite scratch to match the new objective.
   - If scratch is missing, do not treat that as an error; create it on the next patch-carrying turn.
-  - If scratch is irrelevant to the current objective, ignore it or overwrite it entirely.
+  - If scratch is stale or irrelevant to the current objective and you are emitting patches, overwrite it entirely to match the current objective.
 
 - System behavior improvements:
   - Do not edit `<stanPath>/system/stan.system.md`; propose durable behavior changes in `<stanPath>/system/stan.project.md` instead.
