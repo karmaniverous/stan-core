@@ -6,31 +6,14 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Context mode (`--context`) allowlist archiving + budgeting tooling
-  - Implement allowlist-only archive selection in context mode:
-    - Archive payload = Base + selected dependency closure (repo-local nodeIds + staged externals) with reserved denials and binary exclusion always enforced.
-    - Base is config-driven and aligns with meta archive contents (system docs + dependency meta + repo-root base files per selection config + dependency state when present).
-    - Explicit `excludes` are hard denials across base and closure; explicit selection may override `.gitignore` but must not override excludes/reserved.
-  - Enforce dependency state updates in dependency graph mode:
-    - In dependency mode, patch-carrying replies must include either:
-      - a Patch for `.stan/context/dependency.state.json`, or
-      - a bullet line `dependency.state.json: no change` under `## Input Data Changes` (and no state patch).
-    - Forbid no-op state patches (do not emit a state patch unless it changes content).
-    - Update the response validator to enforce this in context mode (likely via an option/flag passed by stan-cli).
-  - Deterministic budgeting support (open questions / design work):
-    - Add tooling output that computes the selected closure membership and estimated size so assistants can follow the 50%/65% budgeting heuristic deterministically.
-    - Decide where this computation lives (stan-core vs stan-cli) and what artifact to emit (e.g., JSON + human-readable summary under `.stan/output/` and/or `.stan/context/`).
-    - Decide what the report must contain at minimum:
-      - selected node count,
-      - sum of `metadata.size` bytes (bytes as proxy for chars),
-      - token estimate (`bytes/4`),
-      - top-N largest contributors,
-      - and prune suggestions ordered by the deterministic prune ladder.
-    - Decide how the report handles “base bytes” vs “closure bytes” vs “external staged bytes”.
+- Context mode (`--context`) follow-through: selection reporting + CLI wiring
+  - Decide where context-mode selection reporting should live (stan-core vs stan-cli), and what minimal artifacts to emit (JSON + human-readable summary).
+  - If reporting lives in stan-core, define the report schema (bytes, bytes/4, largest entries, deterministic warnings) and add tests for stable output.
+  - Coordinate with stan-cli to wire context-mode allowlist-only archiving (Base + dependency closure) using the existing allowlist/context entrypoints in this repo.
 
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
-  - Re-run `npm run docs` and confirm 0 warnings.
+  - Run `npm run build`, `npm run docs`, and `npm run knip` and confirm 0 warnings; if warnings remain, capture them in a focused plan item and fix them in small slices.
 
 - Dependency graph quality (module descriptions)
   - Roll out a module-head TSDoc block (`@module` or `@packageDocumentation`) for every code module, optimized for the first 160 characters.
@@ -224,4 +207,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Report includes base/closure breakdown and largest entries, using meta sizes when available and falling back to stat for repo files.
 - Fix: budget helper lint + typecheck
   - Removed an unnecessary optional chain in `budget.ts` and guarded meta lookups with `hasOwnProperty` for correctness.
-  - Updated `budget.test.ts` to avoid readonly tuple arrays and to pass a properly typed `meta.nodes` shape.
+  - Updated `budget.test.ts` to avoid readonly tuple arrays and to pass a properly typed `meta.nodes` shape.
+- Docs: align dev plan and scratch with green checks
