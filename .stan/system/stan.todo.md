@@ -210,4 +210,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated `budget.test.ts` to avoid readonly tuple arrays and to pass a properly typed `meta.nodes` shape.
 - Docs: align dev plan and scratch with green checks
 - Docs: fix TypeDoc warnings (budget params + exported option types)
-- Docs: export allowlist archive options for TypeDoc
+- Docs: export allowlist archive options for TypeDoc
+- Amendment: `npm run docs` now reports 0 warnings; treat “Docs hygiene (release readiness)” as currently satisfied and focus follow-through on context-mode selection reporting + CLI wiring.

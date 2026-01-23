@@ -4,8 +4,8 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- Fix the remaining TypeDoc warning in `npm run docs` and re-run docs to confirm 0 warnings.
-- Keep context-mode allowlist-only archiving building blocks green (typecheck/lint/test are passing).
+- TypeDoc warnings are now cleared (`npm run docs` reports 0 warnings); keep docs/build/knip green as a release-readiness gate.
+- Context mode follow-through: decide the selection-report contract location (stan-core vs stan-cli) and the minimal report schema.
 - Coordinate with stan-cli to wire context-mode allowlist-only archiving (Base + dependency closure) into the CLI runner.
 
 ## Working model (high signal)
@@ -18,7 +18,7 @@ Last updated: 2026-01-23Z
   - allowlist planning (`computeContextAllowlistPlan`)
   - context-mode orchestration (`createContextArchiveWithDependencyContext`, `createContextArchiveDiffWithDependencyContext`)
 - Budgeting helper present: `summarizeContextAllowlistBudget(...)` (uses meta sizes when present; stat fallback; deterministic `bytes/4` heuristic).
-- TypeDoc warning fixes: align TSDoc param names with args-style signatures and ensure referenced option types are exported in the public surface.
+- TypeDoc warnings were cleared by aligning args-style TSDoc and exporting referenced option types in the public surface.
 
 ## Open questions
 
