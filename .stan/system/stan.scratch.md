@@ -6,6 +6,7 @@ Last updated: 2026-01-23Z
 
 - Selection report callbacks are implemented in stan-core archive APIs (data-only callback; no engine I/O).
 - Follow-up fix: tests now capture selection reports without TS control-flow narrowing issues.
+- Follow-up fix: diff test now narrows `SelectionReport` to `kind: 'diff'` before reading `snapshotExists`.
 - Next step is stan-cli wiring: consume `onSelectionReport` and present it (no engine output files).
 
 ## Working model (high signal)

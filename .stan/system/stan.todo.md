@@ -213,4 +213,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Amendment: `npm run docs` now reports 0 warnings; treat “Docs hygiene (release readiness)” as currently satisfied and focus follow-through on context-mode selection reporting + CLI wiring.
 - Design: lock stan-core selection report contract (data-only callback; no engine IO); implement next thread.
 - Implement selection report callbacks on archive APIs (data-only; no IO).
-- Fix typecheck/lint in selection-report tests (avoid TS narrowing to null).
+- Fix typecheck/lint in selection-report tests (avoid TS narrowing to null).
+- Fix type narrowing for diff selection report test (kind guard).

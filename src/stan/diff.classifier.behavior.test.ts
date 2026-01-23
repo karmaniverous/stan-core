@@ -63,6 +63,8 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
     expect(report).toBeTruthy();
     if (!report) throw new Error('expected onSelectionReport to be called');
     expect(report.kind).toBe('diff');
+    if (report.kind !== 'diff')
+      throw new Error('expected diff selection report');
     expect(report.mode).toBe('denylist');
     expect(report.snapshotExists).toBe(false);
     expect(report.counts.selected).toBe(2);
