@@ -52,6 +52,7 @@ stan-core:
 Given `stanPath = ".stan"`:
 
 - `.stan/system/` — prompts/docs (not owned by the engine’s runtime features, but included in archives)
+- `.stan/system/stan.scratch.md` — assistant-authored short-term memory (top-of-thread context; actively rewritten)
 - `.stan/output/` — archive outputs (and optionally other outputs when “combine” behavior is used by a caller)
 - `.stan/diff/` — snapshot state:
   - `.archive.snapshot.json`

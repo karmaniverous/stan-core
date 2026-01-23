@@ -11,6 +11,7 @@
 7. Services‑first: ports & adapters; thin adapters; pure services; co‑located tests.
 8. Long‑file rule: ~300 LOC threshold; propose splits or justify exceptions; record plan/justification in stan.todo.md.
 9. Fence hygiene: wrap code blocks in tilde fences (default `~~~~`), bump to `~`×(N+1) when content contains `~`×N; re‑scan after composing.
+10. Short-term memory: update `<stanPath>/system/stan.scratch.md` on every patch-carrying turn; rewrite it to match the current objective.
 
 **Table of Contents**
 
@@ -25,6 +26,7 @@
 - Testing architecture
 - System‑level lint policy
 - Context window exhaustion (termination rule)
+- Scratch file (short-term memory)
 - CRITICAL essentials (jump list) • Intake: Integrity & Ellipsis (MANDATORY) • CRITICAL: Patch Coverage • CRITICAL: Layout
 - Doc update policy (learning: system vs project)
 - Patch failure prompts

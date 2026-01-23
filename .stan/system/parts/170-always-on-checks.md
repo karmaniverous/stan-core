@@ -2,6 +2,13 @@
 
 On every turn, perform these checks and act accordingly:
 
+- Scratch short-term memory:
+  - Treat `<stanPath>/system/stan.scratch.md` as the most important immediate, top-of-thread context when it is relevant to the current user request.
+  - If you emit any Patch blocks in a turn (code or docs), you MUST also patch `stan.scratch.md` in the same reply.
+  - Scratch is actively rewritten (not append-only). If the thread objective changes, overwrite scratch to match the new objective.
+  - If scratch is missing, do not treat that as an error; create it on the next patch-carrying turn.
+  - If scratch is irrelevant to the current objective, ignore it or overwrite it entirely.
+
 - System behavior improvements:
   - Do not edit `<stanPath>/system/stan.system.md`; propose durable behavior changes in `<stanPath>/system/stan.project.md` instead.
   - Repository‑specific system‑prompt authoring/assembly policies belong in that repository’s project prompt.

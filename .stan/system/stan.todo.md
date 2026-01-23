@@ -202,6 +202,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Policy: context-mode allowlist archiving requirements
   - Recorded `--context` allowlist-only archiving semantics, config-driven Base definition, budgeting heuristic (50% target, 65% max), and dependency.state.json update enforcement in `.stan/system/stan.requirements.md`.
   - Added a system-prompt policy to hoist policy-bearing magic numbers/strings into feature-scoped constants modules.
+- System prompt: adopt scratch memory; remove handoff
 - Interop: request stan-context confirm `metadata.size` semantics
   - Posted an interop request to stan-context clarifying that `dependency.meta.json` node `metadata.size` must be bytes (used as a proxy for characters for deterministic budgeting via `bytes/4`).
   - This supports `--context` allowlist-only archiving and budget-driven selection without reading all file bodies.

@@ -4,6 +4,20 @@ This document lists durable requirements for the STAN engine (“stan-core”), 
 
 ---
 
+## Short-term memory device (stan.scratch.md)
+
+STAN MUST support a short-term memory device that persists across turns and threads and is always included in the Base set of archives.
+
+- Canonical path: `<stanPath>/system/stan.scratch.md` (repo default: `.stan/system/stan.scratch.md`).
+- Purpose: “What I would want to know if I were at the top of a thread right now.”
+- Behavior:
+  - The assistant MUST actively rewrite scratch to stay current (not append-only).
+  - The assistant MUST update scratch on every patch-carrying turn (code or docs), including turns that only update dependency state in `--context`.
+  - Missing scratch is valid (it may have been deleted); the assistant should recreate it on the next patch-carrying turn.
+  - If scratch is irrelevant to the current thread objective, the assistant should overwrite it (entirely) to match the new objective.
+- Holistic work under context limits:
+  - When a holistic view of a large code base cannot fit in a single thread, the assistant SHOULD perform breadth-first cohort selection across multiple turns/threads and persist a running model and findings in scratch.
+
 ## SSR-friendly dynamic import pattern (test stability)
 
 - Motivation
@@ -73,8 +87,9 @@ Base definition (fixed, config-driven)
 - Base MUST be derived from the existing STAN selection configuration as currently read (gitignore + includes/excludes/anchors + reserved rules), not from special-case rules:
   - Base includes:
     - The “meta archive contents” (system docs + dependency meta; see below),
+    - `<stanPath>/system/stan.scratch.md` (short-term memory; treated as top-of-thread context),
     - The dependency state file (`<stanPath>/context/dependency.state.json`) when it exists,
-    - Plus repo-root files selected by the current selection config, restricted to the repo root (top-level files only).
+    - Plus the repo-root files selected by the current selection config, restricted to the repo root (top-level files only).
 - Base MUST honor explicit `excludes` as hard denials (see “Excludes precedence”).
 - Base MUST NOT be expanded by dependency traversal. Dependency traversal adds only to the allowlist beyond base.
 
@@ -135,8 +150,7 @@ Dependency state update enforcement (assistant + tooling contract)
 - Tooling MUST enforce this rule when dependency graph mode is active:
   - Validation MUST fail when dependency meta is present and neither:
     - a Patch for `dependency.state.json`, nor
-    - the “no change” signal,
-    is present.
+    - the “no change” signal, is present.
   - Validation MUST fail when both a state Patch and the “no change” signal are present.
 
 ### Purpose

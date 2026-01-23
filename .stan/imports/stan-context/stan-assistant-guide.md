@@ -44,6 +44,7 @@ type GraphOptions = {
     anchors?: string[];
   };
   previousGraph?: DependencyGraph;
+  hashSizeEnforcement?: 'warn' | 'error' | 'ignore';
   nodeDescriptionLimit?: number;
   nodeDescriptionTags?: string[];
   maxErrors?: number;
@@ -87,6 +88,11 @@ Runtime options:
   - Caps the number of returned `errors` entries to avoid runaway output.
   - When truncation occurs, the final entry is a deterministic sentinel string.
   - Set to `0` to omit errors entirely.
+- `hashSizeEnforcement` (default: `'warn'`)
+  - Controls enforcement of the invariant:
+    - if `metadata.hash` is present for a file node, `metadata.size` should also be present.
+  - Default behavior is to emit deterministic warnings (via `GraphResult.errors`).
+  - `'error'` throws (strict); `'ignore'` is silent.
 
 ## Graph schema (practical contract)
 
@@ -137,6 +143,82 @@ For accurate prompt budgeting:
 
 - Compute token counts in the consumer (stan-core selection layer) using the tokenizer/model you will call.
 - Cache computed token counts keyed by `metadata.hash` (sha256) so you only re-tokenize when file content changes.
+
+## Selection summary helper (budgeting support)
+
+stan-context exports a pure helper to compute dependency selection closure
+membership and aggregate sizing (bytes) from an in-memory `DependencyGraph` plus
+dependency-state entries.
+
+This is intended to help consumers (e.g., stan-core/stan-cli context mode)
+produce deterministic “selection reports” without reimplementing closure logic
+and without reading file bodies.
+
+Import:
+
+```ts
+import {
+  summarizeDependencySelection,
+  type DependencyStateEntry,
+} from '@karmaniverous/stan-context';
+```
+
+Usage:
+
+```ts
+const include: DependencyStateEntry[] = [['src/index.ts', 2, ['runtime']]];
+const exclude: DependencyStateEntry[] = [];
+
+const summary = summarizeDependencySelection({
+  graph,
+  include,
+  exclude,
+  options: {
+    // defaults: ['runtime','type','dynamic']
+    defaultEdgeKinds: ['runtime', 'type', 'dynamic'],
+    // defaults: drop builtin/missing
+    dropNodeKinds: ['builtin', 'missing'],
+    maxTop: 10,
+    // default: 'warn'
+    hashSizeEnforcement: 'warn',
+  },
+});
+```
+
+Contract (v1):
+
+- Entry forms (`DependencyStateEntry`):
+  - `nodeId`
+  - `[nodeId, depth]`
+  - `[nodeId, depth, edgeKinds]`
+- Traversal semantics:
+  - outgoing edges only
+  - depth-limited expansion:
+    - depth `0`: seed only
+    - depth `N`: include targets reachable within `N` outgoing-edge traversals
+  - `edgeKinds` filtering:
+    - valid kinds: `runtime` | `type` | `dynamic`
+    - when omitted, `defaultEdgeKinds` is used
+    - invalid kinds are ignored and produce deterministic warnings
+- Excludes win:
+  - expand include closure `S`
+  - expand exclude closure `X` using the same traversal semantics
+  - final selection is `S \ X`
+- Node handling:
+  - unknown node IDs (present in state, absent from `graph.nodes`) are retained with bytes `0` and produce warnings
+  - builtin/missing nodes are dropped by default (configurable) and produce warnings indicating what was dropped
+- Size semantics:
+  - `totalBytes` is the sum of `metadata.size` (bytes) for selected nodes where present
+  - missing sizes are treated as `0` and produce warnings
+  - consumers may use a deterministic heuristic `estimatedTokens ≈ totalBytes / 4`
+- Determinism guarantees:
+  - `selectedNodeIds` is sorted lexicographically
+  - `largest` is sorted by bytes descending, tie-break by nodeId ascending
+  - `warnings` is sorted lexicographically
+- Hash/size invariant enforcement (`hashSizeEnforcement`):
+  - `'warn'` (default): add warnings when a hashed file node is missing `metadata.size`
+  - `'error'`: throw when a hashed file node is missing `metadata.size`
+  - `'ignore'`: suppress hashed-node warnings/errors
 
 ## Authoring practices for STAN-enabled repos (recommended)
 
