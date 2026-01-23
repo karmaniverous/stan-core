@@ -1,6 +1,6 @@
 /**
  * Validates npm-staged dependency nodes for undo/redo by locating the
- * installed package@version and hashing pathInPackage; filesystem IO only; no
+ * installed package\@version and hashing pathInPackage; filesystem IO only; no
  * console output.
  * @module
  */

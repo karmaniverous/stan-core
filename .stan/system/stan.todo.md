@@ -201,4 +201,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated `.stan/system/parts/240-dependency-graph-mode.md` and regenerated `.stan/system/stan.system.md` to reflect that meta archives include dependency state when present.
 - Refactor: split dependency selection validator into modules
   - Replaced `src/stan/context/validate.ts` with a small orchestrator and moved implementation into `src/stan/context/validate/**` (npm/abs/path/hash/types).
-  - Intended outcome: satisfy the ≤300 LOC module cap while keeping the public API stable (`validateDependencySelection*` exports unchanged).
+  - Intended outcome: satisfy the ≤300 LOC module cap while keeping the public API stable (`validateDependencySelection*` exports unchanged).
+- Lint: fix tsdoc/syntax warnings in validate modules
+  - Escaped `@` in TSDoc prose (`pkg\@version`, `package\@version`) to satisfy `eslint-plugin-tsdoc` and keep lint clean.

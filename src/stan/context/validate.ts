@@ -1,5 +1,5 @@
 /**
- * Validates selected dependency nodes for undo/redo (npm pkg@version + abs
+ * Validates selected dependency nodes for undo/redo (npm pkg\@version + abs
  * locator hash/size checks); filesystem IO only; no console output.
  * @module
  */
