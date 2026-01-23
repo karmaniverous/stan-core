@@ -4,12 +4,14 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- Fix TypeDoc warning: `SelectionReportCounts` is referenced by `SelectionReport` but not included in docs output.
-- After docs are clean again: stan-cli wiring to consume `onSelectionReport` and present it (presentation only; no engine output files).
+- TypeDoc is clean again (`typedoc --emit none` has 0 warnings).
+- Next: stan-cli wiring to consume `onSelectionReport` and present it (presentation only; no engine output files).
+- Coordination: posted an interop note to stan-cli requesting selection report wiring.
 
 ## Working model (high signal)
 
-- `SelectionReportCounts` exists in `src/stan/archive/report.ts`, but must be re-exported from `src/stan/index.ts` so TypeDoc includes it when it is referenced by `SelectionReport`.
+- Selection reports are deterministic, small, data-only callbacks intended for CLI presentation (no engine I/O).
+- Detailed file lists remain via `onArchiveWarnings`; selection reports should remain counts/options/flags only.
 
 ## Open questions
 

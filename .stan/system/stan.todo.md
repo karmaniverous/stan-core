@@ -12,8 +12,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
-  - Current warning: export `SelectionReportCounts` from the public API so `typedoc --emit none` reports 0 warnings again.
-  - Run `npm run build`, `npm run docs`, and `npm run knip` and confirm 0 warnings; if warnings remain, capture them in a focused plan item and fix them in small slices.
+  - Keep `typedoc --emit none` at 0 warnings; when warnings appear, fix them in small slices and export any referenced public types.
 
 - Dependency graph quality (module descriptions)
   - Roll out a module-head TSDoc block (`@module` or `@packageDocumentation`) for every code module, optimized for the first 160 characters.
@@ -218,4 +217,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Fix type narrowing for diff selection report test (kind guard).
 - Docs: export SelectionReportCounts
   - Re-exported `SelectionReportCounts` from `src/stan/index.ts` so TypeDoc includes it when referenced by `SelectionReport.counts`.
-  - Intended outcome: `typedoc --emit none` reports 0 warnings.
+  - Intended outcome: `typedoc --emit none` reports 0 warnings.
+- Amendment: TypeDoc is clean again
+  - Confirmed `typedoc --emit none` reports 0 warnings after exporting `SelectionReportCounts`.
+  - Follow-through focus returns to stan-cli wiring for selection report presentation.
