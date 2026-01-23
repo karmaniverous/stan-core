@@ -221,4 +221,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Adjusted TSDoc text to avoid unescaped `{}` braces so `tsdoc/syntax` does not warn.
 - Context mode: add deterministic sizing helper
   - Added `summarizeContextAllowlistBudget(...)` to compute total bytes and a `bytes/4` estimate for a computed allowlist plan.
-  - Report includes base/closure breakdown and largest entries, using meta sizes when available and falling back to stat for repo files.
+  - Report includes base/closure breakdown and largest entries, using meta sizes when available and falling back to stat for repo files.
+- Fix: budget helper lint + typecheck
+  - Removed an unnecessary optional chain in `budget.ts` and guarded meta lookups with `hasOwnProperty` for correctness.
+  - Updated `budget.test.ts` to avoid readonly tuple arrays and to pass a properly typed `meta.nodes` shape.

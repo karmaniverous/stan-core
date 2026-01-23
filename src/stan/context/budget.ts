@@ -8,7 +8,6 @@
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 
-import type { ContextAllowlistPlan } from './allowlist';
 import type { DependencyMetaFile } from './schema';
 
 const TOKEN_ESTIMATE_DIVISOR = 4;
@@ -17,7 +16,7 @@ const DEFAULT_TOP_N = 10;
 const toPosix = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
 
-const uniqSorted = (xs: string[]): string[] =>
+const uniqSorted = (xs: ReadonlyArray<string>): string[] =>
   Array.from(new Set(xs.map((s) => toPosix(s).trim()).filter(Boolean))).sort(
     (a, b) => a.localeCompare(b),
   );
@@ -56,8 +55,12 @@ const safeMetaSize = (
   meta: Pick<DependencyMetaFile, 'nodes'>,
   rel: string,
 ): number | null => {
-  const node = meta.nodes[rel];
-  const size = node?.metadata?.size;
+  const node = Object.prototype.hasOwnProperty.call(meta.nodes, rel)
+    ? meta.nodes[rel]
+    : undefined;
+  if (!node) return null;
+
+  const size = node.metadata?.size;
   if (typeof size !== 'number' || !Number.isFinite(size) || size < 0)
     return null;
   return Math.floor(size);
@@ -93,10 +96,11 @@ const sumBytes = (entries: BudgetEntry[]): number =>
  */
 export const summarizeContextAllowlistBudget = async (args: {
   cwd: string;
-  plan: Pick<
-    ContextAllowlistPlan,
-    'baseFiles' | 'selectedNodeIds' | 'allowlistFiles'
-  >;
+  plan: {
+    baseFiles: ReadonlyArray<string>;
+    selectedNodeIds: ReadonlyArray<string>;
+    allowlistFiles: ReadonlyArray<string>;
+  };
   meta: Pick<DependencyMetaFile, 'nodes'>;
   topN?: number;
 }): Promise<ContextAllowlistBudget> => {
