@@ -209,5 +209,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Interop: request selection summary helper in stan-context
   - Posted a follow-up interop request proposing an exported helper to compute dependency state closure membership and aggregate byte sizing from the existing graph.
   - This avoids bloating `dependency.meta.json` with per-node transitive summaries while enabling deterministic selection reports downstream.
-- Prompt/requirements: remove facets/anchors; tighten precedence- Remove anchors from engine API + docs
-  - Removed `anchors` from selection/archiving APIs and updated docs/tests to use `includes` (override `.gitignore`) with `excludes` as hard denials.
+- Prompt/requirements: remove facets/anchors; tighten precedence
+- Remove anchors from engine API + docs
+  - Removed `anchors` from selection/archiving APIs and updated docs/tests to use `includes` (override `.gitignore`) with `excludes` as hard denials.
+- Context mode: start allowlist-only archiving + enforcement seam
+  - Added allowlist-based full+diff archivers and a context allowlist planner (Base + dependency closure) with explicit excludes as hard denials and reserved denials enforced.
+  - Extended `archive.meta.tar` to include repo-root base files and `dependency.state.json` when present (still excludes staged payloads and `.docs.meta.json`).
+  - Added dependency-mode option to the response validator to require either a `dependency.state.json` patch or the exact “dependency.state.json: no change” signal and to reject no-op state patches.

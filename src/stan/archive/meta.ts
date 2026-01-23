@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 
 import { ARCHIVE_META_TAR } from '@/stan/archive/constants';
 import { makeTarFilter } from '@/stan/archive/util';
-import { ensureOutAndDiff, listFiles } from '@/stan/fs';
+import { ensureOutAndDiff, filterFiles, listFiles } from '@/stan/fs';
 
 type TarLike = {
   create: (
@@ -26,6 +26,7 @@ type TarLike = {
 export async function createMetaArchive(
   cwd: string,
   stanPath: string,
+  selection?: { includes?: string[]; excludes?: string[] },
 ): Promise<string> {
   const { outDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -33,6 +34,7 @@ export async function createMetaArchive(
   const systemPrefix = `${stanRel}/system/`;
   const docsMetaRel = `${stanRel}/system/.docs.meta.json`;
   const depMetaRel = `${stanRel}/context/dependency.meta.json`;
+  const depStateRel = `${stanRel}/context/dependency.state.json`;
 
   const all = await listFiles(cwd);
 
@@ -49,8 +51,28 @@ export async function createMetaArchive(
     .filter((p) => p.startsWith(systemPrefix))
     .filter((p) => p !== docsMetaRel);
 
-  // Allowlist dependency meta only (exclude state + staged payloads by omission)
-  const files = Array.from(new Set<string>([...sys, depMetaRel]));
+  // Repo-root base files (config-driven selection, restricted to repo root only).
+  const filtered = await filterFiles(all, {
+    cwd,
+    stanPath,
+    includeOutputDir: false,
+    includes: selection?.includes ?? [],
+    excludes: selection?.excludes ?? [],
+  });
+  const repoRootBaseFiles = filtered.filter((p) => !p.includes('/'));
+
+  // Include dependency state when present (assistant-authored selection intent).
+  const hasState =
+    all.includes(depStateRel) && existsSync(resolve(cwd, depStateRel));
+
+  const files = Array.from(
+    new Set<string>([
+      ...sys,
+      depMetaRel,
+      ...(hasState ? [depStateRel] : []),
+      ...repoRootBaseFiles,
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
 
   const archivePath = resolve(outDir, ARCHIVE_META_TAR);
   const tar = (await import('tar')) as unknown as TarLike;

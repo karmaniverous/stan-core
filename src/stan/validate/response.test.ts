@@ -236,4 +236,130 @@ describe('response-format validator', () => {
     );
     expect(res.errors.some((e) => /expected 2 paths/i.test(e))).toBe(true);
   });
+
+  it('dependency mode: accepts "dependency.state.json: no change" signal when no state patch exists', () => {
+    const body = [
+      '## Input Data Changes',
+      '- dependency.state.json: no change',
+      '',
+      '## UPDATED: src/x.ts',
+      '',
+      '### Patch: src/x.ts',
+      '```',
+      'diff --git a/src/x.ts b/src/x.ts',
+      '--- a/src/x.ts',
+      '+++ b/src/x.ts',
+      '@@ -1,1 +1,1 @@',
+      '-old',
+      '+new',
+      '```',
+      '',
+      '## UPDATED: .stan/system/stan.todo.md',
+      '',
+      '### Patch: .stan/system/stan.todo.md',
+      '```',
+      'diff --git a/.stan/system/stan.todo.md b/.stan/system/stan.todo.md',
+      '--- a/.stan/system/stan.todo.md',
+      '+++ b/.stan/system/stan.todo.md',
+      '@@ -1,1 +1,1 @@',
+      '-before',
+      '+after',
+      '```',
+      '',
+      '## Commit Message',
+      '```',
+      'msg',
+      '```',
+      '',
+    ].join('\n');
+    const res = validateResponseMessage(body, {
+      dependencyMode: true,
+      stanPath: '.stan',
+    });
+    expect(res.ok).toBe(true);
+    expect(res.errors).toEqual([]);
+  });
+
+  it('dependency mode: requires either state patch or no-change signal', () => {
+    const body = [
+      '## UPDATED: src/x.ts',
+      '',
+      '### Patch: src/x.ts',
+      '```',
+      'diff --git a/src/x.ts b/src/x.ts',
+      '--- a/src/x.ts',
+      '+++ b/src/x.ts',
+      '@@ -1,1 +1,1 @@',
+      '-old',
+      '+new',
+      '```',
+      '',
+      '## UPDATED: .stan/system/stan.todo.md',
+      '',
+      '### Patch: .stan/system/stan.todo.md',
+      '```',
+      'diff --git a/.stan/system/stan.todo.md b/.stan/system/stan.todo.md',
+      '--- a/.stan/system/stan.todo.md',
+      '+++ b/.stan/system/stan.todo.md',
+      '@@ -1,1 +1,1 @@',
+      '-before',
+      '+after',
+      '```',
+      '',
+      '## Commit Message',
+      '```',
+      'msg',
+      '```',
+      '',
+    ].join('\n');
+    const res = validateResponseMessage(body, {
+      dependencyMode: true,
+      stanPath: '.stan',
+    });
+    expect(res.ok).toBe(false);
+    expect(
+      res.errors.some((e) =>
+        /dependency mode: missing dependency state update/i.test(e),
+      ),
+    ).toBe(true);
+  });
+
+  it('dependency mode: rejects a no-op dependency.state.json patch', () => {
+    const rel = '.stan/context/dependency.state.json';
+    const body = [
+      '## UPDATED: state',
+      '',
+      `### Patch: ${rel}`,
+      '```',
+      `diff --git a/${rel} b/${rel}`,
+      `--- a/${rel}`,
+      `+++ b/${rel}`,
+      // Intentionally no @@ hunk and no +/- lines.
+      '```',
+      '',
+      '## UPDATED: .stan/system/stan.todo.md',
+      '',
+      '### Patch: .stan/system/stan.todo.md',
+      '```',
+      'diff --git a/.stan/system/stan.todo.md b/.stan/system/stan.todo.md',
+      '--- a/.stan/system/stan.todo.md',
+      '+++ b/.stan/system/stan.todo.md',
+      '@@ -1,1 +1,1 @@',
+      '-before',
+      '+after',
+      '```',
+      '',
+      '## Commit Message',
+      '```',
+      'msg',
+      '```',
+      '',
+    ].join('\n');
+    const res = validateResponseMessage(body, {
+      dependencyMode: true,
+      stanPath: '.stan',
+    });
+    expect(res.ok).toBe(false);
+    expect(res.errors.some((e) => /appears to be a no-op/i.test(e))).toBe(true);
+  });
 });

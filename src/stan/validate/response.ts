@@ -45,6 +45,17 @@ const H_ANY = /^##\s+.*$|^###\s+.*$/m;
 import { extractFileOpsBody } from '@/stan/patch/common/file-ops';
 import { normalizeRepoPath } from '@/stan/path/repo';
 
+export type ValidateResponseOptions = {
+  /**
+   * When true, enforce dependency.state.json update rules (context mode):
+   * require either a Patch for dependency.state.json or the exact “no change”
+   * signal under “## Input Data Changes”.
+   */
+  dependencyMode?: boolean;
+  /** STAN workspace path used to locate dependency.state.json (default: `.stan`). */
+  stanPath?: string;
+};
+
 /** Find all headings and slice blocks up to the next heading or end. */
 const extractBlocks = (text: string): Block[] => {
   const blocks: Block[] = [];
@@ -91,6 +102,30 @@ const extractBlocks = (text: string): Block[] => {
   return blocks;
 };
 
+/** Extract the body for a "## <Heading>" section up to the next heading or EOF. */
+const extractH2SectionBody = (text: string, heading: string): string | null => {
+  const re = new RegExp(
+    `^##\\s+${heading.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\s*$`,
+    'm',
+  );
+  const m = re.exec(text);
+  if (!m) return null;
+  const afterIdx = m.index + m[0].length;
+  const tail = text.slice(afterIdx);
+  const lines = tail.split(/\r?\n/);
+  // Skip leading blank lines
+  let i = 0;
+  while (i < lines.length && lines[i].trim() === '') i += 1;
+  const bodyLines: string[] = [];
+  for (; i < lines.length; i += 1) {
+    const l = lines[i];
+    if (/^#{2,3}\s+/.test(l)) break;
+    bodyLines.push(l);
+  }
+  const body = bodyLines.join('\n').trimEnd();
+  return body.length ? body : null;
+};
+
 /** Extract all "diff --git a/<path> b/<path>" pairs in a patch body. */
 const parseDiffHeaders = (body: string): Array<{ a: string; b: string }> => {
   const re = /^diff --git a\/(.+?) b\/(.+?)\s*$/gm;
@@ -100,6 +135,23 @@ const parseDiffHeaders = (body: string): Array<{ a: string; b: string }> => {
     out.push({ a: toPosix(m[1]), b: toPosix(m[2]) });
   }
   return out;
+};
+
+/** True when a patch body contains at least one real + or - hunk line (not headers). */
+const patchHasAnyChangeLine = (body: string): boolean => {
+  const lines = body.split(/\r?\n/);
+  for (const l of lines) {
+    if (
+      l.startsWith('+++') ||
+      l.startsWith('---') ||
+      l.startsWith('diff --git')
+    ) {
+      continue;
+    }
+    if (l.startsWith('@@')) continue;
+    if (l.startsWith('+') || l.startsWith('-')) return true;
+  }
+  return false;
 };
 
 /** Legacy helper (retained for potential future use). */
@@ -166,7 +218,10 @@ const validateFileOpsBlock = (text: string, errors: string[]): void => {
 };
 
 /** Validate an assistant reply body against response-format rules. */
-export const validateResponseMessage = (text: string): ValidationResult => {
+export const validateResponseMessage = (
+  text: string,
+  options: ValidateResponseOptions = {},
+): ValidationResult => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -214,6 +269,21 @@ export const validateResponseMessage = (text: string): ValidationResult => {
         }
       } catch {
         /* ignore */
+      }
+
+      // In dependency mode, forbid no-op dependency state patches.
+      if (options.dependencyMode) {
+        const sp =
+          typeof options.stanPath === 'string' && options.stanPath.trim().length
+            ? options.stanPath.trim()
+            : '.stan';
+        const depState = `${toPosix(sp)}/context/dependency.state.json`;
+        const targets = parseDiffHeaders(p.body).map((h) => toPosix(h.b));
+        if (targets.includes(depState) && !patchHasAnyChangeLine(p.body)) {
+          errors.push(
+            `Patch for ${depState} appears to be a no-op (no + or - hunk lines)`,
+          );
+        }
       }
     }
     for (const [k, list] of seen.entries()) {
@@ -298,6 +368,37 @@ export const validateResponseMessage = (text: string): ValidationResult => {
           'Doc cadence violation: Patch present but no Patch for ".stan/system/stan.todo.md"',
         );
       }
+    }
+  }
+
+  // 5) Dependency state update enforcement (context mode)
+  if (options.dependencyMode) {
+    const sp =
+      typeof options.stanPath === 'string' && options.stanPath.trim().length
+        ? options.stanPath.trim()
+        : '.stan';
+    const depState = `${toPosix(sp)}/context/dependency.state.json`;
+
+    const patchTargets = patches.flatMap((p) => {
+      const diffs = parseDiffHeaders(p.body);
+      if (diffs.length === 1) return [toPosix(diffs[0].b)];
+      // fallback to heading path
+      return p.path ? [toPosix(p.path)] : [];
+    });
+    const hasStatePatch = patchTargets.includes(depState);
+
+    const inputBody = extractH2SectionBody(text, 'Input Data Changes') ?? '';
+    const hasNoChangeSignal =
+      /^\s*-\s*dependency\.state\.json:\s*no change\s*$/m.test(inputBody);
+
+    if (hasStatePatch && hasNoChangeSignal) {
+      errors.push(
+        'dependency mode: both a dependency.state.json Patch and the "dependency.state.json: no change" signal were present; choose exactly one',
+      );
+    } else if (!hasStatePatch && !hasNoChangeSignal) {
+      errors.push(
+        'dependency mode: missing dependency state update; include either a Patch for dependency.state.json or a bullet line "dependency.state.json: no change" under "## Input Data Changes"',
+      );
     }
   }
 

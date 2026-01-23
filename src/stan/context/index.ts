@@ -4,6 +4,8 @@
  * @module
  */
 
+export type { ContextAllowlistPlan, ContextModeSelection } from './allowlist';
+export { computeContextAllowlistPlan } from './allowlist';
 export type {
   CreateArchiveDiffWithDependencyContextResult,
   CreateArchiveWithDependencyContextResult,
@@ -24,6 +26,14 @@ export type {
 } from './build';
 export type { NodeSource } from './build';
 export { buildDependencyMeta } from './build';
+export type {
+  CreateContextArchiveDiffResult,
+  CreateContextArchiveResult,
+} from './context-archive';
+export {
+  createContextArchiveDiffWithDependencyContext,
+  createContextArchiveWithDependencyContext,
+} from './context-archive';
 export type {
   DependencyEdgeType,
   DependencyMetaEdge,

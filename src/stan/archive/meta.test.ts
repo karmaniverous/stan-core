@@ -23,7 +23,17 @@ describe('createMetaArchive', () => {
     vi.restoreAllMocks();
   });
 
-  it('includes system/** (except .docs.meta.json) and context/dependency.meta.json only', async () => {
+  it('includes system/** (except .docs.meta.json), dependency meta/state, and repo-root base files', async () => {
+    // Repo-root base file
+    await writeFile(path.join(dir, 'README.md'), '# readme\n', 'utf8');
+    // Non-root file should not be included as a base file
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'src', 'a.ts'),
+      'export const a = 1;\n',
+      'utf8',
+    );
+
     // system files
     await mkdir(path.join(dir, stan, 'system'), { recursive: true });
     await writeFile(
@@ -45,12 +55,14 @@ describe('createMetaArchive', () => {
       'utf8',
     );
 
-    // excluded-by-omission: dependency state and staged payloads
+    // dependency state should be included when present
     await writeFile(
       path.join(dir, stan, 'context', 'dependency.state.json'),
       '{"include":[]}\n',
       'utf8',
     );
+
+    // excluded-by-omission: staged payloads
     await mkdir(path.join(dir, stan, 'context', 'npm', 'x', '1.0.0'), {
       recursive: true,
     });
@@ -72,6 +84,8 @@ describe('createMetaArchive', () => {
       expect.arrayContaining([
         `${stan}/system/stan.system.md`,
         `${stan}/context/dependency.meta.json`,
+        `${stan}/context/dependency.state.json`,
+        'README.md',
       ]),
     );
 
@@ -79,8 +93,8 @@ describe('createMetaArchive', () => {
     expect(files).not.toEqual(
       expect.arrayContaining([
         `${stan}/system/.docs.meta.json`,
-        `${stan}/context/dependency.state.json`,
         `${stan}/context/npm/x/1.0.0/index.d.ts`,
+        'src/a.ts',
       ]),
     );
   });
