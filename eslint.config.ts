@@ -1,4 +1,8 @@
-/** @module ESLint flat config for stan-core; TS strict rules + Prettier; temporarily silences stan-context module-doc warnings until repo is fully annotated. */
+/**
+ * ESLint flat config for stan-core; TS strict rules + Prettier; temporarily
+ * silences stan-context module-doc warnings until repo is fully annotated.
+ * @module
+ */
 import eslint from '@eslint/js';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';

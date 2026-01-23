@@ -75,32 +75,32 @@ Use “### File Ops” to declare safe, repo‑relative file and directory opera
 
 Examples
 
-```
+~~~~
 ### File Ops
 mkdirp src/new/dir
 mv src/old.txt src/new/dir/new.txt
 cp src/new/dir/new.txt src/new/dir/copy.txt
 rm src/tmp.bin
 rmdir src/legacy/empty
-```
+~~~~
 
-```
+~~~~
 ### File Ops
 mv packages/app-a/src/util.ts packages/app-b/src/util.ts
 mkdirp packages/app-b/src/internal
 rm docs/drafts/obsolete.md
-```
+~~~~
 
 Combined example (File Ops + Diff Patch)
 
-```
+~~~~
 ### File Ops
 mv old/path/to/file/a.ts new/path/to/file/a.ts
-```
+~~~~
 
 Then follow with a Diff Patch in the new location:
 
-```diff
+~~~~diff
 diff --git a/new/path/to/file/a.ts b/new/path/to/file/a.ts
 --- a/new/path/to/file/a.ts
 +++ b/new/path/to/file/a.ts
@@ -111,4 +111,4 @@ diff --git a/new/path/to/file/a.ts b/new/path/to/file/a.ts
 -   return oldThing();
 +   return newThing();
   }
-```
+~~~~

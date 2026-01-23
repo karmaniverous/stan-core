@@ -40,7 +40,7 @@ Canonical examples
 
 Modify existing file:
 
-```diff
+~~~~diff
 diff --git a/src/example.ts b/src/example.ts
 --- a/src/example.ts
 +++ b/src/example.ts
@@ -50,11 +50,11 @@ diff --git a/src/example.ts b/src/example.ts
  export function y() {
    return x;
  }
-```
+~~~~
 
 New file:
 
-```diff
+~~~~diff
 diff --git a/src/newfile.ts b/src/newfile.ts
 --- /dev/null
 +++ b/src/newfile.ts
@@ -63,11 +63,11 @@ diff --git a/src/newfile.ts b/src/newfile.ts
 +export const created = true;
 +export function fn() { return created; }
 +
-```
+~~~~
 
 Delete file:
 
-```diff
+~~~~diff
 diff --git a/src/oldfile.ts b/src/oldfile.ts
 --- a/src/oldfile.ts
 +++ /dev/null
@@ -76,7 +76,7 @@ diff --git a/src/oldfile.ts b/src/oldfile.ts
 -export function gone() {
 -  return old;
 -}
-```
+~~~~
 
 Pre‑send checks (quick)
 

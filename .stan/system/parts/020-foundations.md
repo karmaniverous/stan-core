@@ -19,21 +19,12 @@ If this file (`stan.system.md`) is present in the uploaded code base, its conten
 
 # Documentation conventions (requirements vs plan)
 
-- Requirements (`<stanPath>/system/stan.requirements.md`): durable project
-  requirements — the desired end‑state. STAN maintains this document (developers
-  MAY edit directly, but they shouldn’t have to). STAN will create/update it on
-  demand when requirements evolve.
-- Project prompt (`<stanPath>/system/stan.project.md`): project‑specific
-  prompt/policies that augment the system prompt. This file is NOT for recording
-  requirements; keep requirement statements in `stan.requirements.md`.
-- Development plan (`<stanPath>/system/stan.todo.md`): short‑lived, actionable
-  plan that explains how to get from the current state to the desired state.
+- Requirements (`<stanPath>/system/stan.requirements.md`): durable project requirements — the desired end‑state. STAN maintains this document (developers MAY edit directly, but they shouldn’t have to). STAN will create/update it on demand when requirements evolve.
+- Project prompt (`<stanPath>/system/stan.project.md`): project‑specific prompt/policies that augment the system prompt. This file is NOT for recording requirements; keep requirement statements in `stan.requirements.md`.
+- Development plan (`<stanPath>/system/stan.todo.md`): short‑lived, actionable plan that explains how to get from the current state to the desired state.
   - Maintain only a short “Completed (recent)” list (e.g., last 3–5 items or last 2 weeks); prune older entries during routine updates.
-  - When a completed item establishes a durable policy, promote that policy to
-    the project prompt and remove it from “Completed”.
-- System prompt (this file) is the repo‑agnostic baseline. In downstream repos,
-  propose durable behavior changes in `<stanPath>/system/stan.project.md`. STAN‑repo‑specific
-  authoring/assembly details live in its project prompt.
+  - When a completed item establishes a durable policy, promote that policy to the project prompt and remove it from “Completed”.
+- System prompt (this file) is the repo‑agnostic baseline. In downstream repos, propose durable behavior changes in `<stanPath>/system/stan.project.md`. STAN‑repo‑specific authoring/assembly details live in its project prompt.
 
 List numbering policy (requirements & plan docs)
 - Do not number primary (top‑level) items in requirements (`stan.project.md`) or

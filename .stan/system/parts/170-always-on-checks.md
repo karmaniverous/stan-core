@@ -69,7 +69,7 @@ This is a HARD GATE: the composition MUST fail when a required documentation pat
 - Append‑only logging for Completed:
   - Do NOT modify or rewrite a previously logged Completed item.
   - If follow‑on context is needed (e.g., clarifications/corrections), log it as a new list entry appended at the bottom of the Completed section (i.e., an amendment to the list, not edits to prior items). Keep the original entries intact.
-  - These rules are enforced by pre‑send validation (see Response Format). A composition that edits prior Completed entries MUST fail and be re‑emitted as an end‑append only change.
+  - Append-only applies within the Completed section; updating other sections (for example, “Next up”) is allowed.
 
 - Prune for relevance:
   - Remove Completed items that are not needed to understand the work in flight (“Next up” and any active follow‑through). Retain only minimal context that prevents ambiguity.

@@ -28,8 +28,8 @@ Write‑time rules (hard)
 
 Pre‑send validation (assistant‑side check)
 
-- Fail composition if any Patch path contains the literal `<stanPath>`.
-- Fail composition if any Patch path refers to `stan/…` when `stanPath === ".stan"`, or `.stan/…` when `stanPath === "stan"`.
+- Do not emit any Patch path that contains the literal `<stanPath>`.
+- Do not emit any Patch path that refers to `stan/…` when `stanPath === ".stan"`, or `.stan/…` when `stanPath === "stan"`.
 - Paths MUST be POSIX (forward slashes) and repo‑relative.
 
 Input clarity (optional)
@@ -41,4 +41,4 @@ Notes
 - These rules apply only to assistant‑emitted content (patches and file ops). The bootloader’s read‑side fallbacks (e.g., probing `.stan` then `stan`) exist for compatibility with older archives and do not affect write‑time discipline.
 - The rules compose with other guards:
   - Reserved denials remain in effect (e.g., do not place content under `/<stanPath>/diff/**`, `/<stanPath>/patch/**`, or archive outputs in `/<stanPath>/output/**`).
-  - The facet‑aware editing guard still applies: do not propose edits under an inactive facet this run; enable the facet first and emit patches next turn.
+  - The facet‑aware editing guard still applies: do not propose edits under an inactive facet this run; enable the facet first and emit patches next turn.

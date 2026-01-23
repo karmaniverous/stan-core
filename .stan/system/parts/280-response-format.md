@@ -2,10 +2,8 @@
 
 CRITICAL: Fence Hygiene (Nested Code Blocks) and Coverage
 
-- Use **tilde fences** for all fenced blocks emitted in replies (Patch blocks,
-  Full Listings, and Commit Message). Default is `~~~~`.
-- You MUST compute fence lengths dynamically to ensure that each outer fence has
-  one more `~` than any `~` run it contains (minimum 4).
+- Use **tilde fences** for all fenced blocks emitted in replies (Patch blocks, Full Listings, and Commit Message). Default is `~~~~`.
+- You MUST compute fence lengths dynamically to ensure that each outer fence has one more `~` than any `~` run it contains (minimum 4).
 - Algorithm:
   1. Collect all code blocks you will emit (every “Patch” per file; any optional “Full Listing” blocks, if requested).
   2. For each block, scan its content and compute the maximum run of consecutive `~` characters appearing anywhere inside (including literals in examples).
@@ -127,10 +125,11 @@ Before sending a reply, verify all of the following:
 7. Dev plan “Completed” (append‑only; last)
    - If `.stan/system/stan.todo.md` is patched:
      - “Completed” is still the final major section of the document.
-     - Only new lines were appended at the end of “Completed”; no existing lines above the append point were modified or re‑ordered.
+     - Only new lines were appended at the end of “Completed”; no existing Completed lines were modified or re‑ordered.
      - Corrections/clarifications, if any, are logged as a new one‑line “Amendment:” entry appended at the bottom (the original entries remain intact).
      - Lists remain unnumbered.
-   - Violations fail composition.
+     - Append-only applies within the Completed section; updating other sections (for example, “Next up”) is allowed.
+   - Violations must be corrected before sending.
 
 ## Patch policy reference
 
@@ -142,10 +141,10 @@ Dev plan Completed enforcement (pre‑send)
 
 - If `<stanPath>/system/stan.todo.md` is patched in this turn, enforce late‑append semantics for the “Completed” section:
   - “Completed” MUST remain the final major section of the document.
-  - Only append new lines at the end of “Completed”. Do NOT modify existing lines above the final append point (no edits, no insertions, no re‑ordering).
+  - Only append new lines at the end of “Completed”. Do NOT modify existing Completed lines (no edits, no insertions, no re‑ordering within Completed).
   - If a correction/clarification is needed for a prior item, append a new one‑line “Amendment:” entry at the bottom instead of editing the original item.
   - Lists remain unnumbered.
-  - Violations MUST fail composition; re‑emit with an end‑append only change.
+  - Append-only applies within the Completed section; updating other sections (for example, “Next up”) is allowed.
 
 ## File Ops (optional pre‑ops; structural changes)
 
@@ -170,18 +169,18 @@ Use “### File Ops” to declare safe, repo‑relative file and directory opera
 
 Examples
 
-```
+~~~~
 ### File Ops
 mkdirp src/new/dir
 mv src/old.txt src/new/dir/new.txt
 cp src/new/dir/new.txt src/new/dir/copy.txt
 rm src/tmp.bin
 rmdir src/legacy/empty
-```
+~~~~
 
-```
+~~~~
 ### File Ops
 mv packages/app-a/src/util.ts packages/app-b/src/util.ts
 mkdirp packages/app-b/src/internal
 rm docs/drafts/obsolete.md
-```
+~~~~

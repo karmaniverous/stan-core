@@ -40,8 +40,9 @@ Step 0 — Long-file scan (no automatic refactors)
 - Do not refactor automatically. Wait for user confirmation on which files to split before emitting patches.
 
 Dev plan logging rules (operational)
+
 - “Completed” is the final major section of the dev plan.
-- Append‑only: add new Completed items at the bottom so their order reflects implementation order. Do not modify existing Completed items.
+- Append‑only within Completed: add new Completed items at the bottom so their order reflects implementation order. Do not modify existing Completed items. Updating other sections (for example, “Next up”) is allowed.
 - Corrections/clarifications are logged as new list entries (appended) — i.e., amendments to the list, not edits to prior items.
 - Prune Completed entries that are not needed to understand the work in flight; keep only minimal context to avoid ambiguity.
 - Do not number dev plan items. Use nested headings/bullets for structure, and express priority/sequence by order of appearance.
@@ -84,8 +85,8 @@ If info is insufficient to proceed without critical assumptions, abort and clari
 - When patches are impractical, provide Full Listings for changed files, followed by the commit message. Do not emit unified diffs in that mode.
 
 Exception — patch failure diagnostics:
--
+
 - When responding to a patch‑failure diagnostics envelope:
   - Do NOT emit a Commit Message.
   - Provide Full, post‑patch listings ONLY (no patches) for each affected file. If multiple envelopes are pasted, list the union of affected files.
-  - Apply the 300‑LOC decomposition pivot: if any listed file would exceed 300 LOC, emit a decomposition plan (File Ops) and provide Full Listings for the decomposed files instead of the monolith. See “Patch failure prompts” for details.
+  - Apply the 300‑LOC decomposition pivot: if any listed file would exceed 300 LOC, emit a decomposition plan (File Ops) and provide Full Listings for the decomposed files instead of the monolith. See “Patch failure prompts” for details.

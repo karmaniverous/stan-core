@@ -24,4 +24,4 @@ Content guidelines (keep it small and high-signal)
 
 - Do not paste code or diffs into scratch.
 - Prefer repo-relative paths and short bullets over quotes.
-- Capture: current focus, working model, coverage/cohorts, decisions, and open questions.
+- Capture: current focus, working model, coverage/cohorts, decisions, and open questions.

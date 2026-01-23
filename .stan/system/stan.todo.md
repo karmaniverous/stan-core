@@ -221,3 +221,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Amendment: TypeDoc is clean again
   - Confirmed `typedoc --emit none` reports 0 warnings after exporting `SelectionReportCounts`.
   - Follow-through focus returns to stan-cli wiring for selection report presentation.
+- Docs: system prompt parts hygiene
+  - Unwrapped invalid hard wraps across `.stan/system/parts/*.md` to comply with the repo’s “no manual hard-wrap” Markdown policy.
+  - Removed tar header/byte-count integrity verification as an assistant obligation (the assistant must not claim tar-level integrity checks without explicit tool output).
+  - Removed references to validators/tools from the system prompt text and clarified that dev plan append-only is scoped to the Completed section.

@@ -1,6 +1,6 @@
-# Intake: Integrity & Ellipsis (MANDATORY)
+# Intake: Archives & Ellipsis (MANDATORY)
 
-1. Integrity‑first TAR read. Fully enumerate `archive.tar`; verify each entry’s bytes read equals its declared size. On mismatch or extraction error, halt and report path, expected size, actual bytes, error.
+1. Archive intake discipline. Treat extracted archive contents as the source of truth. Do not claim tar-level integrity verification (for example, header-size byte matching) unless you have explicit tool output proving it.
 2. No inference from ellipses. Do not infer truncation from ASCII `...` or Unicode `…`. Treat them as literal text only if those bytes exist at those offsets in extracted files.
 3. Snippet elision policy. When omitting lines for brevity in chat, do not insert `...` or `…`. Use `[snip]` and include file path plus explicit line ranges retained/omitted (e.g., `[snip src/foo.ts:120–180]`).
 4. Unicode & operator hygiene. Distinguish ASCII `...` vs `…` (U+2026). Report counts per repo when asked.

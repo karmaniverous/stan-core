@@ -35,31 +35,31 @@ Canonical template (copy/paste the body; wrap per fence‑hygiene rules)
 
 Example:
 
-```bash
+~~~~bash
 pnpm i
 pnpm run build
 # Expected: <…>
 # Actual: see error excerpt below
-```
+~~~~
 
 ## Evidence (concise)
 
 Primary error excerpt:
 
-```text
+~~~~text
 <copy the minimal error lines + 2–5 lines of context>
-```
+~~~~
 
 If a minimal code change triggers it, show the tiniest diff:
 
-```diff
+~~~~diff
 diff --git a/src/example.ts b/src/example.ts
 --- a/src/example.ts
 +++ b/src/example.ts
 @@ -1,3 +1,4 @@
  import { broken } from '<package>';
  +broken(); // triggers <symptom>
-```
+~~~~
 
 ## Root cause hypothesis (best‑effort)
 

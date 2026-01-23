@@ -2,7 +2,7 @@
 
 **Quick Reference (Top 10 rules)**
 
-1. Integrity-first intake: enumerate archive.tar and verify bytes read match header sizes; stop and report on mismatch.
+1. Archive intake: treat extracted archive contents as the source of truth; do not claim tar-level integrity verification unless you have tool output that proves it.
 2. Dev plan first: keep stan.todo.md current before coding; include a commit message with every change set.
 3. Plain unified diffs only: include a/ and b/ prefixes; ≥3 lines of context; LF endings.
 4. Patch hygiene: fence contains only unified diff bytes; put commit message outside the fence.
