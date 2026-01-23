@@ -48,6 +48,97 @@ stan-cli MUST be able to run against any compatible stan-core at runtime.
 
 ## 1) stan-core — Requirements (engine)
 
+### Context mode (`--context`) — allowlist-only archiving (v1)
+
+When context mode is enabled, the archive payload MUST be allowlist-only so STAN can operate in repositories where a full project archive would exceed model context limits.
+
+Definitions
+
+- Effective repo root: the directory STAN operates in for a run (after `--workspace` is applied). All “repo root” references in this section use this effective root.
+- Dependency graph universe: the set of files scanned to produce `dependency.meta.json` (see below).
+- Base: the minimal set of files that are always included in context-mode archives.
+
+Hard requirements
+
+- Archive selection in context mode MUST be allowlist-only:
+  - Full and diff archives MUST include only:
+    - Base (defined below),
+    - Plus the repo-local node IDs selected by the dependency state closure,
+    - Plus staged external node IDs required by that selection (under `<stanPath>/context/{npm,abs}/...`),
+    - Minus reserved denials and binaries (reserved denials and binary exclusion always win).
+- This explicitly replaces the pre-context “archive almost everything (denylist)” behavior for `--context` runs.
+
+Base definition (fixed, config-driven)
+
+- Base MUST be derived from the existing STAN selection configuration as currently read (gitignore + includes/excludes/anchors + reserved rules), not from special-case rules:
+  - Base includes:
+    - The “meta archive contents” (system docs + dependency meta; see below),
+    - The dependency state file (`<stanPath>/context/dependency.state.json`) when it exists,
+    - Plus repo-root files selected by the current selection config, restricted to the repo root (top-level files only).
+- Base MUST honor explicit `excludes` as hard denials (see “Excludes precedence”).
+- Base MUST NOT be expanded by dependency traversal. Dependency traversal adds only to the allowlist beyond base.
+
+Dependency graph universe vs archive selection
+
+- The dependency graph universe is the seed for the dependency map. It MUST be sufficiently broad to support later selection via state without requiring full-archive ingestion by the assistant.
+- For v1, the dependency graph universe SHOULD be the same selection used by the pre-context archiving flow (the existing STAN selection model driven by config includes/excludes/anchors and `.gitignore` semantics), even though the context-mode archive payload is allowlist-only.
+- Archive selection begins from Base only; it does not implicitly include the full graph universe.
+
+Excludes precedence (hard denials)
+
+- In context mode, explicit `excludes` are hard denials and MUST be applied to:
+  - Base construction (repo-root base files),
+  - Repo-local node IDs selected by dependency closure,
+  - Staged external node IDs selected by dependency closure.
+- `.gitignore` semantics are applied by the existing selection model when building Base and when constructing the dependency graph universe.
+- Explicit selection via dependency state MAY override `.gitignore` (i.e., gitignored files may be included if explicitly selected), but MUST NOT override explicit `excludes` or reserved denials.
+
+Meta archive alignment
+
+- The meta archive produced for context mode MUST include Base inputs sufficient for the assistant to author a correct dependency state file:
+  - System prompt docs (per existing meta archive behavior),
+  - `<stanPath>/context/dependency.meta.json`,
+  - Repo-root base files (top-level files) selected by the current selection config,
+  - `<stanPath>/context/dependency.state.json` when it exists.
+- When `dependency.state.json` does not exist (new thread / fresh context-mode run), the assistant MUST respond by creating it to request the next turn’s context.
+
+Budgeting and selection heuristics (assistant contract)
+
+- Token estimation is approximate and deterministic:
+  - Treat `metadata.size` (bytes) as a proxy for characters.
+  - Estimate tokens as `bytes / 4`.
+- Context-mode archive size target:
+  - The archive payload SHOULD occupy roughly half of the assistant’s usable context budget.
+  - The assistant SHOULD expand dependency selection until it either:
+    - has what it believes it needs for the next planned step, or
+    - reaches the target budget,
+    - whichever comes LAST.
+  - The assistant MAY perform controlled extra expansion beyond the target when necessary to reach sufficiency, but MUST cap this extra expansion at 65% of the usable context budget.
+  - If over the target, the assistant MUST prune lowest-value context first until back at the target.
+- “Need” MUST be defined by the next planned step, not by indefinite future exploration (avoid runaway expansion).
+- Pruning MUST follow a deterministic ladder (highest-level intent; exact ordering may be refined but must remain stable):
+  - Remove `dynamic` traversal first unless the task explicitly requires it.
+  - Reduce depth before removing direct edit-target seeds.
+  - Remove broad barrel/entrypoint seeds before removing narrow, directly relevant seeds.
+  - Drop low-signal subtrees (tests/fixtures/generated/docs) before core source, when they are not needed.
+- All policy-bearing thresholds and strings (including these budgeting constants) MUST be hoisted into named constants in feature-scoped constants modules.
+
+Dependency state update enforcement (assistant + tooling contract)
+
+- When dependency graph mode is active for a run (dependency meta is present), assistant replies that include any code patches MUST satisfy exactly one of:
+  - Patch `<stanPath>/context/dependency.state.json` to request next-turn context changes, or
+  - Explicitly indicate that no dependency state change is needed for the next turn and omit any dependency state patch.
+- No-op state patches are forbidden:
+  - The assistant MUST NOT emit a Patch block for `dependency.state.json` unless it changes the file contents.
+- “No change” signal (stable, machine-checkable):
+  - The assistant MUST include a bullet line exactly `dependency.state.json: no change` under `## Input Data Changes` when no state update is needed.
+- Tooling MUST enforce this rule when dependency graph mode is active:
+  - Validation MUST fail when dependency meta is present and neither:
+    - a Patch for `dependency.state.json`, nor
+    - the “no change” signal,
+    is present.
+  - Validation MUST fail when both a state Patch and the “no change” signal are present.
+
 ### Purpose
 
 Provide a cohesive, dependency‑light engine that implements the durable capabilities of STAN as pure TypeScript services. The engine is transport‑agnostic and swappable at runtime.
@@ -94,12 +185,8 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
       - Excludes win over includes.
       - Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
   - Expansion precedence (dependency mode)
-    - Dependency expansion MUST override:
-      - `.gitignore`
-      - configured excludes
-    - Dependency expansion MUST NOT override:
-      - reserved denials: `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`, and archive outputs under `<stanPath>/output/**`
-      - binary exclusion during archive classification
+    - In `--context`, archive selection is allowlist-only (Base + selected closure) and explicit `excludes` are hard denials.
+    - Reserved denials and binary exclusion always win.
   - Imports (baseline safety)
     - `.stan/imports/**` is staged context and MUST be treated as read-only by the assistant and engine operations:
       - never create, patch, or delete files under `.stan/imports/**`.

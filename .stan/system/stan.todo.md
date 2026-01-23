@@ -6,6 +6,28 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- Context mode (`--context`) allowlist archiving + budgeting tooling
+  - Implement allowlist-only archive selection in context mode:
+    - Archive payload = Base + selected dependency closure (repo-local nodeIds + staged externals) with reserved denials and binary exclusion always enforced.
+    - Base is config-driven and aligns with meta archive contents (system docs + dependency meta + repo-root base files per selection config + dependency state when present).
+    - Explicit `excludes` are hard denials across base and closure; explicit selection may override `.gitignore` but must not override excludes/reserved.
+  - Enforce dependency state updates in dependency graph mode:
+    - In dependency mode, patch-carrying replies must include either:
+      - a Patch for `.stan/context/dependency.state.json`, or
+      - a bullet line `dependency.state.json: no change` under `## Input Data Changes` (and no state patch).
+    - Forbid no-op state patches (do not emit a state patch unless it changes content).
+    - Update the response validator to enforce this in context mode (likely via an option/flag passed by stan-cli).
+  - Deterministic budgeting support (open questions / design work):
+    - Add tooling output that computes the selected closure membership and estimated size so assistants can follow the 50%/65% budgeting heuristic deterministically.
+    - Decide where this computation lives (stan-core vs stan-cli) and what artifact to emit (e.g., JSON + human-readable summary under `.stan/output/` and/or `.stan/context/`).
+    - Decide what the report must contain at minimum:
+      - selected node count,
+      - sum of `metadata.size` bytes (bytes as proxy for chars),
+      - token estimate (`bytes/4`),
+      - top-N largest contributors,
+      - and prune suggestions ordered by the deterministic prune ladder.
+    - Decide how the report handles “base bytes” vs “closure bytes” vs “external staged bytes”.
+
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
   - Re-run `npm run docs` and confirm 0 warnings.
@@ -177,3 +199,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Policy: module docblocks required except tests
   - Updated system-prompt baseline: module headers required everywhere except tests (standard test-like patterns are exempt).
   - Added missing module docblocks in `src/stan/patch/detect.ts` and `src/stan/patch/jsdiff.ts` to clear `stan-context/require-module-description` warnings.
+- Policy: context-mode allowlist archiving requirements
+  - Recorded `--context` allowlist-only archiving semantics, config-driven Base definition, budgeting heuristic (50% target, 65% max), and dependency.state.json update enforcement in `.stan/system/stan.requirements.md`.
+  - Added a system-prompt policy to hoist policy-bearing magic numbers/strings into feature-scoped constants modules.
