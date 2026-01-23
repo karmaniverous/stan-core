@@ -25,19 +25,23 @@ describe('createArchive', () => {
   });
 
   it('writes archive.tar and excludes files under outputPath', async () => {
-    let report: SelectionReport | null = null;
+    const reports: SelectionReport[] = [];
     const out = await createArchive(dir, 'stan', {
       onSelectionReport: (r) => {
-        report = r;
+        reports.push(r);
       },
     });
     expect(typeof out).toBe('string');
     expect(out.endsWith('archive.tar')).toBe(true);
     expect(existsSync(path.join(dir, 'stan'))).toBe(true);
     expect(await readFile(out, 'utf8')).toBe('TAR');
-    expect(report?.kind).toBe('archive');
-    expect(report?.mode).toBe('denylist');
-    expect(report?.counts.archived).toBe(1);
-    expect(report?.counts.excludedBinaries).toBe(0);
+
+    const report = reports.at(0);
+    expect(report).toBeTruthy();
+    if (!report) throw new Error('expected onSelectionReport to be called');
+    expect(report.kind).toBe('archive');
+    expect(report.mode).toBe('denylist');
+    expect(report.counts.archived).toBe(1);
+    expect(report.counts.excludedBinaries).toBe(0);
   });
 });

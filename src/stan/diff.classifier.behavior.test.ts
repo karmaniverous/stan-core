@@ -5,9 +5,9 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { withMockTarCapture } from '../test/helpers';
+import type { SelectionReport } from './archive/report';
 import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
-import type { SelectionReport } from './archive/report';
 
 describe('createArchiveDiff integrates classifier (excludes binaries, surfaces warnings via callback)', () => {
   let dir: string;
@@ -32,7 +32,7 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
     await writeFile(path.join(dir, 'small.txt'), 'hello\n', 'utf8');
 
     const seen: string[] = [];
-    let report: SelectionReport | null = null;
+    const reports: SelectionReport[] = [];
     await createArchiveDiff({
       cwd: dir,
       stanPath: out,
@@ -41,7 +41,7 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
       updateSnapshot: 'createIfMissing',
       onArchiveWarnings: (t) => seen.push(t),
       onSelectionReport: (r) => {
-        report = r;
+        reports.push(r);
       },
     });
 
@@ -59,11 +59,14 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
     expect(body).toMatch(/Binary files excluded|Large text files/);
 
     // selection report surfaced via callback (engine does not log)
-    expect(report?.kind).toBe('diff');
-    expect(report?.mode).toBe('denylist');
-    expect(report?.snapshotExists).toBe(false);
-    expect(report?.counts.selected).toBe(2);
-    expect(report?.counts.archived).toBe(1);
-    expect(report?.counts.excludedBinaries).toBe(1);
+    const report = reports.at(0);
+    expect(report).toBeTruthy();
+    if (!report) throw new Error('expected onSelectionReport to be called');
+    expect(report.kind).toBe('diff');
+    expect(report.mode).toBe('denylist');
+    expect(report.snapshotExists).toBe(false);
+    expect(report.counts.selected).toBe(2);
+    expect(report.counts.archived).toBe(1);
+    expect(report.counts.excludedBinaries).toBe(1);
   });
 });

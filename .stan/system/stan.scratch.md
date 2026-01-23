@@ -5,8 +5,8 @@ Last updated: 2026-01-23Z
 ## Current focus
 
 - Selection report callbacks are implemented in stan-core archive APIs (data-only callback; no engine I/O).
-- Next step is stan-cli wiring: capture and present selection reports during run/snap/context flows without writing files from the engine.
-- Keep docs/build/knip green as a release-readiness gate.
+- Follow-up fix: tests now capture selection reports without TS control-flow narrowing issues.
+- Next step is stan-cli wiring: consume `onSelectionReport` and present it (no engine output files).
 
 ## Working model (high signal)
 
