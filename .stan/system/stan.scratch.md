@@ -4,8 +4,8 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
+- Long-file cap compliance: decompose `src/stan/context/validate.ts` into smaller modules while keeping the public API stable.
 - Follow through on stan-cli wiring to consume and present `onSelectionReport` (presentation-only; engine remains silent). See `.stan/interop/stan-cli/20260123-233830Z-selection-report-wiring.md`.
-- Long-file cap compliance: split `src/stan/context/validate.ts` into smaller modules while keeping the public API stable.
 
 ## Working model (high signal)
 

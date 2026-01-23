@@ -20,8 +20,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Long-file cap compliance (≤ 300 LOC per module)
   - Identify and decompose any TS modules > 300 LOC before further edits.
-  - Current known long file:
-    - `src/stan/context/validate.ts` (must be split into smaller modules while keeping the public API stable)
+  - After each refactor, re-scan for any remaining modules > 300 LOC before making further changes.
 
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during future work or CLI alignment.
@@ -30,46 +29,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ---
 
 ## Completed (recent)
-
-- Test stability + lint config: classifier resolver and Prettier config
-  - Resolved a Vitest SSR hazard by resolving `classifyForArchive` at action time using a named‑or‑default dynamic import pattern in both archive and diff paths.
-  - Converted `eslint-config-prettier` to a static import in `eslint.config.ts` (no need for dynamic import).
-  - Integrated an engine‑focused “SSR/ESM test‑stability” section into the project prompt to codify these patterns.
-  - Outcome: fixes “classifyForArchive is not a function” in `src/stan/archive.test.ts`; preserves runtime behavior; keeps engine presentation‑free.
-
-- Patch engine — preserve leading dot in “.stan/…” creation paths
-  - Fixed path normalization in jsdiff fallback and last‑resort creation fallback to strip only a literal “./” and preserve “.stan/...”.
-  - Added focused tests:
-    - src/stan/patch/jsdiff.newfile.dotstan.test.ts
-    - src/stan/patch/run/pipeline.creation.dotstan.test.ts
-
-- Tests — fix helper import ambiguity in config discovery test
-  - Replaced the helper import with a local YAML write in src/stan/config.discover.test.ts to avoid an intermittent SSR import ambiguity under Vitest. Test intent and behavior unchanged; resolves the single failing test.
-
-- Amendment: config discovery test — use writeFile directly
-  - Replaced the undefined helper call with a direct writeFile in src/stan/config.discover.test.ts to fix TS2304 and lint errors.
-  - No change in test intent; stabilizes typecheck/lint/build.
-
-- Tests — stabilize SSR-sensitive imports in two suites
-  - src/stan/archive.classifier.behavior.test.ts: dynamically import the tar mock helper inside beforeEach and reset captured calls there.
-  - src/stan/patch/jsdiff.newfile.nested.test.ts: dynamically import applyWithJsDiff inside the test body to avoid cross‑suite mock effects.
-
-- Docs: add “STAN assistant guide” upkeep policy
-  - Added a system-prompt policy requiring a self-contained assistant guide doc (default `guides/stan-assistant-guide.md`, unless project prompt specifies a different stable path) and keeping it updated alongside API/semantic changes.
-
-- Docs: create initial STAN assistant guide
-  - Added `guides/stan-assistant-guide.md` describing how to configure and use the stan-core engine APIs (config, selection, archive/diff/snapshot, imports staging, patch pipeline, and response validation).
-
-- Tests: hoist SSR-fragile exports used by archiving
-  - Converted exported const-arrow bindings to function declarations for:
-    - makeStanDirs (paths)
-    - createArchive (archive)
-    - writeArchiveSnapshot/createArchiveDiff (diff)
-  - Goal: eliminate Vitest SSR “is not a function” export binding failures.
-
-- Tests: hoist remaining high-fanout exports
-  - Hoisted classifyForArchive (classifier) to stop SSR “export not found” failures in archive tests.
-  - Hoisted fs exports (listFiles/filterFiles/ensure\*) to stop SSR “is not a function” failures in fs-related tests and reduce follow-on flake risk.
 
 - Docs + patch ingestion: default tilde fences (~~~~)
   - Updated system-prompt guidance to wrap all code blocks in tilde fences with default `~~~~`, bumping by 1 when inner content contains `~` runs.
@@ -239,4 +198,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Removed remaining “anchors” references in `.stan/system/stan.requirements.md` that no longer reflect the engine API.
 - Docs: align meta archive docs with current behavior
   - Updated `src/stan/archive/meta.ts` module doc comment to match implementation (optional dependency state + repo-root base files; staged payloads excluded by omission).
-  - Updated `.stan/system/parts/240-dependency-graph-mode.md` and regenerated `.stan/system/stan.system.md` to reflect that meta archives include dependency state when present.
+  - Updated `.stan/system/parts/240-dependency-graph-mode.md` and regenerated `.stan/system/stan.system.md` to reflect that meta archives include dependency state when present.
+- Refactor: split dependency selection validator into modules
+  - Replaced `src/stan/context/validate.ts` with a small orchestrator and moved implementation into `src/stan/context/validate/**` (npm/abs/path/hash/types).
+  - Intended outcome: satisfy the ≤300 LOC module cap while keeping the public API stable (`validateDependencySelection*` exports unchanged).
