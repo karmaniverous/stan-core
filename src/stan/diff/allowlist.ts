@@ -15,9 +15,10 @@ import {
   makeTarFilter,
   surfaceArchiveWarnings,
 } from '@/stan/archive/util';
+import type { SnapshotUpdateMode } from '@/stan/diff';
 import { ensureOutAndDiff } from '@/stan/fs';
 
-export type SnapshotUpdateMode = 'never' | 'createIfMissing' | 'replace';
+export type { SnapshotUpdateMode };
 
 type TarLike = {
   create: (

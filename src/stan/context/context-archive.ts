@@ -8,7 +8,7 @@
 
 import type { CreateArchiveFromFilesOptions } from '@/stan/archive/allowlist';
 import { createArchiveFromFiles } from '@/stan/archive/allowlist';
-import type { SnapshotUpdateMode } from '@/stan/diff/allowlist';
+import type { SnapshotUpdateMode } from '@/stan/diff';
 import { createArchiveDiffFromFiles } from '@/stan/diff/allowlist';
 
 import type { ContextModeSelection } from './allowlist';

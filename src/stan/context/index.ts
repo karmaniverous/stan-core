@@ -34,6 +34,7 @@ export type { NodeSource } from './build';
 export { buildDependencyMeta } from './build';
 export type {
   CreateContextArchiveDiffResult,
+  CreateContextArchiveOptions,
   CreateContextArchiveResult,
 } from './context-archive';
 export {

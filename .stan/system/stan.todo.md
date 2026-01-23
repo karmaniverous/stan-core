@@ -208,4 +208,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Fix: budget helper lint + typecheck
   - Removed an unnecessary optional chain in `budget.ts` and guarded meta lookups with `hasOwnProperty` for correctness.
   - Updated `budget.test.ts` to avoid readonly tuple arrays and to pass a properly typed `meta.nodes` shape.
-- Docs: align dev plan and scratch with green checks
+- Docs: align dev plan and scratch with green checks
+- Docs: fix TypeDoc warnings (budget params + exported option types)

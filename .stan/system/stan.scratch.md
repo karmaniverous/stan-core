@@ -4,8 +4,8 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- Keep context-mode allowlist-only archiving building blocks green (typecheck/lint/test are currently passing).
-- Close the loop on release readiness in stan-core: run build/docs/knip and eliminate TypeDoc warnings.
+- Fix TypeDoc warnings in `npm run docs` and re-run docs to confirm 0 warnings.
+- Keep context-mode allowlist-only archiving building blocks green (typecheck/lint/test are passing).
 - Coordinate with stan-cli to wire context-mode allowlist-only archiving (Base + dependency closure) into the CLI runner.
 
 ## Working model (high signal)
@@ -18,6 +18,7 @@ Last updated: 2026-01-23Z
   - allowlist planning (`computeContextAllowlistPlan`)
   - context-mode orchestration (`createContextArchiveWithDependencyContext`, `createContextArchiveDiffWithDependencyContext`)
 - Budgeting helper present: `summarizeContextAllowlistBudget(...)` (uses meta sizes when present; stat fallback; deterministic `bytes/4` heuristic).
+- TypeDoc warnings addressed by ensuring exported API types are re-exported and by aligning TSDoc param names with actual function signatures.
 
 ## Open questions
 

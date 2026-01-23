@@ -89,10 +89,8 @@ const sumBytes = (entries: BudgetEntry[]): number =>
 /**
  * Summarize the byte size of a context allowlist deterministically.
  *
- * @param cwd - Repo root.
- * @param plan - Context allowlist plan (Base + closure + allowlist union).
- * @param meta - Dependency meta nodes map (used for `metadata.size` bytes).
- * @param topN - Max number of `largest` entries to return (default: 10).
+ * @param args - Inputs object (repo root, allowlist plan, dependency meta nodes
+ * map, and optional max count for largest entries).
  */
 export const summarizeContextAllowlistBudget = async (args: {
   cwd: string;
