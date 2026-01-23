@@ -6,7 +6,7 @@
 export * from './archive';
 export type { CreateArchiveFromFilesOptions } from './archive/allowlist';
 export { createMetaArchive } from './archive/meta';
-export type { SelectionReport } from './archive/report';
+export type { SelectionReport, SelectionReportCounts } from './archive/report';
 export * from './config/index';
 export * from './diff';
 export * from './validate/response';

@@ -12,6 +12,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
+  - Current warning: export `SelectionReportCounts` from the public API so `typedoc --emit none` reports 0 warnings again.
   - Run `npm run build`, `npm run docs`, and `npm run knip` and confirm 0 warnings; if warnings remain, capture them in a focused plan item and fix them in small slices.
 
 - Dependency graph quality (module descriptions)
@@ -214,4 +215,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Design: lock stan-core selection report contract (data-only callback; no engine IO); implement next thread.
 - Implement selection report callbacks on archive APIs (data-only; no IO).
 - Fix typecheck/lint in selection-report tests (avoid TS narrowing to null).
-- Fix type narrowing for diff selection report test (kind guard).
+- Fix type narrowing for diff selection report test (kind guard).
+- Docs: export SelectionReportCounts
+  - Re-exported `SelectionReportCounts` from `src/stan/index.ts` so TypeDoc includes it when referenced by `SelectionReport.counts`.
+  - Intended outcome: `typedoc --emit none` reports 0 warnings.
