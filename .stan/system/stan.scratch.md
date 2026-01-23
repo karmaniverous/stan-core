@@ -4,10 +4,10 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- Documentation accuracy pass for stan-core: ensure README + `guides/stan-assistant-guide.md` + public TypeDoc comments match current implementation.
-- Remove stale “anchors” references (engine selection uses `includes`/`excludes`; no anchors API).
-- Correct meta archive docs: `archive.meta.tar` includes `dependency.state.json` when present and repo-root base files; staged payloads remain excluded by omission.
-- Ensure File Ops docs list current verbs (mv/cp/rm/rmdir/mkdirp) and imports read-only enforcement is documented correctly.
+- Close the remaining documentation drift items after the last doc pass.
+- Fix TSDoc in `src/stan/diff.ts` that still claims `includes` override `excludes` (they do not; `excludes` win).
+- Fix remaining meta archive docs drift in `guides/stan-assistant-guide.md` (meta archive includes dependency state when present).
+- Remove remaining “anchors” references in `.stan/system/stan.requirements.md` that no longer reflect the engine API.
 
 ## Working model (high signal)
 

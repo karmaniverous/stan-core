@@ -370,7 +370,9 @@ Archive output:
 
 - `archive.meta.tar` is written under `.stan/output/` when context mode is enabled.
   - It includes system files + dependency meta.
-  - It excludes dependency state and staged payloads.
+  - It includes dependency state when it exists (assistant-authored selection intent).
+  - It includes repo-root (top-level) base files selected by the current selection config.
+  - It excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
   - It excludes `.stan/system/.docs.meta.json`.
 
 Note:

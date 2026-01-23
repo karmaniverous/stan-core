@@ -232,4 +232,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: align user-facing docs with current engine behavior
   - Updated README + `guides/stan-assistant-guide.md` to reflect current selection/archiving semantics (includes/excludes; no anchors API; meta archive includes dependency state when present).
   - Corrected TypeDoc/JSDoc comments that drifted from implementation (no “patch included in archives”; no “anchors” options).
-  - Documented current File Ops verbs (including `cp`) and imports read-only enforcement.
+  - Documented current File Ops verbs (including `cp`) and imports read-only enforcement.
+- Docs: remove remaining anchors/meta drift
+  - Fixed `src/stan/diff.ts` TSDoc to reflect actual `includes`/`excludes` semantics (includes are additive; excludes win).
+  - Updated `guides/stan-assistant-guide.md` to match current `archive.meta.tar` behavior (includes dependency state when present; excludes staged payloads by omission).
+  - Removed remaining “anchors” references in `.stan/system/stan.requirements.md` that no longer reflect the engine API.

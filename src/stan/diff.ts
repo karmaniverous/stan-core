@@ -77,7 +77,7 @@ const getClassifyForArchive = async (): Promise<
  * @param args - Object with:
  *   - cwd: Repo root.
  *   - stanPath: STAN workspace folder.
- *   - includes: Allow‑list globs (overrides excludes).
+ *   - includes: Additive allow‑list globs (can re-include gitignored files); excludes still win.
  *   - excludes: Deny‑list globs.
  *
  * @example
@@ -131,8 +131,8 @@ export async function writeArchiveSnapshot({
  *   - cwd: Repo root.
  *   - stanPath: STAN workspace folder.
  *   - baseName: Base archive name (e.g., `archive` -\> `archive.diff.tar`).
- *   - includes: Allow‑list globs (overrides excludes).
- *   - excludes: Deny‑list globs.
+ *   - includes: Additive allow‑list globs (can re-include gitignored files); excludes still win.
+ *   - excludes: Deny‑list globs (hard denials; take precedence over includes).
  *   - updateSnapshot: Controls when the snapshot file is replaced.
  *   - includeOutputDirInDiff: When true, include `stanPath/output` in the diff.
  * @returns `{ diffPath }` absolute path to the diff archive.

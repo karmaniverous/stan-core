@@ -84,7 +84,7 @@ Hard requirements
 
 Base definition (fixed, config-driven)
 
-- Base MUST be derived from the existing STAN selection configuration as currently read (gitignore + includes/excludes/anchors + reserved rules), not from special-case rules:
+- Base MUST be derived from the existing STAN selection configuration as currently read (gitignore + includes/excludes + reserved rules), not from special-case rules:
   - Base includes:
     - The “meta archive contents” (system docs + dependency meta; see below),
     - `<stanPath>/system/stan.scratch.md` (short-term memory; treated as top-of-thread context),
@@ -250,7 +250,7 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - `archive.tar` (full selection),
     - `archive.diff.tar` (changed since snapshot with snapshot management).
   - Dependency graph mode MAY also produce:
-    - `archive.meta.tar` (system + dependency meta only; excludes dependency state and staged payloads).
+    - `archive.meta.tar` (system + dependency meta; includes dependency state when present; excludes staged payloads by omission).
   - Classification at archive time:
     - Exclude binaries,
     - Flag large text by size and/or LOC.
@@ -366,7 +366,7 @@ Improve success on “new document” diffs commonly malformed in chat:
 
 - Coverage for:
   - Config loaders and schema error messages (namespaced `stan-core` block).
-  - Selection semantics (includes vs excludes precedence; reserved workspace exclusions; anchors re‑inclusion).
+  - Selection semantics (includes vs excludes precedence; reserved workspace exclusions; includes re-inclusion).
   - Archive classification (binary exclusion, large‑text flags) and warnings surfacing (returns/callback).
   - Diff archive + snapshot handling (changed/no‑changes sentinel).
   - Patch pipeline:
