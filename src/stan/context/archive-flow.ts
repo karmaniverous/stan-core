@@ -7,7 +7,7 @@
  * Requirements:
  * - Stage dependency external bytes (npm + abs) into <stanPath>/context/** before archiving.
  * - Prefer staging ONLY the selected nodeId set derived from dependency state closure to avoid bloat.
- * - Ensure <stanPath>/context/** is included in archives even when gitignored (use anchors).
+ * - Ensure <stanPath>/context/** is included in archives even when gitignored (use includes).
  * - No console I/O; keep behavior deterministic.
  * @module
  */
@@ -35,7 +35,7 @@ const normalizePrefix = (p: string): string =>
 
 const uniq = (xs: string[]): string[] => Array.from(new Set(xs));
 
-const contextAnchorGlob = (stanPath: string): string =>
+const contextIncludeGlob = (stanPath: string): string =>
   `${normalizePrefix(stanPath)}/context/**`;
 
 const isUnder = (prefix: string, rel: string): boolean => {
@@ -73,8 +73,8 @@ export type DependencyContextInputs = {
 };
 
 export type PrepareDependencyContextResult = {
-  /** Anchors required to include <stanPath>/context/** even if gitignored. */
-  anchors: string[];
+  /** Include globs required to include <stanPath>/context/** even if gitignored. */
+  includes: string[];
   /** Node IDs selected by state closure (empty when state not provided). */
   selectedNodeIds: string[];
   /** Node IDs that should be staged (subset of selected, stageable only). */
@@ -90,7 +90,7 @@ export const prepareDependencyContext = (args: {
 }): PrepareDependencyContextResult => {
   const { stanPath, meta, state, nodeIdsWhenNoState } = args;
 
-  const anchors = [contextAnchorGlob(stanPath)];
+  const includes = [contextIncludeGlob(stanPath)];
 
   if (typeof state === 'undefined') {
     const fallback = Array.isArray(nodeIdsWhenNoState)
@@ -99,7 +99,7 @@ export const prepareDependencyContext = (args: {
     const stageNodeIds = uniq(fallback.map(normalizePrefix)).filter((id) =>
       isStageableNodeId(stanPath, id),
     );
-    return { anchors, selectedNodeIds: [], stageNodeIds };
+    return { includes, selectedNodeIds: [], stageNodeIds };
   }
 
   const parsed = parseDependencyStateFile(state);
@@ -112,7 +112,7 @@ export const prepareDependencyContext = (args: {
   const stageNodeIds = selectedNodeIds.filter((id) =>
     isStageableNodeId(stanPath, id),
   );
-  return { anchors, selectedNodeIds, stageNodeIds };
+  return { includes, selectedNodeIds, stageNodeIds };
 };
 
 export type StagePreparedDependencyContextResult =
@@ -169,10 +169,10 @@ export const createArchiveWithDependencyContext = async (args: {
     clean: dependency.clean ?? false,
   });
 
-  const anchors = uniq([...(archive?.anchors ?? []), ...plan.anchors]);
+  const includes = uniq([...(archive?.includes ?? []), ...plan.includes]);
   const archivePath = await createArchive(cwd, stanPath, {
     ...(archive ?? {}),
-    anchors,
+    includes,
   });
 
   return { ...staged, archivePath };
@@ -189,7 +189,6 @@ export const createArchiveDiffWithDependencyContext = async (args: {
     baseName: string;
     includes?: string[];
     excludes?: string[];
-    anchors?: string[];
     updateSnapshot?: SnapshotUpdateMode;
     includeOutputDirInDiff?: boolean;
     onArchiveWarnings?: (text: string) => void;
@@ -213,15 +212,14 @@ export const createArchiveDiffWithDependencyContext = async (args: {
     clean: dependency.clean ?? false,
   });
 
-  const anchors = uniq([...(diff.anchors ?? []), ...plan.anchors]);
+  const includes = uniq([...(diff.includes ?? []), ...plan.includes]);
 
   const out = await createArchiveDiff({
     cwd,
     stanPath,
     baseName: diff.baseName,
-    includes: diff.includes,
+    includes,
     excludes: diff.excludes,
-    anchors,
     updateSnapshot: diff.updateSnapshot,
     includeOutputDirInDiff: diff.includeOutputDirInDiff,
     onArchiveWarnings: diff.onArchiveWarnings,

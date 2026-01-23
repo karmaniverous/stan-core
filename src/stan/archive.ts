@@ -46,25 +46,6 @@ export type CreateArchiveOptions = {
   excludes?: string[];
   /** Optional callback for archive classifier warnings (engine remains silent by default). */
   onArchiveWarnings?: (text: string) => void;
-  /**
-   * High‑precedence re‑includes (subject to reserved denials and output exclusion).
-   * Anchors re-include paths even when excluded by `.gitignore` or `excludes`,
-   * but they never override reserved workspace denials:
-   * - `<stanPath>/diff/**`, `<stanPath>/patch/**`
-   * - `<stanPath>/output/{archive.tar,archive.diff.tar,archive.warnings.txt}`
-   * - `.git/**`
-   *
-   * @example
-   * ```ts
-   * // Force-include README.md even if repo excludes would drop it:
-   * await createArchive(cwd, '.stan', {
-   *   includes: [],
-   *   excludes: ['README.md'],
-   *   anchors: ['README.md'],
-   * });
-   * ```
-   */
-  anchors?: string[];
 };
 
 /**
@@ -110,7 +91,6 @@ export async function createArchive(
     fileName: rawFileName,
     includes = [],
     excludes = [],
-    anchors = [],
   } = options;
 
   let fileName = rawFileName ?? 'archive.tar';
@@ -125,7 +105,6 @@ export async function createArchive(
     includeOutputDir,
     includes,
     excludes,
-    anchors,
   });
 
   const archivePath = resolve(outDir, fileName);

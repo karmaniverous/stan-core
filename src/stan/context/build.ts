@@ -47,7 +47,7 @@ type Graph = {
 export type BuildDependencyMetaArgs = {
   cwd: string;
   stanPath: string;
-  selection?: { includes?: string[]; excludes?: string[]; anchors?: string[] };
+  selection?: { includes?: string[]; excludes?: string[] };
   nodeDescriptionLimit?: number;
   nodeDescriptionTags?: string[];
   maxErrors?: number;

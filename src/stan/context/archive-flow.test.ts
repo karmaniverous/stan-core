@@ -100,7 +100,7 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
     const stagedBody = await readFile(stagedAbs, 'utf8');
     expect(stagedBody).toBe(body);
 
-    // Archive includes staged file (via anchors)
+    // Archive includes staged file (via includes)
     const call = calls.find((c) => c.file.endsWith('archive.tar'));
     expect(call).toBeTruthy();
     const files = call?.files ?? [];

@@ -70,7 +70,7 @@ The engine uses **repo-relative POSIX paths** (forward slashes) for selection an
 
 ### Base denials / reserved workspace
 
-These are always excluded from archives and cannot be forced back by includes/anchors:
+These are always excluded from archives and cannot be forced back by includes:
 
 - `.git/**`
 - `<stanPath>/diff/**`
@@ -84,7 +84,7 @@ Additionally:
 
 - `<stanPath>/output/**` is excluded from selection unless explicitly included by the calling mode (see `includeOutputDir` / `includeOutputDirInDiff`).
 
-### Includes vs excludes vs anchors (precedence)
+### Includes vs excludes (precedence)
 
 - `includes` are **additive**: they can add paths even if `.gitignore` would ignore them.
 - `excludes` win over `includes`.
@@ -199,7 +199,7 @@ const stanPath = '.stan';
 const built = await buildDependencyMeta({
   cwd,
   stanPath,
-  selection: { includes: [], excludes: [], anchors: [] },
+  selection: { includes: [], excludes: [] },
 });
 
 await writeDependencyMetaFile({ cwd, stanPath, meta: built.meta });
@@ -208,9 +208,7 @@ await writeDependencyMetaFile({ cwd, stanPath, meta: built.meta });
 
 ### Staging external dependency bytes (engine API)
 
-The dependency graph contains external nodes (npm + abs/outside-root). To make those
-files available to the assistant *inside archives*, they must be copied (“staged”)
-into the repo under `<stanPath>/context/**` prior to archiving.
+The dependency graph contains external nodes (npm + abs/outside-root). To make those files available to the assistant _inside archives_, they must be copied (“staged”) into the repo under `<stanPath>/context/**` prior to archiving.
 
 The engine provides:
 
@@ -227,24 +225,24 @@ await stageDependencyContext({
 ```
 
 Contract:
+
 - Stages only `<stanPath>/context/npm/**` and `<stanPath>/context/abs/**` node IDs.
 - Verifies sha256 (and size when present) against `meta.nodes[nodeId].metadata`.
 - Fails fast (throws) on mismatch/missing source locator.
 - No console I/O; returns `{ staged, skipped }` on success.
 
 Important:
-- `<stanPath>/context/**` is typically gitignored, so callers must ensure it is
-  selected for archiving. The engine’s selection model supports this via `anchors`
-  because anchors override both `.gitignore` and configured excludes:
-  - `anchors: ['<stanPath>/context/**']` (use the concrete `stanPath`, e.g. `.stan/context/**`)
+
+- `<stanPath>/context/**` is typically gitignored, so callers must ensure it is selected for archiving. The engine’s selection model supports this via `includes` because includes override `.gitignore`:
+  - `includes: ['<stanPath>/context/**']` (use the concrete `stanPath`, e.g. `.stan/context/**`)
 
 ### Archive-flow helpers (stage + include + archive)
 
-For adapters that want a single “do the right thing” entrypoint (typically stan-cli),
-the engine also provides archive-flow wrappers that:
+For adapters that want a single “do the right thing” entrypoint (typically stan-cli), the engine also provides archive-flow wrappers that:
+
 - compute the stage set from dependency state closure (when provided),
 - stage only those external nodes,
-- and force archive inclusion via `anchors: ['<stanPath>/context/**']`.
+- and force archive inclusion via `includes: ['<stanPath>/context/**']`.
 
 ```ts
 import {
@@ -255,22 +253,31 @@ import {
 const full = await createArchiveWithDependencyContext({
   cwd,
   stanPath,
-  dependency: { meta: built.meta, state: depState, sources: built.sources, clean: true },
+  dependency: {
+    meta: built.meta,
+    state: depState,
+    sources: built.sources,
+    clean: true,
+  },
   archive: { includeOutputDir: false },
 });
 
 const diff = await createArchiveDiffWithDependencyContext({
   cwd,
   stanPath,
-  dependency: { meta: built.meta, state: depState, sources: built.sources, clean: false },
+  dependency: {
+    meta: built.meta,
+    state: depState,
+    sources: built.sources,
+    clean: false,
+  },
   diff: { baseName: 'archive', updateSnapshot: 'createIfMissing' },
 });
 ```
 
 ### Strict undo/redo validation seam (engine API)
 
-Undo/redo must fail fast if the restored dependency selection cannot be satisfied
-by the *current environment*.
+Undo/redo must fail fast if the restored dependency selection cannot be satisfied by the _current environment_.
 
 The engine provides:
 
@@ -280,7 +287,7 @@ import { validateDependencySelection } from '@karmaniverous/stan-core';
 const res = await validateDependencySelection({
   cwd,
   stanPath,
-  meta,  // dependency.meta.json contents
+  meta, // dependency.meta.json contents
   state, // dependency.state.json contents (raw)
 });
 if (!res.ok) {
@@ -289,10 +296,10 @@ if (!res.ok) {
 ```
 
 Contract (v1):
+
 - Computes selected node IDs from meta+state closure (excludes win).
 - Validates external nodes only:
-  - npm nodes under `<stanPath>/context/npm/**` by locating `<pkgName>@<pkgVersion>`
-    in the current install and hashing `<pathInPackage>`.
+  - npm nodes under `<stanPath>/context/npm/**` by locating `<pkgName>@<pkgVersion>` in the current install and hashing `<pathInPackage>`.
   - abs nodes under `<stanPath>/context/abs/**` by hashing `locatorAbs`.
 - Returns deterministic, structured mismatches for adapters to surface.
 
@@ -352,8 +359,9 @@ Selection semantics:
 - Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
 - Excludes win and subtract using the same traversal semantics.
 - In dependency mode, expansion is intended to expand beyond baseline selection:
-  - overrides `.gitignore` and configured excludes,
-  - but never overrides reserved workspace denials or binary exclusion.
+  - overrides `.gitignore`,
+  - but never overrides reserved workspace denials or binary exclusion,
+  - and never overrides explicit `excludes`.
 
 ### Meta archive (thread opener)
 
@@ -466,6 +474,6 @@ This is intended for tooling that enforces a predictable assistant reply format.
 ## Common pitfalls / invariants
 
 - Always pass the correct `stanPath` (this repo uses `.stan`).
-- Anchors can re-include files excluded by `.gitignore`/excludes, but they cannot override reserved denials and they cannot include `<stanPath>/output` unless output-inclusion mode is enabled.
+- `includes` can re-include files ignored by `.gitignore`, but reserved denials and binary screening still apply, and `excludes` always win.
 - `onArchiveWarnings` is the intended integration point for archive classifier warnings; the engine remains silent by default.
 - All file lists are POSIX repo-relative; normalize Windows paths before comparing.

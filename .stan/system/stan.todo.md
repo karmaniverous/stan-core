@@ -6,12 +6,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Remove anchors from the engine and STAN model
-  - Update selection/archiving APIs and semantics to remove the `anchors` channel entirely.
-  - Update any archive-flow wrappers that previously relied on anchors to ensure required staged context is included by explicit allowlist selection in `--context`.
-  - Update tests to match the new selection model.
-  - Update docs to remove anchors references (system prompt parts, requirements, assistant guide).
-
 - Context mode (`--context`) allowlist archiving + budgeting tooling
   - Implement allowlist-only archive selection in context mode:
     - Archive payload = Base + selected dependency closure (repo-local nodeIds + staged externals) with reserved denials and binary exclusion always enforced.
@@ -215,4 +209,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Interop: request selection summary helper in stan-context
   - Posted a follow-up interop request proposing an exported helper to compute dependency state closure membership and aggregate byte sizing from the existing graph.
   - This avoids bloating `dependency.meta.json` with per-node transitive summaries while enabling deterministic selection reports downstream.
-- Prompt/requirements: remove facets/anchors; tighten precedence
+- Prompt/requirements: remove facets/anchors; tighten precedence- Remove anchors from engine API + docs
+  - Removed `anchors` from selection/archiving APIs and updated docs/tests to use `includes` (override `.gitignore`) with `excludes` as hard denials.

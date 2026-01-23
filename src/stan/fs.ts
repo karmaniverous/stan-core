@@ -1,6 +1,6 @@
 /**
  * Lists/filters repo files for archiving and snapshots (gitignore + includes/
- * excludes + anchors + reserved rules) and ensures STAN workspace dirs;
+ * excludes + reserved rules) and ensures STAN workspace dirs;
  * filesystem IO only.
  * @module
  */
@@ -99,22 +99,6 @@ export type FilterOptions = {
   includeOutputDir: boolean;
   includes?: string[];
   excludes?: string[];
-  /**
-   * High‑precedence re‑includes (subject to reserved denials and output exclusion).
-   *
-   * @example
-   * ```ts
-   * const files = await listFiles(cwd);
-   * const filtered = await filterFiles(files, {
-   *   cwd,
-   *   stanPath: '.stan',
-   *   includeOutputDir: false,
-   *   excludes: ['README.md'],
-   *   anchors: ['README.md'], // bring README.md back
-   * });
-   * ```
-   */
-  anchors?: string[];
 };
 
 /**
@@ -136,9 +120,7 @@ export type FilterOptions = {
  *   - When provided, matched files are ADDED after excludes and `.gitignore`,
  *     but anchors DO NOT override reserved denials (`diff/patch`) and DO NOT
  *     include `stanPath/output` when `includeOutputDir` is false.
- *
  * Paths are compared using POSIX separators.
- *
  * @param files - Repo‑relative paths to consider.
  * @param options - See {@link FilterOptions}.
  * @returns Filtered list to include in archives/snapshots.
@@ -151,7 +133,6 @@ export async function filterFiles(
     includeOutputDir,
     includes = [],
     excludes = [],
-    anchors = [],
   }: FilterOptions,
 ): Promise<string[]> {
   const stanRel = stanPath.replace(/\\/g, '/');
@@ -182,58 +163,29 @@ export async function filterFiles(
   // Base selection (deny list applied)
   const base = files.filter((f) => !denyMatchers.some((m) => m(f)));
 
-  // Additive includes: union with base, but still respect reserved exclusions
+  // Additive includes: union with base, but excludes and reserved denials still win.
   if (includes.length > 0) {
     const allowMatchers: Matcher[] = includes.map(toMatcher);
-    const reserved: Matcher[] = [
-      // Still reserve-exclude patch/diff even if explicitly included.
-      (f) => isReservedWorkspacePath(stanRel, f),
-      ...(includeOutputDir
-        ? []
-        : [(f: string) => isUnder(`${stanRel}/output`, f)]),
-    ];
     // Build union: start from base, add includes (even if gitignored/default-denied)
     const inUnion = new Set<string>(base);
     for (const f of files) if (allowMatchers.some((m) => m(f))) inUnion.add(f);
-    // Excludes take precedence over includes: drop anything matching user excludes.
-    const excludesMatchers: Matcher[] = excludes.map(toMatcher);
 
-    // Filter after excludes and reserved
-    const afterExcludes = new Set<string>(
-      files.filter(
-        (f) =>
-          inUnion.has(f) &&
-          !reserved.some((m) => m(f)) &&
-          !excludesMatchers.some((m) => m(f)),
-      ),
+    const blocked: Matcher[] = [
+      // .git is always excluded (never include, even via includes)
+      (f: string) => matchesPrefix(f, '.git'),
+      // Still reserve-exclude patch/diff even if explicitly included.
+      (f: string) => isReservedWorkspacePath(stanRel, f),
+      ...(includeOutputDir
+        ? []
+        : [(f: string) => isUnder(`${stanRel}/output`, f)]),
+      // Excludes take precedence over includes.
+      ...excludes.map(toMatcher),
+    ];
+
+    const final = new Set<string>(
+      files.filter((f) => inUnion.has(f) && !blocked.some((m) => m(f))),
     );
-
-    // Anchors override excludes/.gitignore (but not reserved/output exclusion)
-    if (anchors.length > 0) {
-      const anchorMatchers: Matcher[] = anchors.map(toMatcher);
-      for (const f of files) {
-        const blocked =
-          isReservedWorkspacePath(stanRel, f) ||
-          (!includeOutputDir && isUnder(`${stanRel}/output`, f));
-        if (!blocked && anchorMatchers.some((m) => m(f))) afterExcludes.add(f);
-      }
-    }
-
-    // Preserve original order
-    return files.filter((f) => afterExcludes.has(f));
-  }
-
-  // No includes supplied — apply anchors on top of base
-  if (anchors.length > 0) {
-    const anchorMatchers: Matcher[] = anchors.map(toMatcher);
-    const out = new Set<string>(base);
-    for (const f of files) {
-      const blocked =
-        isReservedWorkspacePath(stanRel, f) ||
-        (!includeOutputDir && isUnder(`${stanRel}/output`, f));
-      if (!blocked && anchorMatchers.some((m) => m(f))) out.add(f);
-    }
-    return files.filter((f) => out.has(f));
+    return files.filter((f) => final.has(f));
   }
 
   return base;

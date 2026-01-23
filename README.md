@@ -156,7 +156,7 @@ Top‑level (via `import '@karmaniverous/stan-core'`):
 
 See CHANGELOG for behavior changes. Typedoc site is generated from source.
 
-## Selection precedence and anchors
+## Selection precedence
 
 Core file selection applies in this order:
 
@@ -164,16 +164,8 @@ Core file selection applies in this order:
   - `.git/**`, `<stanPath>/diff/**`, `<stanPath>/patch/**`,
   - archive outputs under `<stanPath>/output/…`,
   - binary screening during archive classification.
-- `includes` override `.gitignore` (but not `excludes`).
-- `excludes` override `includes`.
-- `anchors` (optional) re‑include paths after excludes and `.gitignore`, subject to reserved denials and binary screening.
-
-APIs that accept anchors:
-
-- `filterFiles(files, { …, anchors?: string[] })`
-- `createArchive(cwd, stanPath, { …, anchors?: string[] })`
-- `createArchiveDiff({ …, anchors?: string[] })`
-- `writeArchiveSnapshot({ …, anchors?: string[] })`
+- `includes` are additive and can re-include paths ignored by `.gitignore`.
+- `excludes` are hard denials and override `includes`.
 
 ## Environment variables
 
@@ -190,3 +182,7 @@ stan init  # offers to refactor legacy → namespaced; supports --dry-run and ba
 ## License
 
 BSD‑3‑Clause
+
+---
+
+Built for you with ❤️ on Bali! Find more great tools & templates on [my GitHub Profile](https://github.com/karmaniverous).

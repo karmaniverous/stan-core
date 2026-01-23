@@ -77,16 +77,14 @@ const getClassifyForArchive = async (): Promise<
  *   - stanPath: STAN workspace folder.
  *   - includes: Allow‑list globs (overrides excludes).
  *   - excludes: Deny‑list globs.
- *   - anchors: High‑precedence re‑includes (subject to reserved/output).
  *
  * @example
  * ```ts
- * // Seed snapshot using anchors to keep README.md even when excluded:
+ * // Seed snapshot using includes to bring back gitignored files:
  * await writeArchiveSnapshot({
  *   cwd: process.cwd(),
  *   stanPath: '.stan',
- *   excludes: ['README.md'],
- *   anchors: ['README.md'],
+ *   includes: ['README.md'],
  * });
  * ```
  * @returns Absolute path to the `.archive.snapshot.json` file.
@@ -96,13 +94,11 @@ export async function writeArchiveSnapshot({
   stanPath,
   includes,
   excludes,
-  anchors,
 }: {
   cwd: string;
   stanPath: string;
   includes?: string[];
   excludes?: string[];
-  anchors?: string[];
 }): Promise<string> {
   const { diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -113,7 +109,6 @@ export async function writeArchiveSnapshot({
     includeOutputDir: false,
     includes: includes ?? [],
     excludes: excludes ?? [],
-    anchors: anchors ?? [],
   });
 
   const current = await computeCurrentHashes(cwd, filtered);
@@ -137,20 +132,18 @@ export async function writeArchiveSnapshot({
  *   - baseName: Base archive name (e.g., `archive` -\> `archive.diff.tar`).
  *   - includes: Allow‑list globs (overrides excludes).
  *   - excludes: Deny‑list globs.
- *   - anchors: High‑precedence re‑includes (subject to reserved/output).
  *   - updateSnapshot: Controls when the snapshot file is replaced.
  *   - includeOutputDirInDiff: When true, include `stanPath/output` in the diff.
  * @returns `{ diffPath }` absolute path to the diff archive.
  *
  * @example
  * ```ts
- * // Diff archive with anchors to retain docs/overview.md:
+ * // Diff archive with includes to bring back gitignored files:
  * const { diffPath } = await createArchiveDiff({
  *   cwd: process.cwd(),
  *   stanPath: '.stan',
  *   baseName: 'archive',
- *   excludes: ['docs/**'],
- *   anchors: ['docs/overview.md'],
+ *   includes: ['docs/overview.md'],
  *   updateSnapshot: 'createIfMissing',
  * });
  * ```
@@ -163,7 +156,6 @@ export async function createArchiveDiff({
   excludes,
   updateSnapshot = 'createIfMissing',
   includeOutputDirInDiff = false,
-  anchors,
   onArchiveWarnings,
 }: {
   cwd: string;
@@ -173,7 +165,6 @@ export async function createArchiveDiff({
   excludes?: string[];
   updateSnapshot?: SnapshotUpdateMode;
   includeOutputDirInDiff?: boolean;
-  anchors?: string[];
   onArchiveWarnings?: (text: string) => void;
 }): Promise<{ diffPath: string }> {
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
@@ -185,7 +176,6 @@ export async function createArchiveDiff({
     includeOutputDir: false,
     includes: includes ?? [],
     excludes: excludes ?? [],
-    anchors: anchors ?? [],
   });
 
   const current = await computeCurrentHashes(cwd, filtered);
