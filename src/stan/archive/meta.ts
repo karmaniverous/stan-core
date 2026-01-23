@@ -1,7 +1,7 @@
 /**
- * Creates a minimal "meta" archive (system + dependency meta only) intended as
- * a thread opener for dependency graph mode; performs filesystem IO; no console
- * output.
+ * Creates a "meta" archive (system docs + dependency meta, plus optional
+ * dependency state and repo-root base files); excludes staged payloads by
+ * omission and excludes `<stanPath>/system/.docs.meta.json`; filesystem IO only.
  * @module
  */
 

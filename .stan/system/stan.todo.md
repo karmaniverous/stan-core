@@ -236,4 +236,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: remove remaining anchors/meta drift
   - Fixed `src/stan/diff.ts` TSDoc to reflect actual `includes`/`excludes` semantics (includes are additive; excludes win).
   - Updated `guides/stan-assistant-guide.md` to match current `archive.meta.tar` behavior (includes dependency state when present; excludes staged payloads by omission).
-  - Removed remaining “anchors” references in `.stan/system/stan.requirements.md` that no longer reflect the engine API.
+  - Removed remaining “anchors” references in `.stan/system/stan.requirements.md` that no longer reflect the engine API.
+- Docs: align meta archive docs with current behavior
+  - Updated `src/stan/archive/meta.ts` module doc comment to match implementation (optional dependency state + repo-root base files; staged payloads excluded by omission).
+  - Updated `.stan/system/parts/240-dependency-graph-mode.md` and regenerated `.stan/system/stan.system.md` to reflect that meta archives include dependency state when present.

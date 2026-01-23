@@ -909,7 +909,7 @@ Archive outputs (under `.stan/output/`):
 - `.stan/output/archive.tar` (full)
 - `.stan/output/archive.diff.tar` (diff)
 - `.stan/output/archive.meta.tar` (meta; only when context mode enabled)
-  - Contains system files + dependency meta (not state; not staged payloads).
+  - Contains system files + dependency meta; includes dependency state when it exists; excludes staged payloads by omission.
 
 ## Read-only staged imports (baseline rule)
 
@@ -975,7 +975,8 @@ When context mode is enabled, tooling produces `.stan/output/archive.meta.tar` i
 The meta archive is intended for the start of a thread:
 
 - It contains system docs + dependency meta.
-- It excludes dependency state and staged dependency payloads.
+- It includes dependency state when it exists.
+- It excludes staged dependency payloads by omission.
 - The assistant should produce an initial `dependency.state.json` based on the prompt and then rely on full/diff archives for subsequent turns.
 
 ## Assistant guidance (anti-bloat)
