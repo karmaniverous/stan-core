@@ -133,6 +133,15 @@ export type UserSettings = z.infer<typeof userSettingsSchema>;
 
 ---
 
+## 8) Chat rendering vs tool ingestion (File Ops blocks)
+
+- In assistant replies, a “### File Ops” block may be shown inside a fenced code block for readability in the chat client.
+- That fence is a presentation wrapper only. When the developer copies the File Ops into tooling, they copy only the inner content (starting at the `### File Ops` line), not the fence markers.
+- Therefore, do not treat the presence of fence markers in a chat transcript as evidence that the File Ops block itself is “fenced” at ingestion time.
+- When reasoning about engine behavior, assume the tool receives the unfenced File Ops lines (verbs + repo-relative paths), not the chat wrapper.
+
+---
+
 ## Linting policy (project-level)
 
 - Enforce strict, type‑aware ESLint rules across all TypeScript files, including tests.

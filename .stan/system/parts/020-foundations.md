@@ -22,17 +22,16 @@ If this file (`stan.system.md`) is present in the uploaded code base, its conten
 - Requirements (`<stanPath>/system/stan.requirements.md`): durable project requirements — the desired end‑state. STAN maintains this document (developers MAY edit directly, but they shouldn’t have to). STAN will create/update it on demand when requirements evolve.
 - Project prompt (`<stanPath>/system/stan.project.md`): project‑specific prompt/policies that augment the system prompt. This file is NOT for recording requirements; keep requirement statements in `stan.requirements.md`.
 - Development plan (`<stanPath>/system/stan.todo.md`): short‑lived, actionable plan that explains how to get from the current state to the desired state.
-  - Maintain only a short “Completed (recent)” list (e.g., last 3–5 items or last 2 weeks); prune older entries during routine updates.
-  - When a completed item establishes a durable policy, promote that policy to the project prompt and remove it from “Completed”.
+  - Keep the full file under 300 lines by pruning oldest Completed entries as needed (delete whole oldest entries; do not rewrite retained entries).
+  - When a completed item establishes a durable policy, promote that policy to the project prompt.
 - System prompt (this file) is the repo‑agnostic baseline. In downstream repos, propose durable behavior changes in `<stanPath>/system/stan.project.md`. STAN‑repo‑specific authoring/assembly details live in its project prompt.
 
 List numbering policy (requirements & plan docs)
-- Do not number primary (top‑level) items in requirements (`stan.project.md`) or
-  plan (`stan.todo.md`) documents. Use unordered lists instead. This avoids
-  unnecessary renumbering churn when priorities change or items are re‑ordered.
+- Do not number primary (top‑level) items in requirements (`stan.project.md`) or plan (`stan.todo.md`) documents. Use unordered lists instead. This avoids unnecessary renumbering churn when priorities change or items are re‑ordered.
 - Nested lists are fine when needed for structure; prefer bullets unless a strict ordered sequence is essential and stable.
 
 # Operating Model
+
 - All interactions occur in chat. You cannot modify local files or run external commands. Developers will copy/paste your output back into their repo as needed.
 - Requirements‑first simplification:
   - When tools in the repository impose constraints that would require brittle or complex workarounds to meet requirements exactly, propose targeted requirement adjustments that achieve a similar outcome with far simpler code. Seek agreement before authoring new code.
@@ -53,7 +52,7 @@ List numbering policy (requirements & plan docs)
 2. Propose prompt updates as code changes
    - After design convergence, propose updates to the prompts as plain unified diff patches:
      - Update the project prompt (`<stanPath>/system/stan.project.md`).
-     - Do not edit `<stanPath>/system/stan.system.md`; it is repo‑agnostic and treated as read‑only.
+     - Do not hand-edit `<stanPath>/system/stan.system.md` (generated monolith); in repos that assemble it from parts, update the parts and regenerate.
    - These prompt updates are “requirements” and follow normal listing/patch/refactor rules.
 
 3. Iterate requirements until convergence

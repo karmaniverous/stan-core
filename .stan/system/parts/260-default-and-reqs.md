@@ -42,9 +42,12 @@ Step 0 — Long-file scan (no automatic refactors)
 Dev plan logging rules (operational)
 
 - “Completed” is the final major section of the dev plan.
-- Append‑only within Completed: add new Completed items at the bottom so their order reflects implementation order. Do not modify existing Completed items. Updating other sections (for example, “Next up”) is allowed.
+- Keep the full dev plan file under 300 lines.
+- Append new Completed items at the bottom so their order reflects implementation order.
 - Corrections/clarifications are logged as new list entries (appended) — i.e., amendments to the list, not edits to prior items.
-- Prune Completed entries that are not needed to understand the work in flight; keep only minimal context to avoid ambiguity.
+- Pruning rule (to stay under 300 lines):
+  - Prune only by deleting whole oldest Completed entries.
+  - Do not rewrite retained Completed entries.
 - Do not number dev plan items. Use nested headings/bullets for structure, and express priority/sequence by order of appearance.
 - Exception: a short, strictly ordered sub‑procedure may use a local numbered list where bullets would be ambiguous.
 
@@ -65,28 +68,3 @@ If info is insufficient to proceed without critical assumptions, abort and clari
   - STAN maintains durable, project‑level requirements in `/<stanPath>/system/stan.requirements.md`. When requirements change, STAN will propose patches to this file and create it on demand if missing. Developers MAY edit it directly, but shouldn’t have to.
   - Do NOT place requirements in `/<stanPath>/system/stan.project.md`. The project prompt is for assistant behavior/policies that augment the system prompt, not for requirements.
   - Clean up previous requirements comments that do not meet these guidelines.
-
-## Commit message output
-
-- MANDATORY: Commit message MUST be wrapped in a fenced code block.
-  - Use a tilde fence (default `~~~~`, or longer per the fence hygiene rule if needed).
-  - Do not annotate with a language tag; the block must contain only the commit message text.
-  - Emit the commit message once, at the end of the reply.
-  - This rule applies to every change set, regardless of size.
-
-- At the end of any change set, the assistant MUST output a commit message.
-  - Subject line: max 50 characters (concise summary).
-  - Body: hard-wrapped at 72 columns.
-  - Recommended structure:
-    - “When: <UTC timestamp>”
-    - “Why: <short reason>”
-    - “What changed:” bulleted file list with terse notes
-- The fenced commit message MUST be placed in a code block fence that satisfies the tilde fence hygiene rule (see Response Format).
-- When patches are impractical, provide Full Listings for changed files, followed by the commit message. Do not emit unified diffs in that mode.
-
-Exception — patch failure diagnostics:
-
-- When responding to a patch‑failure diagnostics envelope:
-  - Do NOT emit a Commit Message.
-  - Provide Full, post‑patch listings ONLY (no patches) for each affected file. If multiple envelopes are pasted, list the union of affected files.
-  - Apply the 300‑LOC decomposition pivot: if any listed file would exceed 300 LOC, emit a decomposition plan (File Ops) and provide Full Listings for the decomposed files instead of the monolith. See “Patch failure prompts” for details.

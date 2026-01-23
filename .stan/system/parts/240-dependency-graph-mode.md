@@ -2,8 +2,6 @@
 
 When dependency graph mode is enabled (via the CLI “context mode”), STAN uses a dependency graph (“meta”) and a state file (“state”) to expand archived context beyond the baseline repository selection.
 
-This is designed to replace facet/anchor-based archive shaping as the primary mechanism for context control.
-
 ## Canonical files and locations
 
 Dependency artifacts (workspace; gitignored):

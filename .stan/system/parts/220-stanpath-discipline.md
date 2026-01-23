@@ -39,6 +39,4 @@ Input clarity (optional)
 Notes
 
 - These rules apply only to assistant‑emitted content (patches and file ops). The bootloader’s read‑side fallbacks (e.g., probing `.stan` then `stan`) exist for compatibility with older archives and do not affect write‑time discipline.
-- The rules compose with other guards:
-  - Reserved denials remain in effect (e.g., do not place content under `/<stanPath>/diff/**`, `/<stanPath>/patch/**`, or archive outputs in `/<stanPath>/output/**`).
-  - The facet‑aware editing guard still applies: do not propose edits under an inactive facet this run; enable the facet first and emit patches next turn.
+- The rules compose with other guards (for example: reserved denials remain in effect; do not place content under `/<stanPath>/diff/**`, `/<stanPath>/patch/**`, or archive outputs in `/<stanPath>/output/**`).

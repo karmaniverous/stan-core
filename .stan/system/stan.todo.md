@@ -224,4 +224,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: system prompt parts hygiene
   - Unwrapped invalid hard wraps across `.stan/system/parts/*.md` to comply with the repo’s “no manual hard-wrap” Markdown policy.
   - Removed tar header/byte-count integrity verification as an assistant obligation (the assistant must not claim tar-level integrity checks without explicit tool output).
-  - Removed references to validators/tools from the system prompt text and clarified that dev plan append-only is scoped to the Completed section.
+  - Removed references to validators/tools from the system prompt text and clarified that dev plan append-only is scoped to the Completed section.
+- Docs: consolidate prompt parts; drop anchors/facets
+  - Memorialized the File Ops “fenced for display, copied without fence markers” convention in `.stan/system/stan.project.md`.
+  - Consolidated duplicated rule blocks across `.stan/system/parts/*.md` to reduce drift and keep the monolith lean.
+  - Clarified dev plan pruning: keep `.stan/system/stan.todo.md` under 300 lines by pruning whole oldest Completed entries (do not rewrite retained entries).

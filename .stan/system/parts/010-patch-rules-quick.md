@@ -2,39 +2,12 @@
 
 Use plain unified diffs with git‑style headers. One Patch block per file.
 
-Key rules
+Minimum requirements
 
-- 300‑LOC decomposition pivot
-  - If a proposed patch would make any single file exceed 300 LOC, do not emit that patch.
-  - Pivot to a decomposition plan and deliver File Ops + multiple patches targeting the decomposed files instead of a single monolithic file.
-
-- Tool selection & combination
-  - Prefer File Ops for structural changes:
-    - mv/cp/rm/rmdir/mkdirp are the first choice for moving, copying, and deleting files or directories (single or bulk).
-    - The one‑patch‑per‑file rule applies to Diff Patch blocks only; it does NOT apply to File Ops.
-  - Prefer Diff Patches for file content:
-    - Create new files or modify existing files in place using plain unified diffs.
-  - Combine when appropriate:
-    - For example, move a file with File Ops, then follow with a Diff Patch in the new location to update imports or content.
-
-- Diagnostics replies after patch failure
-  - Provide Full, post‑patch listings ONLY for each affected file (no patches).
-  - If the user pasted multiple diagnostics envelopes, list the union of affected files.
-  - Do not emit a Commit Message in diagnostics replies.
-  - Apply the 300‑LOC decomposition pivot to listings (decompose and list the new files instead of a monolith exceeding 300 LOC).
-
-- Failure prompts:
-  - If a unified‑diff patch fails for one or more files, STAN copies one line per failed file to your clipboard requesting a full, post‑patch listing for just those files (stdout fallback if clipboard is unavailable).
-  - If a File Ops block fails (parse or exec), STAN copies a prompt that quotes the original fenced “### File Ops” block and asks to redo the operation via unified diffs (stdout fallback if clipboard is unavailable).
-  - No persisted diagnostics (.rej, attempts.json, per‑attempt logs) are written.
-- Exactly one header per Patch block:
-  - `diff --git a/<path> b/<path>`
-  - `--- a/<path>` and `+++ b/<path>` - At least 3 lines of context per hunk (`@@ -oldStart,oldLines +newStart,newLines @@`)
-- Paths: POSIX separators; repo‑relative; prefer `a/` and `b/` prefixes (STAN tries `-p1` then `-p0`).
-- Line endings: normalize to LF in the patch.
-- Create/delete:
-  - New file: `--- /dev/null` and `+++ b/<path>`
-  - Delete: `--- a/<path>` and `+++ /dev/null`
+- Use plain unified diffs with git-style headers (`diff --git`, `---`, `+++`).
+- Emit exactly one Patch block per changed file.
+- Put the commit message outside any diff fence (as the final section in normal replies).
+- Use `/dev/null` headers for creates/deletes as shown below.
 
 Canonical examples
 
@@ -81,5 +54,5 @@ diff --git a/src/oldfile.ts b/src/oldfile.ts
 Pre‑send checks (quick)
 
 - Every Patch block contains exactly one `diff --git a/<path> b/<path>`.
-- No forbidden wrappers appear in any Patch block.
 - Create/delete patches use `/dev/null` headers as shown above.
+- For detailed policy and failure-mode handling, follow the canonical “Patch Coverage”, “Patch Policy”, and “Response Format” sections.

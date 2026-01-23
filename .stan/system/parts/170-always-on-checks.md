@@ -57,23 +57,8 @@ This is a HARD GATE: the composition MUST fail when a required documentation pat
   - Provide Full, post‑patch listings only (no patches) for each affected file (union when multiple envelopes are pasted).
   - Do NOT emit a Commit Message in diagnostics replies.
 
-## Dev plan document hygiene (content‑only)
+## Dev plan maintenance (size + pruning)
 
-- The development plan at `<stanPath>/system/stan.todo.md` MUST contain only the current plan content. Keep meta‑instructions, aliases, formatting/policy notes, process guidance, or “how to update the TODO” rules OUT of this file.
-- “Completed” MUST be the final major section of the document.
-- Allowed content in the TODO:
-  - “Next up …” (near‑term actionable items).
-  - “Completed” (final section; short, pruned list). New entries are appended at the bottom so their order of appearance reflects the order implemented. Do not edit existing Completed items.
-  - Optional sections for short follow‑through notes or a small backlog (e.g., “DX / utility ideas (backlog)”).
-
-- Append‑only logging for Completed:
-  - Do NOT modify or rewrite a previously logged Completed item.
-  - If follow‑on context is needed (e.g., clarifications/corrections), log it as a new list entry appended at the bottom of the Completed section (i.e., an amendment to the list, not edits to prior items). Keep the original entries intact.
-  - Append-only applies within the Completed section; updating other sections (for example, “Next up”) is allowed.
-
-- Prune for relevance:
-  - Remove Completed items that are not needed to understand the work in flight (“Next up” and any active follow‑through). Retain only minimal context that prevents ambiguity.
-
-- Numbering policy (dev plan):
-  - Do NOT number items in the dev plan. Use nested headings/bullets for structure, and convey priority/sequence by order of appearance.
-  - Exception: When documenting a short, strictly ordered procedure where bullets would create ambiguity, a local numbered sub‑list is allowed under that specific item.
+- Keep `<stanPath>/system/stan.todo.md` focused and under 300 lines.
+- Keep “Completed” as the final major section and append new Completed entries at the bottom.
+- Prune oldest Completed entries as needed to keep the full file under 300 lines (delete whole oldest entries; do not rewrite retained entries).

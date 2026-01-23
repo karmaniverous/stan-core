@@ -4,13 +4,15 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- System prompt parts hygiene: remove invalid hard-wraps in `.stan/system/parts/*.md`, remove tar header integrity as an assistant obligation, and remove tool/validator references from the prompt text.
-- Keep the follow-through focus: stan-cli wiring for `onSelectionReport` presentation (engine stays presentation-free).
+- System prompt hygiene and de-duplication: consolidate overlapping rule blocks in `.stan/system/parts/*.md` to reduce drift.
+- Remove deprecated archive-shaping language (anchors/facets) from the system prompt; upcoming major will eliminate them.
+- Memorialize the File Ops “fenced for display, copied without fence markers” convention in `.stan/system/stan.project.md` so it is not treated as an implementation mismatch.
+- Keep the follow-through focus on stan-cli wiring for `onSelectionReport` presentation (engine stays presentation-free).
 
 ## Working model (high signal)
 
-- The system prompt is generated from `.stan/system/parts/*.md`; those parts must follow the repo-wide “no manual hard-wrap” Markdown policy to avoid self-contradiction.
-- Dev plan “Completed” rule means: append-only within the Completed section; updating other sections (e.g., “Next up”) is allowed.
+- The system prompt monolith is assembled from `.stan/system/parts/*.md`; edit parts, then regenerate the monolith via tooling.
+- Dev plan maintenance: keep `.stan/system/stan.todo.md` under 300 lines by pruning whole oldest Completed entries; do not rewrite retained Completed entries; keep Completed as the final major section.
 
 ## Open questions
 

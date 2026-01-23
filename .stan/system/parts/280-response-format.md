@@ -81,17 +81,6 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 
 - Output the commit message at the end of the reply wrapped in a fenced code block. Do not annotate with a language tag. Apply the tilde fence-hygiene rule. The block contains only the commit message (subject + body), no surrounding prose.
 
-## Validation
-
-- Normal replies:
-  - Confirm one Patch block per changed file (and zero Full Listings).
-  - Confirm fence lengths obey the tilde fence hygiene rule for every block.
-  - Confirm that no Patch would cause any file to exceed 300 LOC; pivoted decomposition patches instead.
-- Diagnostics replies (after patch‑failure envelopes):
-  - Confirm that the reply contains Full Listings only (no patches), one per affected file (union across envelopes).
-  - Confirm fence lengths obey the tilde fence hygiene rule for every block.
-  - Confirm that no listed file exceeds 300 LOC; if it would, pivoted decomposition + listings for the decomposed files instead.
-
 ---
 
 ## Post‑compose verification checklist (MUST PASS)
@@ -117,70 +106,6 @@ Before sending a reply, verify all of the following:
 4. Section headings
    - Headings match the template exactly (names and order).
 
-5. Documentation cadence (gating)
-   - Normal replies: If any Patch block is present, there MUST also be a Patch for <stanPath>/system/stan.todo.md that reflects the change set (unless the change set is deletions‑only or explicitly plan‑only). The “Commit Message” MUST be present and last.
-   - Diagnostics replies: Skip Commit Message; listings‑only for the affected files.
-6. Nested-code templates (hard gate)
-   - Any template or example that contains nested fenced code blocks (e.g., the Dependency Bug Report or a patch failure diagnostics envelope) MUST pass the fence‑hygiene scan: compute N = max(4, maxInnerTildes + 1), apply that tilde fence, then re‑scan before sending. If any collision remains, STOP and re‑emit. If any check fails, STOP and re‑emit after fixing. Do not send a reply that fails these checks.
-7. Dev plan “Completed” (append‑only; last)
-   - If `.stan/system/stan.todo.md` is patched:
-     - “Completed” is still the final major section of the document.
-     - Only new lines were appended at the end of “Completed”; no existing Completed lines were modified or re‑ordered.
-     - Corrections/clarifications, if any, are logged as a new one‑line “Amendment:” entry appended at the bottom (the original entries remain intact).
-     - Lists remain unnumbered.
-     - Append-only applies within the Completed section; updating other sections (for example, “Next up”) is allowed.
-   - Violations must be corrected before sending.
-
-## Patch policy reference
-
-Follow the canonical rules in “Patch Policy” (see earlier section). The Response Format adds presentation requirements only (fencing, section ordering, per‑file one‑patch rule). Do not duplicate prose inside patch fences; emit plain unified diff payloads.
-
-Optional Full Listings — Normal replies only: when explicitly requested by the user in a non‑diagnostics turn, include Full Listings for the relevant files; otherwise omit listings by default. Diagnostics replies (after patch‑failure envelopes) MUST provide Full, post‑patch listings as described above (no patches, union across envelopes, no commit message). Skip listings for deletions.
-
-Dev plan Completed enforcement (pre‑send)
-
-- If `<stanPath>/system/stan.todo.md` is patched in this turn, enforce late‑append semantics for the “Completed” section:
-  - “Completed” MUST remain the final major section of the document.
-  - Only append new lines at the end of “Completed”. Do NOT modify existing Completed lines (no edits, no insertions, no re‑ordering within Completed).
-  - If a correction/clarification is needed for a prior item, append a new one‑line “Amendment:” entry at the bottom instead of editing the original item.
-  - Lists remain unnumbered.
-  - Append-only applies within the Completed section; updating other sections (for example, “Next up”) is allowed.
-
-## File Ops (optional pre‑ops; structural changes)
-
-Use “### File Ops” to declare safe, repo‑relative file and directory operations that run before content patches. File Ops are for structure (moves/renames, creates, deletes), while unified‑diff Patches are for editing file contents.
-
-- Verbs:
-  - mv <src> <dest> # move/rename a file or directory (recursive), no overwrite
-  - cp <src> <dest> # copy a file or directory (recursive), no overwrite; creates parents for <dest>
-  - rm <path> # remove file or directory (recursive)
-  - rmdir <path> # remove empty directory (explicit safety)
-  - mkdirp <path> # create directory (parents included)
-- Multiple targets:
-  - Include as many operations (one per line) as needed to handle an entire related set of structural changes in a single patch turn.
-- Paths:
-  - POSIX separators, repo‑relative only.
-  - Absolute paths are forbidden. Any “..” traversal is forbidden after normalization.
-- Arity:
-  - mv and cp require 2 paths; rm/rmdir/mkdirp require 1.
-- Execution:
-  - Pre‑ops run before applying unified diffs.
-  - In --check (dry‑run), pre‑ops are validated and reported; no filesystem changes are made.
-
-Examples
-
-~~~~
-### File Ops
-mkdirp src/new/dir
-mv src/old.txt src/new/dir/new.txt
-cp src/new/dir/new.txt src/new/dir/copy.txt
-rm src/tmp.bin
-rmdir src/legacy/empty
-~~~~
-
-~~~~
-### File Ops
-mv packages/app-a/src/util.ts packages/app-b/src/util.ts
-mkdirp packages/app-b/src/internal
-rm docs/drafts/obsolete.md
-~~~~
+5. Documentation cadence and dev plan maintenance
+   - Normal replies: if any Patch block is present, include a Patch for `<stanPath>/system/stan.todo.md` (unless deletions-only or explicitly plan-only) and end with a Commit Message block.
+   - Keep the dev plan under 300 lines by pruning whole oldest Completed entries when needed; do not rewrite retained Completed entries.
