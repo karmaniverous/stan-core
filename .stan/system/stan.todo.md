@@ -211,4 +211,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: align dev plan and scratch with green checks
 - Docs: fix TypeDoc warnings (budget params + exported option types)
 - Docs: export allowlist archive options for TypeDoc
-- Amendment: `npm run docs` now reports 0 warnings; treat “Docs hygiene (release readiness)” as currently satisfied and focus follow-through on context-mode selection reporting + CLI wiring.
+- Amendment: `npm run docs` now reports 0 warnings; treat “Docs hygiene (release readiness)” as currently satisfied and focus follow-through on context-mode selection reporting + CLI wiring.
+- Design: lock stan-core selection report contract (data-only callback; no engine IO); implement next thread.
