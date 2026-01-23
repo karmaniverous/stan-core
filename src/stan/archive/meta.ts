@@ -9,6 +9,8 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { ARCHIVE_META_TAR } from '@/stan/archive/constants';
+import type { SelectionReport } from '@/stan/archive/report';
+import { surfaceSelectionReport } from '@/stan/archive/report';
 import { makeTarFilter } from '@/stan/archive/util';
 import { ensureOutAndDiff, filterFiles, listFiles } from '@/stan/fs';
 
@@ -27,6 +29,10 @@ export async function createMetaArchive(
   cwd: string,
   stanPath: string,
   selection?: { includes?: string[]; excludes?: string[] },
+  options?: {
+    /** Optional callback for a deterministic selection report (engine remains silent by default). */
+    onSelectionReport?: (report: SelectionReport) => void;
+  },
 ): Promise<string> {
   const { outDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -75,6 +81,24 @@ export async function createMetaArchive(
   ).sort((a, b) => a.localeCompare(b));
 
   const archivePath = resolve(outDir, ARCHIVE_META_TAR);
+  surfaceSelectionReport(
+    {
+      kind: 'meta',
+      mode: 'allowlist',
+      stanPath,
+      outputFile: archivePath,
+      hasWarnings: false,
+      counts: {
+        candidates: all.length,
+        selected: files.length,
+        archived: files.length,
+        excludedBinaries: 0,
+        largeText: 0,
+      },
+    },
+    options?.onSelectionReport,
+  );
+
   const tar = (await import('tar')) as unknown as TarLike;
   await tar.create(
     {

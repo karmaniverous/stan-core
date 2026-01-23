@@ -131,6 +131,16 @@ const tarAbs = await createArchive(process.cwd(), '.stan', {
     // surface “binaries excluded” / “large text flagged” to the caller
     console.log(text);
   },
+  onSelectionReport: (report) => {
+    // deterministic, data-only selection summary; engine remains silent
+    // report.kind: 'archive' | 'diff' | 'meta'
+    // report.counts: { candidates, selected, archived, excludedBinaries, largeText }
+    // report.hasWarnings: derived from classifier counts
+    //
+    // Intended for adapters (e.g., stan-cli) to present concise selection stats
+    // without writing files from the engine.
+    console.log(report);
+  },
 });
 ```
 
@@ -156,6 +166,8 @@ const { diffPath } = await createArchiveDiff({
   includeOutputDirInDiff: false,
   excludes: ['docs/**'],
   onArchiveWarnings: (text) => console.log(text),
+  // Optional: same selection report contract as createArchive
+  onSelectionReport: (report) => console.log(report),
 });
 ```
 

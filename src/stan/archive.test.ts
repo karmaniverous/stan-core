@@ -9,6 +9,7 @@ import { withMockTarCapture } from '../test/helpers';
 void withMockTarCapture('TAR');
 
 import { createArchive } from './archive';
+import type { SelectionReport } from './archive/report';
 
 describe('createArchive', () => {
   let dir: string;
@@ -24,10 +25,19 @@ describe('createArchive', () => {
   });
 
   it('writes archive.tar and excludes files under outputPath', async () => {
-    const out = await createArchive(dir, 'stan');
+    let report: SelectionReport | null = null;
+    const out = await createArchive(dir, 'stan', {
+      onSelectionReport: (r) => {
+        report = r;
+      },
+    });
     expect(typeof out).toBe('string');
     expect(out.endsWith('archive.tar')).toBe(true);
     expect(existsSync(path.join(dir, 'stan'))).toBe(true);
     expect(await readFile(out, 'utf8')).toBe('TAR');
+    expect(report?.kind).toBe('archive');
+    expect(report?.mode).toBe('denylist');
+    expect(report?.counts.archived).toBe(1);
+    expect(report?.counts.excludedBinaries).toBe(0);
   });
 });

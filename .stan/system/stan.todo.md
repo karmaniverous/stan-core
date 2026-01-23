@@ -6,10 +6,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Context mode (`--context`) follow-through: selection reporting + CLI wiring
-  - Decide where context-mode selection reporting should live (stan-core vs stan-cli), and what minimal artifacts to emit (JSON + human-readable summary).
-  - If reporting lives in stan-core, define the report schema (bytes, bytes/4, largest entries, deterministic warnings) and add tests for stable output.
-  - Coordinate with stan-cli to wire context-mode allowlist-only archiving (Base + dependency closure) using the existing allowlist/context entrypoints in this repo.
+- Context mode (`--context`) follow-through: stan-cli wiring
+  - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
+  - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
 
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
@@ -212,4 +211,5 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: fix TypeDoc warnings (budget params + exported option types)
 - Docs: export allowlist archive options for TypeDoc
 - Amendment: `npm run docs` now reports 0 warnings; treat “Docs hygiene (release readiness)” as currently satisfied and focus follow-through on context-mode selection reporting + CLI wiring.
-- Design: lock stan-core selection report contract (data-only callback; no engine IO); implement next thread.
+- Design: lock stan-core selection report contract (data-only callback; no engine IO); implement next thread.
+- Implement selection report callbacks on archive APIs (data-only; no IO).

@@ -4,9 +4,9 @@ Last updated: 2026-01-23Z
 
 ## Current focus
 
-- TypeDoc warnings are now cleared (`npm run docs` reports 0 warnings); keep docs/build/knip green as a release-readiness gate.
-- Selection report: stan-core contract is now locked; implement in next thread.
-- Coordinate with stan-cli to wire context-mode allowlist-only archiving (Base + dependency closure) into the CLI runner.
+- Selection report callbacks are implemented in stan-core archive APIs (data-only callback; no engine I/O).
+- Next step is stan-cli wiring: capture and present selection reports during run/snap/context flows without writing files from the engine.
+- Keep docs/build/knip green as a release-readiness gate.
 
 ## Working model (high signal)
 
@@ -19,13 +19,10 @@ Last updated: 2026-01-23Z
   - context-mode orchestration (`createContextArchiveWithDependencyContext`, `createContextArchiveDiffWithDependencyContext`)
 - Budgeting helper present: `summarizeContextAllowlistBudget(...)` (uses meta sizes when present; stat fallback; deterministic `bytes/4` heuristic).
 - TypeDoc warnings were cleared by aligning args-style TSDoc and exporting referenced option types in the public surface.
-- Selection report (stan-core contract; CLI-facing diagnostic):
-  - Provide an optional `onSelectionReport?: (report) => void` callback on archive APIs.
-  - Keep engine presentation-free: do not print and do not write report files from stan-core.
-  - Report should be deterministic and small by default (counts/options/snapshot + classifier summary); avoid full path lists unless explicitly requested.
-  - Implementation will be done in the next thread.
+- Selection report (stan-core contract; CLI-facing diagnostic) is now implemented as `onSelectionReport?: (report: SelectionReport) => void` on archive APIs.
+- Report is deterministic and small (counts/options/snapshot + classifier summary only; no full path lists).
 
 ## Open questions
 
-- Whether “selection report” output should live in stan-core or be assembled in stan-cli (engine should remain presentation-free; core may still expose pure summary helpers).
-- What minimal report schema should be standardized for assistants (bytes, bytes/4, largest entries, deterministic warnings).
+- Whether stan-cli should persist any selection report artifacts under `.stan/output/` (recommendation: no; present-only).
+- Whether the report schema needs an opt-in “verbose” mode (recommendation: keep minimal; warnings already carry file lists).

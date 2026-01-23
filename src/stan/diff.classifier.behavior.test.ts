@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { withMockTarCapture } from '../test/helpers';
 import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
+import type { SelectionReport } from './archive/report';
 
 describe('createArchiveDiff integrates classifier (excludes binaries, surfaces warnings via callback)', () => {
   let dir: string;
@@ -31,6 +32,7 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
     await writeFile(path.join(dir, 'small.txt'), 'hello\n', 'utf8');
 
     const seen: string[] = [];
+    let report: SelectionReport | null = null;
     await createArchiveDiff({
       cwd: dir,
       stanPath: out,
@@ -38,6 +40,9 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
       includeOutputDirInDiff: false,
       updateSnapshot: 'createIfMissing',
       onArchiveWarnings: (t) => seen.push(t),
+      onSelectionReport: (r) => {
+        report = r;
+      },
     });
 
     const diffCall = calls.find((c) => c.file.endsWith('archive.diff.tar'));
@@ -52,5 +57,13 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
     // warnings surfaced via callback (engine does not log)
     const body = seen.join('\n');
     expect(body).toMatch(/Binary files excluded|Large text files/);
+
+    // selection report surfaced via callback (engine does not log)
+    expect(report?.kind).toBe('diff');
+    expect(report?.mode).toBe('denylist');
+    expect(report?.snapshotExists).toBe(false);
+    expect(report?.counts.selected).toBe(2);
+    expect(report?.counts.archived).toBe(1);
+    expect(report?.counts.excludedBinaries).toBe(1);
   });
 });

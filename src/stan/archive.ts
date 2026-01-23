@@ -10,6 +10,8 @@ import { copyFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { ARCHIVE_PREV_TAR } from './archive/constants';
+import type { SelectionReport } from './archive/report';
+import { surfaceSelectionReport } from './archive/report';
 import {
   composeFilesWithOutput,
   makeTarFilter,
@@ -46,6 +48,8 @@ export type CreateArchiveOptions = {
   excludes?: string[];
   /** Optional callback for archive classifier warnings (engine remains silent by default). */
   onArchiveWarnings?: (text: string) => void;
+  /** Optional callback for a deterministic selection report (engine remains silent by default). */
+  onSelectionReport?: (report: SelectionReport) => void;
 };
 
 /**
@@ -123,10 +127,30 @@ export async function createArchive(
   // - exclude binaries
   // - flag large text (not excluded)
   const classifyForArchive = await getClassifyForArchive();
-  const { textFiles, warningsBody } = await classifyForArchive(cwd, files);
+  const { textFiles, excludedBinaries, largeText, warningsBody } =
+    await classifyForArchive(cwd, files);
   const filesForArchive = textFiles;
 
   surfaceArchiveWarnings(warningsBody, options.onArchiveWarnings);
+
+  surfaceSelectionReport(
+    {
+      kind: 'archive',
+      mode: 'denylist',
+      stanPath,
+      outputFile: archivePath,
+      includeOutputDir,
+      hasWarnings: excludedBinaries.length > 0 || largeText.length > 0,
+      counts: {
+        candidates: all.length,
+        selected: files.length,
+        archived: filesForArchive.length,
+        excludedBinaries: excludedBinaries.length,
+        largeText: largeText.length,
+      },
+    },
+    options.onSelectionReport,
+  );
 
   const tar = (await import('tar')) as unknown as TarLike;
 

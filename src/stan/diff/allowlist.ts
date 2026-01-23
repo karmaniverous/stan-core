@@ -10,6 +10,8 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
+import type { SelectionReport } from '@/stan/archive/report';
+import { surfaceSelectionReport } from '@/stan/archive/report';
 import {
   composeFilesWithOutput,
   makeTarFilter,
@@ -99,6 +101,7 @@ export async function createArchiveDiffFromFiles(args: {
   updateSnapshot?: SnapshotUpdateMode;
   includeOutputDirInDiff?: boolean;
   onArchiveWarnings?: (text: string) => void;
+  onSelectionReport?: (report: SelectionReport) => void;
 }): Promise<{ diffPath: string }> {
   const {
     cwd,
@@ -108,6 +111,7 @@ export async function createArchiveDiffFromFiles(args: {
     updateSnapshot = 'createIfMissing',
     includeOutputDirInDiff = false,
     onArchiveWarnings,
+    onSelectionReport,
   } = args;
 
   const files = uniqSorted(relFiles);
@@ -130,13 +134,39 @@ export async function createArchiveDiffFromFiles(args: {
   // - exclude binaries
   // - flag large text (not excluded)
   const classifyForArchive = await getClassifyForArchive();
-  const { textFiles, warningsBody } = await classifyForArchive(cwd, changedRaw);
+  const { textFiles, excludedBinaries, largeText, warningsBody } =
+    await classifyForArchive(cwd, changedRaw);
   const changed = uniqSorted(textFiles);
 
   surfaceArchiveWarnings(warningsBody, onArchiveWarnings);
 
   const diffPath = join(outDir, `${baseName}.diff.tar`);
   const tar = (await import('tar')) as unknown as TarLike;
+
+  const sentinelUsed = !includeOutputDirInDiff && changed.length === 0;
+  surfaceSelectionReport(
+    {
+      kind: 'diff',
+      mode: 'allowlist',
+      stanPath,
+      outputFile: diffPath,
+      includeOutputDirInDiff,
+      updateSnapshot,
+      snapshotExists: hasPrev,
+      baseSelected: files.length,
+      sentinelUsed,
+      hasWarnings: excludedBinaries.length > 0 || largeText.length > 0,
+      counts: {
+        candidates: relFiles.length,
+        selected: changedRaw.length,
+        archived: changed.length,
+        excludedBinaries: excludedBinaries.length,
+        largeText: largeText.length,
+      },
+    },
+    onSelectionReport,
+  );
+
   if (includeOutputDirInDiff) {
     await tar.create(
       {
