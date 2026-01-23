@@ -4,6 +4,7 @@
  * @module
  */
 export * from './archive';
+export type { CreateArchiveFromFilesOptions } from './archive/allowlist';
 export { createMetaArchive } from './archive/meta';
 export * from './config/index';
 export * from './diff';
