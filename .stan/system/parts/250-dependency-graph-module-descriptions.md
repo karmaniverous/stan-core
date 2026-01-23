@@ -4,13 +4,26 @@ Purpose:
 
 - Dependency graph node descriptions are a critical signal for selecting and traversing modules; they exist to help an assistant decide whether to include a module and whether to traverse its dependencies.
 
-Hard rule (every code module):
+Hard rule (every non-test code module):
 
 - Every code module MUST begin with a TSDoc block using the appropriate tag:
   - Use `@packageDocumentation` for package entrypoints intended as public surfaces.
   - Use `@module` for normal modules.
 - The docblock MUST appear at the head of the module (before imports/exports).
 - The docblock MUST include prose (tag-only blocks are not acceptable).
+
+Test file exemption (baseline rule)
+
+- Module/package docblocks are required in all non-test code modules.
+- Test files are exempt (unit tests, specs, fixtures, and harnesses).
+- Test-like paths are defined by these patterns (across TS/JS-like extensions):
+  - `**/*.test.*`
+  - `**/*.spec.*`
+  - `**/__tests__/**`
+  - `**/test/**`
+  - `**/tests/**`
+- This exemption is intended to reduce noise: module-level descriptions are generally low-signal in tests and can bloat dependency-graph context unnecessarily.
+- If a project explicitly wants module docblocks in tests, it may override its lint config to enforce them.
 
 Truncation-aware authoring (optimize the first 160 chars):
 

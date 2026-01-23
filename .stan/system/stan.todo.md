@@ -7,8 +7,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ## Next up (priority order)
 
 - Docs hygiene (release readiness)
-  - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas
-    are exported in the public surface.
+  - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
   - Re-run `npm run docs` and confirm 0 warnings.
 
 - Dependency graph quality (module descriptions)
@@ -18,8 +17,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Long-file cap compliance (≤ 300 LOC per module)
   - Identify and decompose any TS modules > 300 LOC before further edits.
   - Current known long file:
-    - `src/stan/context/validate.ts` (must be split into smaller modules while
-      keeping the public API stable)
+    - `src/stan/context/validate.ts` (must be split into smaller modules while keeping the public API stable)
 
 - Optional DRY set (later)
   - Hoist additional small shared helpers if duplication appears during future work or CLI alignment.
@@ -165,8 +163,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Release readiness: ran build/docs/knip checks
   - `npm run build` succeeded (Rollup warnings observed; output produced).
-  - `npm run docs` produced warnings to address (TypeDoc “referenced but not
-    included” items).
+  - `npm run docs` produced warnings to address (TypeDoc “referenced but not included” items).
   - `npm run knip` reported only the expected optional peerDependency reference.
 
 - Policy: module docs + TypeDoc/DX guidance
@@ -176,4 +173,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Lint/docs: module docblock formatting rule
   - Documented the required module docblock structure (multi-line JSDoc, tag after prose, wrap code comments at 80) and began applying it to core engine modules without disabling `stan-context/require-module-description`.
 - Docs: clarify module docblock merge behavior (tag last)
-- Lint: silence module-doc warnings for tests; fix runtime modules
+- Lint: silence module-doc warnings for tests; fix runtime modules
+- Policy: module docblocks required except tests
+  - Updated system-prompt baseline: module headers required everywhere except tests (standard test-like patterns are exempt).
+  - Added missing module docblocks in `src/stan/patch/detect.ts` and `src/stan/patch/jsdiff.ts` to clear `stan-context/require-module-description` warnings.

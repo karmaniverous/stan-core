@@ -1,12 +1,8 @@
-// src/stan/patch/jsdiff.ts
-/* src/stan/patch/jsdiff.ts
- * Apply a unified diff with the "diff" library as a fallback engine.
- * - Deterministic path resolution from patch headers (no fuzzy/basename matching).
- * - Whitespace/EOL-tolerant comparison (ignores CR and trailing whitespace).
- * - Preserves original EOL flavor (CRLF vs LF) per file.
- * - When check=true, writes patched content to a sandbox under <stanPath>/patch/.sandbox/ without touching repo files.
- * - When writing to the repo (check=false), ensure parent directories exist for new or nested paths.
- * - Refuses to apply patches that target <stanPath>/imports/** (protected staged context) when stanPath is provided.
+/**
+ * Applies unified diffs via jsdiff ("diff" library) fallback; reads/writes
+ * files; preserves EOL; supports sandbox check-mode; refuses writes under
+ * <stanPath>/imports/**.
+ * @module
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
