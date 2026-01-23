@@ -205,3 +205,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Interop: request stan-context confirm `metadata.size` semantics
   - Posted an interop request to stan-context clarifying that `dependency.meta.json` node `metadata.size` must be bytes (used as a proxy for characters for deterministic budgeting via `bytes/4`).
   - This supports `--context` allowlist-only archiving and budget-driven selection without reading all file bodies.
+- Interop: request selection summary helper in stan-context
+  - Posted a follow-up interop request proposing an exported helper to compute dependency state closure membership and aggregate byte sizing from the existing graph.
+  - This avoids bloating `dependency.meta.json` with per-node transitive summaries while enabling deterministic selection reports downstream.
