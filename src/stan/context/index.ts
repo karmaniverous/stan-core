@@ -21,6 +21,12 @@ export {
   stagePreparedDependencyContext,
 } from './archive-flow';
 export type {
+  BudgetEntry,
+  BudgetSource,
+  ContextAllowlistBudget,
+} from './budget';
+export { summarizeContextAllowlistBudget } from './budget';
+export type {
   BuildDependencyMetaArgs,
   BuildDependencyMetaResult,
 } from './build';

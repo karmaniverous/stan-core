@@ -218,4 +218,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added dependency-mode option to the response validator to require either a `dependency.state.json` patch or the exact “dependency.state.json: no change” signal and to reject no-op state patches.
 - Fix: context allowlist lint hygiene
   - Removed redundant `unknown | null` unions that tripped `@typescript-eslint/no-redundant-type-constituents`.
-  - Adjusted TSDoc text to avoid unescaped `{}` braces so `tsdoc/syntax` does not warn.
+  - Adjusted TSDoc text to avoid unescaped `{}` braces so `tsdoc/syntax` does not warn.
+- Context mode: add deterministic sizing helper
+  - Added `summarizeContextAllowlistBudget(...)` to compute total bytes and a `bytes/4` estimate for a computed allowlist plan.
+  - Report includes base/closure breakdown and largest entries, using meta sizes when available and falling back to stat for repo files.

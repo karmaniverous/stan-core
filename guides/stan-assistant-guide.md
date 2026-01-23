@@ -208,7 +208,7 @@ await writeDependencyMetaFile({ cwd, stanPath, meta: built.meta });
 
 ### Staging external dependency bytes (engine API)
 
-The dependency graph contains external nodes (npm + abs/outside-root). To make those files available to the assistant _inside archives_, they must be copied (“staged”) into the repo under `<stanPath>/context/**` prior to archiving.
+The dependency graph contains external nodes (npm + abs/outside-root). To make those files available to the assistant inside archives, they must be copied (“staged”) into the repo under `<stanPath>/context/**` prior to archiving.
 
 The engine provides:
 
@@ -235,6 +235,38 @@ Important:
 
 - `<stanPath>/context/**` is typically gitignored, so callers must ensure it is selected for archiving. The engine’s selection model supports this via `includes` because includes override `.gitignore`:
   - `includes: ['<stanPath>/context/**']` (use the concrete `stanPath`, e.g. `.stan/context/**`)
+
+### Deterministic sizing report for context mode (budgeting support)
+
+Context mode needs deterministic “what did we select and how big is it?” reporting so assistants can follow the `bytes/4` heuristic without reading file bodies.
+
+The engine exports a helper that computes a size report for a computed allowlist plan:
+
+```ts
+import {
+  computeContextAllowlistPlan,
+  summarizeContextAllowlistBudget,
+} from '@karmaniverous/stan-core';
+
+const plan = await computeContextAllowlistPlan({
+  cwd: process.cwd(),
+  stanPath: '.stan',
+  meta, // dependency.meta.json contents
+  // state is optional; if omitted and dependency.state.json exists, it is loaded
+});
+
+const budget = await summarizeContextAllowlistBudget({
+  cwd: process.cwd(),
+  plan,
+  meta,
+});
+```
+
+Contract:
+
+- Uses `meta.nodes[path].metadata.size` (bytes) when present.
+- Falls back to `stat()` for repo files that are not in meta.
+- Returns `totalBytes`, `estimatedTokens = totalBytes / 4`, a breakdown (base-only / closure-only / overlap), and the largest entries.
 
 ### Archive-flow helpers (stage + include + archive)
 
@@ -277,7 +309,7 @@ const diff = await createArchiveDiffWithDependencyContext({
 
 ### Strict undo/redo validation seam (engine API)
 
-Undo/redo must fail fast if the restored dependency selection cannot be satisfied by the _current environment_.
+Undo/redo must fail fast if the restored dependency selection cannot be satisfied by the current environment.
 
 The engine provides:
 
