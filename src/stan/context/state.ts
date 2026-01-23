@@ -7,7 +7,7 @@
  * - dependency.state.json include/exclude entries
  *
  * Requirements:
- * - Depth semantics: 0 => node only (no traversal).
+ * - Depth semantics: 0 =\> node only (no traversal).
  * - Traverse outgoing edges only, restricted by edgeKinds.
  * - Deterministic selection: stable ordering across runs for identical inputs.
  * - Excludes win: subtract after includes using same traversal semantics.

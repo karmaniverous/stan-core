@@ -5,7 +5,7 @@
  * Context-mode dependency loaders (dynamic import; SSR-friendly).
  *
  * Requirements:
- * - Only load TypeScript and @karmaniverous/stan-context when context mode is invoked.
+ * - Only load TypeScript and \@karmaniverous/stan-context when context mode is invoked.
  * - Keep engine presentation-free; throw with clear errors and let callers surface them.
  * @module
  */

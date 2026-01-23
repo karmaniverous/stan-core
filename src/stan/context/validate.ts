@@ -1,5 +1,5 @@
 /**
- * Validates selected dependency nodes for undo/redo (npm pkg@version + abs
+ * Validates selected dependency nodes for undo/redo (npm pkg\@version + abs
  * locator hash/size checks); filesystem IO only; no console output.
  *
  * Strict dependency selection validation for undo/redo.
@@ -8,7 +8,7 @@
  * - Validate that the selected dependency set (from meta+state closure) can be
  *   satisfied by the current environment.
  * - npm nodes:
- *   - locate <pkgName>@<pkgVersion> in current install
+ *   - locate <pkgName>\@<pkgVersion> in current install
  *   - hash-check <pathInPackage> against meta.nodes[nodeId].metadata.hash
  * - abs nodes:
  *   - hash-check locatorAbs against meta.nodes[nodeId].metadata.hash

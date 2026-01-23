@@ -6,7 +6,7 @@
  *
  * Requirements:
  * - Deterministic normalization (POSIX paths, traversal guards).
- * - Keep modules small (<300 LOC); used by build/stage/validate.
+ * - Keep modules small (\<300 LOC); used by build/stage/validate.
  * @module
  */
 import { createHash } from 'node:crypto';

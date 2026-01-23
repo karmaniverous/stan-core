@@ -1,5 +1,5 @@
 /**
- * Stages external dependency bytes into <stanPath>/context/{npm,abs}/** and
+ * Stages external dependency bytes into <stanPath>/context/\{npm,abs\}/** and
  * verifies sha256/size; filesystem IO only; no console output.
  *
  * Stage external dependency bytes under <stanPath>/context/** prior to archiving.

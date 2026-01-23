@@ -7,10 +7,10 @@
  * Requirements:
  * - Invoked only when context mode is enabled by the caller (CLI).
  * - Must throw if TypeScript cannot be imported (context mode requires TS).
- * - Must dynamically import @karmaniverous/stan-context only when invoked.
+ * - Must dynamically import \@karmaniverous/stan-context only when invoked.
  * - Must normalize external node IDs to staged paths under <stanPath>/context:
  *   - npm: <stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>
- *   - abs/outside-root: <stanPath>/context/abs/<sha256(sourceAbs)>/<basename>
+ *   - abs/outside-root: <stanPath>/context/abs/\<sha256(sourceAbs)\>/<basename>
  * - Must omit builtins and missing nodes from persisted meta (surface as warnings).
  * - Must produce deterministic JSON-serializable nodes/edges and validate with dependencyMetaFileSchema.
  * @module
