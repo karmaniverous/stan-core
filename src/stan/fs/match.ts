@@ -37,7 +37,7 @@ export const makeGlobMatcher = (
   const mats = patterns.map(toMatcher);
   if (mats.length === 0) return () => false;
   return (rel: string) => {
-    const file = normalize(rel);
+    const file = normalizePrefix(rel);
     for (const m of mats) if (m(file)) return true;
     return false;
   };
