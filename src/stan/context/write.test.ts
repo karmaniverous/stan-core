@@ -1,14 +1,14 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { writeDependencyMetaFile } from './write';
 
 describe('writeDependencyMetaFile', () => {
   it('writes <stanPath>/context/dependency.meta.json with trailing newline', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-meta-write-'));
+    const cwd = await makeTempDir('stan-meta-write-');
     try {
       const abs = await writeDependencyMetaFile({
         cwd,
@@ -22,7 +22,7 @@ describe('writeDependencyMetaFile', () => {
         JSON.parse(body);
       }).not.toThrow();
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 });

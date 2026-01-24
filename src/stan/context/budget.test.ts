@@ -1,15 +1,15 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { summarizeContextAllowlistBudget } from './budget';
 import type { DependencyMetaFile } from './schema';
 
 describe('summarizeContextAllowlistBudget', () => {
   it('uses meta.metadata.size when present and stats repo files otherwise', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-budget-'));
+    const cwd = await makeTempDir('stan-budget-');
     try {
       // Base repo file (stat fallback)
       const readmeRel = 'README.md';
@@ -69,12 +69,12 @@ describe('summarizeContextAllowlistBudget', () => {
       // No warnings expected in this scenario
       expect(out.warnings).toEqual([]);
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 
   it('emits warnings when neither meta size nor stat is available', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-budget-missing-'));
+    const cwd = await makeTempDir('stan-budget-missing-');
     try {
       const missing = 'nope.txt';
       const out = await summarizeContextAllowlistBudget({
@@ -90,7 +90,7 @@ describe('summarizeContextAllowlistBudget', () => {
       expect(out.warnings.some((w) => w.includes(missing))).toBe(true);
       expect(out.largest[0]?.source).toBe('missing');
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 });

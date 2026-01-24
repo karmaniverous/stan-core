@@ -1,18 +1,16 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 import { filterFiles, listFiles } from './fs';
 
 describe('default sub‑package exclusion and re‑include via includes', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await (
-      await import('node:fs/promises')
-    ).mkdtemp(path.join(os.tmpdir(), 'stan-fs-subpkg-'));
+    dir = await makeTempDir('stan-fs-subpkg-');
 
     // Nested sub‑package: packages/app1 with its own package.json
     await mkdir(path.join(dir, 'packages', 'app1', 'src'), { recursive: true });
@@ -31,7 +29,7 @@ describe('default sub‑package exclusion and re‑include via includes', () => 
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('excludes nested sub‑package by default', async () => {

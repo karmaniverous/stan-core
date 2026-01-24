@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleSystemPrompt } from '../../tools/gen-system';
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 
 const read = (p: string) => readFile(p, 'utf8');
 
@@ -12,17 +12,11 @@ describe('gen-system (assemble parts into stan.system.md)', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-gen-system-'));
+    dir = await makeTempDir('stan-gen-system-');
   });
 
   afterEach(async () => {
-    // leave temp dir before removal (Windows safety)
-    try {
-      process.chdir(os.tmpdir());
-    } catch {
-      // ignore
-    }
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('no parts -> no changes (leave target as-is if present)', async () => {

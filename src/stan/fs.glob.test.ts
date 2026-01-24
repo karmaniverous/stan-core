@@ -1,17 +1,15 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 import { filterFiles, listFiles } from './fs';
 describe('filterFiles with glob patterns', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await (
-      await import('node:fs/promises')
-    ).mkdtemp(path.join(os.tmpdir(), 'stan-fs-glob-'));
+    dir = await makeTempDir('stan-fs-glob-');
     // Make a small tree
     await mkdir(path.join(dir, 'packages', 'app1', '.tsbuild'), {
       recursive: true,
@@ -39,7 +37,7 @@ describe('filterFiles with glob patterns', () => {
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('excludes **/.tsbuild/** and **/generated/** via excludes globs', async () => {

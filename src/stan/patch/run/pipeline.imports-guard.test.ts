@@ -1,9 +1,9 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import {} from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../../test/tmp';
 vi.mock('../apply', () => ({
   __esModule: true,
   buildApplyAttempts: () => [],
@@ -21,7 +21,7 @@ vi.mock('../jsdiff', () => ({
 
 describe('applyPatchPipeline imports guard', () => {
   it('refuses to apply patch that targets <stanPath>/imports/** when stanPath is provided', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-pipeline-guard-'));
+    const cwd = await makeTempDir('stan-pipeline-guard-');
     try {
       const rel = '.stan/imports/x/readme.md';
       const cleaned = [
@@ -48,7 +48,7 @@ describe('applyPatchPipeline imports guard', () => {
       expect(out.js?.failed.some((f) => f.path === rel)).toBe(true);
       expect(out.js?.failed[0]?.reason ?? '').toMatch(/protected imports/i);
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 });

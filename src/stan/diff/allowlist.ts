@@ -5,7 +5,6 @@
  * @module
  */
 
-import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -18,7 +17,13 @@ import {
   surfaceArchiveWarnings,
 } from '@/stan/archive/util';
 import type { SnapshotUpdateMode } from '@/stan/diff';
+import {
+  ARCHIVE_SNAPSHOT_FILE,
+  NO_CHANGES_SENTINEL_FILE,
+} from '@/stan/diff/constants';
+import { computeFileHashes } from '@/stan/diff/hash';
 import { ensureOutAndDiff } from '@/stan/fs';
+import { functionGuard, resolveExport } from '@/stan/util/ssr/resolve-export';
 
 export type { SnapshotUpdateMode };
 
@@ -41,25 +46,11 @@ const uniqSorted = (xs: string[]): string[] =>
     (a, b) => a.localeCompare(b),
   );
 
-const computeCurrentHashes = async (
-  cwd: string,
-  relFiles: string[],
-): Promise<Record<string, string>> => {
-  const current: Record<string, string> = {};
-  for (const rel of relFiles) {
-    const abs = resolve(cwd, rel);
-    const buf = await readFile(abs);
-    const h = createHash('sha256').update(buf).digest('hex');
-    current[rel] = h;
-  }
-  return current;
-};
-
 const snapshotPathFor = (diffDir: string): string =>
-  join(diffDir, '.archive.snapshot.json');
+  join(diffDir, ARCHIVE_SNAPSHOT_FILE);
 
 const sentinelPathFor = (diffDir: string): string =>
-  join(diffDir, '.stan_no_changes');
+  join(diffDir, NO_CHANGES_SENTINEL_FILE);
 
 /**
  * SSR-safe resolver for `classifyForArchive` (named-or-default).
@@ -68,19 +59,12 @@ const sentinelPathFor = (diffDir: string): string =>
 const getClassifyForArchive = async (): Promise<
   (typeof import('@/stan/classifier'))['classifyForArchive']
 > => {
-  try {
-    const mod = await import('@/stan/classifier');
-    const named = (mod as { classifyForArchive?: unknown }).classifyForArchive;
-    const viaDefault = (mod as { default?: { classifyForArchive?: unknown } })
-      .default?.classifyForArchive;
-    const fn = (typeof named === 'function' ? named : viaDefault) as
-      | (typeof import('@/stan/classifier'))['classifyForArchive']
-      | undefined;
-    if (typeof fn === 'function') return fn;
-  } catch {
-    /* ignore */
-  }
-  throw new Error('classifyForArchive export not found in @/stan/classifier');
+  return resolveExport(
+    () => import('@/stan/classifier'),
+    'classifyForArchive',
+    functionGuard<(typeof import('@/stan/classifier'))['classifyForArchive']>(),
+    { moduleLabel: '@/stan/classifier', acceptCallableDefault: true },
+  );
 };
 
 /**
@@ -118,7 +102,7 @@ export async function createArchiveDiffFromFiles(args: {
 
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
-  const current = await computeCurrentHashes(cwd, files);
+  const current = await computeFileHashes(cwd, files);
 
   const snapPath = snapshotPathFor(diffDir);
   const hasPrev = existsSync(snapPath);
@@ -179,7 +163,7 @@ export async function createArchiveDiffFromFiles(args: {
   } else if (changed.length === 0) {
     const sentinel = sentinelPathFor(diffDir);
     await writeFile(sentinel, 'no changes', 'utf8');
-    const only = `${toPosix(stanPath)}/diff/.stan_no_changes`;
+    const only = `${toPosix(stanPath)}/diff/${NO_CHANGES_SENTINEL_FILE}`;
     await tar.create({ file: diffPath, cwd }, [only]);
   } else {
     await tar.create({ file: diffPath, cwd }, changed);

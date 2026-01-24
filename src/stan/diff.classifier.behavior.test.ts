@@ -1,10 +1,10 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { withMockTarCapture } from '../test/helpers';
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 import type { SelectionReport } from './archive/report';
 import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
@@ -13,12 +13,12 @@ describe('createArchiveDiff integrates classifier (excludes binaries, surfaces w
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-diff-class-'));
+    dir = await makeTempDir('stan-diff-class-');
     calls.length = 0;
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

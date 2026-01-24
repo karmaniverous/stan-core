@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { withMockTarCapture } from '../../test/helpers';
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 const { calls } = withMockTarCapture('TAR');
 
 import { createMetaArchive } from './meta';
@@ -14,12 +14,12 @@ describe('createMetaArchive', () => {
   const stan = '.stan';
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-meta-'));
+    dir = await makeTempDir('stan-meta-');
     calls.length = 0;
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

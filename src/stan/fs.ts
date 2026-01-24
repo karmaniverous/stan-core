@@ -15,6 +15,7 @@ import picomatch from 'picomatch';
 
 import { isReservedWorkspacePath, isUnder } from './fs/reserved';
 import type { StanDirs } from './paths';
+import { functionGuard, resolveExport } from './util/ssr/resolve-export';
 
 /**
  * Recursively enumerate files under `root`, returning POSIX-style
@@ -187,29 +188,6 @@ export async function filterFiles(
   return base;
 }
 /**
- * Resolve makeStanDirs from ./paths using a dynamic import.
- * Vitest SSR can occasionally surface a transient undefined named export;
- * prefer the named export, falling back to default.makeStanDirs when present.
- */
-const getMakeStanDirs = async (): Promise<
-  (cwd: string, stanPath: string) => StanDirs
-> => {
-  try {
-    const mod = await import('./paths');
-    const named = (mod as unknown as { makeStanDirs?: unknown }).makeStanDirs;
-    const viaDefault = (
-      mod as unknown as { default?: { makeStanDirs?: unknown } }
-    ).default?.makeStanDirs;
-    const fn = (typeof named === 'function' ? named : viaDefault) as
-      | ((cwd: string, stanPath: string) => StanDirs)
-      | undefined;
-    if (typeof fn === 'function') return fn;
-  } catch {
-    /* ignore */
-  }
-  throw new Error('makeStanDirs export not found in ./paths');
-};
-/**
  * Ensure `<stanPath>` workspace exists (root/output/diff/patch).
  * Returns the resolved directory set.
  */
@@ -222,7 +200,13 @@ export async function ensureStanWorkspace(
   diffAbs: string;
   patchAbs: string;
 }> {
-  const mk = await getMakeStanDirs();
+  type MakeStanDirs = (cwd: string, stanPath: string) => StanDirs;
+  const mk = await resolveExport(
+    () => import('./paths'),
+    'makeStanDirs',
+    functionGuard<MakeStanDirs>(),
+    { moduleLabel: './paths', acceptCallableDefault: true },
+  );
   const dirs = mk(cwd, stanPath);
   await ensureDir(dirs.rootAbs);
   await ensureDir(dirs.outputAbs);

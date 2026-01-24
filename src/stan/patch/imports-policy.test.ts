@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { parseFileOpsBlock } from './file-ops';
 import { applyWithJsDiff } from './jsdiff';
 
@@ -18,7 +18,7 @@ describe('imports read-only policy (engine safety net)', () => {
   });
 
   it('jsdiff refuses to modify files under <stanPath>/imports when stanPath is provided', async () => {
-    const dir = await mkdtemp(path.join(tmpdir(), 'stan-imports-guard-'));
+    const dir = await makeTempDir('stan-imports-guard-');
     try {
       const rel = '.stan/imports/pkg/readme.md';
       const abs = path.join(dir, ...rel.split('/'));
@@ -50,7 +50,7 @@ describe('imports read-only policy (engine safety net)', () => {
       const body = await readFile(abs, 'utf8');
       expect(body).toBe('old\n');
     } finally {
-      await rm(dir, { recursive: true, force: true });
+      await cleanupTempDir(dir);
     }
   });
 });

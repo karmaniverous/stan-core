@@ -1,26 +1,21 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleSystemMonolith } from '@/stan/system/assemble';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
+
 describe('assembleSystemMonolith skips when parts contains no .md files', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-assemble-'));
+    dir = await makeTempDir('stan-assemble-');
   });
 
   afterEach(async () => {
-    // leave temp dir before removal (Windows safety)
-    try {
-      process.chdir(os.tmpdir());
-    } catch {
-      // ignore
-    }
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('action is "skipped-no-md" and target path is stable', async () => {

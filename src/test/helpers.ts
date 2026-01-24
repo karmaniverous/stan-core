@@ -1,38 +1,16 @@
 /* src/test/helpers.ts */
-import { rm, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { vi } from 'vitest';
 import YAML from 'yaml';
 
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export { rmDirWithRetries } from './fs';
 
 /**
- * Remove a directory with a short series of retries to mitigate transient
- * EBUSY/ENOTEMPTY on Windows test runners.
- *
- * @param dir - Absolute path to remove.
- * @param backoffMs - Backoff series in milliseconds (tunable).
+ * NOTE: `rmDirWithRetries` has moved to `src/test/fs.ts` (vitest-free) and is
+ * re-exported here for back-compat with existing imports.
  */
-export const rmDirWithRetries = async (
-  dir: string,
-  // Extended default backoff to further absorb intermittent rmdir EBUSY on CI/Windows.
-  // Total wait ~6.4s; callers can pass a shorter series when appropriate.
-  backoffMs: number[] = [50, 100, 200, 400, 800, 1600, 3200],
-): Promise<void> => {
-  let lastErr: unknown;
-  for (let i = 0; i <= backoffMs.length; i += 1) {
-    try {
-      await rm(dir, { recursive: true, force: true });
-      return;
-    } catch (e) {
-      lastErr = e;
-      if (i === backoffMs.length) break;
-      await delay(backoffMs[i]);
-    }
-  }
-  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
-};
 
 /**
  * Write a namespaced YAML config with a stan-core block.

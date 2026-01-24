@@ -6,6 +6,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- DRY follow-through: finish the test sweep + remaining duplicated helpers
+  - Convert remaining `mkdtemp/rm` test patterns to `src/test/tmp.ts` (`makeTempDir`/`cleanupTempDir`) for consistency and Windows stability.
+  - Continue consolidating identical `toPosix/normalizePrefix/isUnder/uniqSorted` variants where semantics truly match (avoid behavior drift).
+
 - Context mode (`--context`) follow-through: stan-cli wiring
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
@@ -206,4 +210,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Escaped `@` in TSDoc prose (`pkg\@version`, `package\@version`) to satisfy `eslint-plugin-tsdoc` and keep lint clean.
 - Docs: retire “swappable core” concept
   - Removed the swappable-core requirement section and dropped `--core` references from project-level prompt guidance.
-  - Keep stan-core framed as a presentation-free engine/library without “swappable core” positioning.
+  - Keep stan-core framed as a presentation-free engine/library without “swappable core” positioning.
+- Refactor: DRY SSR resolver + diff constants + test tmp helpers
+  - Added a shared SSR-safe export resolver (`src/stan/util/ssr/resolve-export.ts`) and migrated archive/diff/fs call sites to use it.
+  - Hoisted diff snapshot/sentinel filenames into `src/stan/diff/constants.ts` and deduplicated sha256 hashing via `src/stan/diff/hash.ts`.
+  - Split vitest-free filesystem cleanup into `src/test/fs.ts`, added `src/test/tmp.ts`, and began a broad test sweep to standardize temp dir usage.

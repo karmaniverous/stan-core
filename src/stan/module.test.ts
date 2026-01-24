@@ -1,10 +1,11 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { getModuleRoot, getPackagedSystemPromptPath } from '@/stan/module';
+
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 
 describe('module root and packaged prompt resolution', () => {
   it('getPackagedSystemPromptPath returns null when missing and resolves when present', async () => {
@@ -52,7 +53,7 @@ describe('module root and packaged prompt resolution', () => {
     await writeFile(promptPath, '# prompt\n', 'utf8');
 
     const prevCwd = process.cwd();
-    const temp = await mkdtemp(path.join(os.tmpdir(), 'stan-cwd-'));
+    const temp = await makeTempDir('stan-cwd-');
     try {
       // Change to a temp directory unrelated to the module root
       process.chdir(temp);
@@ -70,7 +71,7 @@ describe('module root and packaged prompt resolution', () => {
       } catch {
         // ignore
       }
-      await rm(temp, { recursive: true, force: true }).catch(() => {});
+      await cleanupTempDir(temp).catch(() => {});
       await rm(promptPath, { force: true }).catch(() => {});
     }
   });

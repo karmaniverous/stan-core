@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { validateDependencySelection } from './validate';
 
 const sha256 = (s: string): string =>
@@ -12,7 +12,7 @@ const sha256 = (s: string): string =>
 
 describe('validateDependencySelection (strict undo/redo seam)', () => {
   it('npm: ok when package@version exists and file hash matches', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-val-npm-ok-'));
+    const cwd = await makeTempDir('stan-val-npm-ok-');
     const stanPath = '.stan';
     try {
       const pkgName = 'pkg';
@@ -53,12 +53,12 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       expect(out.mismatches).toEqual([]);
       expect(out.checkedNodeIds).toEqual([nodeId]);
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 
   it('npm: reports version mismatch when name exists but version differs', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-val-npm-ver-'));
+    const cwd = await makeTempDir('stan-val-npm-ver-');
     const stanPath = '.stan';
     try {
       const pkgName = 'pkg';
@@ -94,13 +94,13 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       expect(out.mismatches[0]?.kind).toBe('npm');
       expect(out.mismatches[0]?.reason).toBe('package-version-mismatch');
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 
   it('abs: ok when locatorAbs file hash matches', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-val-abs-ok-'));
-    const outside = await mkdtemp(path.join(tmpdir(), 'stan-val-abs-out-'));
+    const cwd = await makeTempDir('stan-val-abs-ok-');
+    const outside = await makeTempDir('stan-val-abs-out-');
     const stanPath = '.stan';
     try {
       const body = 'export type A = 1;\n';
@@ -131,14 +131,14 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       expect(out.ok).toBe(true);
       expect(out.mismatches).toEqual([]);
     } finally {
-      await rm(cwd, { recursive: true, force: true });
-      await rm(outside, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
+      await cleanupTempDir(outside);
     }
   });
 
   it('abs: reports hash mismatch when locatorAbs differs', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-val-abs-bad-'));
-    const outside = await mkdtemp(path.join(tmpdir(), 'stan-val-abs-bad-out-'));
+    const cwd = await makeTempDir('stan-val-abs-bad-');
+    const outside = await makeTempDir('stan-val-abs-bad-out-');
     const stanPath = '.stan';
     try {
       const absFile = path.join(outside, 'a.d.ts');
@@ -172,8 +172,8 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       expect(out.mismatches[0]?.kind).toBe('abs');
       expect(out.mismatches[0]?.reason).toBe('hash-mismatch');
     } finally {
-      await rm(cwd, { recursive: true, force: true });
-      await rm(outside, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
+      await cleanupTempDir(outside);
     }
   });
 });

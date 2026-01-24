@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 // Stub dynamic deps module so we can simulate missing deps deterministically.
 let typeScriptOk = true;
 let graphFactory: (() => unknown) | null = null;
@@ -36,7 +36,7 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
   });
 
   it('omits builtin/missing nodes and normalizes npm + abs externals', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-meta-build-'));
+    const cwd = await makeTempDir('stan-meta-build-');
     const stanPath = '.stan';
 
     // Create a fake package under node_modules/pkg
@@ -51,7 +51,7 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     await writeFile(pkgFileAbs, 'export {};\n', 'utf8');
 
     // Create an abs file outside repo root
-    const outside = await mkdtemp(path.join(tmpdir(), 'stan-abs-'));
+    const outside = await makeTempDir('stan-abs-');
     const absFileAbs = path.join(outside, 'x.d.ts');
     await writeFile(absFileAbs, 'export type X = 1;\n', 'utf8');
 
@@ -120,7 +120,7 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     );
 
     // Cleanup
-    await rm(cwd, { recursive: true, force: true });
-    await rm(outside, { recursive: true, force: true });
+    await cleanupTempDir(cwd);
+    await cleanupTempDir(outside);
   });
 });

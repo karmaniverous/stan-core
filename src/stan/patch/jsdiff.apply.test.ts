@@ -1,9 +1,9 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { applyWithJsDiff } from './jsdiff';
 
 describe('applyWithJsDiff — coverage for success, sandbox/check, and failures', () => {
@@ -12,11 +12,11 @@ describe('applyWithJsDiff — coverage for success, sandbox/check, and failures'
   const readUtf8 = (p: string) => readFile(p, 'utf8');
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(tmpdir(), 'stan-jsdiff-apply-'));
+    dir = await makeTempDir('stan-jsdiff-apply-');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('applies patch to existing LF file and preserves LF endings', async () => {

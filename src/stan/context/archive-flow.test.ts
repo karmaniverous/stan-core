@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { createArchiveWithDependencyContext } from './archive-flow';
 import type { NodeSource } from './build';
 
@@ -17,7 +17,7 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
   }>;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-ctx-arch-'));
+    dir = await makeTempDir('stan-ctx-arch-');
     // Capture tar calls; dynamic import to avoid SSR/mock ordering issues.
     const helpers = await import('../../test/helpers');
     const state = helpers.withMockTarCapture('TAR');
@@ -26,7 +26,7 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

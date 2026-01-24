@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import type { NodeSource } from './build';
 import { stageDependencyContext } from './stage';
 
@@ -13,7 +13,7 @@ const sha256 = (buf: Buffer): string =>
 
 describe('stageDependencyContext', () => {
   it('stages npm + abs node bytes and verifies hash/size', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-stage-'));
+    const cwd = await makeTempDir('stan-stage-');
     const stanPath = '.stan';
     try {
       const npmNodeId = '.stan/context/npm/pkg/1.0.0/index.d.ts';
@@ -77,12 +77,12 @@ describe('stageDependencyContext', () => {
       expect(npmStaged.toString('utf8')).toBe('export type N = 1;\n');
       expect(absStaged.toString('utf8')).toBe('export type A = 2;\n');
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 
   it('fails fast on hash mismatch', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-stage-mismatch-'));
+    const cwd = await makeTempDir('stan-stage-mismatch-');
     const stanPath = '.stan';
     try {
       const nodeId = '.stan/context/npm/pkg/1.0.0/index.d.ts';
@@ -112,12 +112,12 @@ describe('stageDependencyContext', () => {
         stageDependencyContext({ cwd, stanPath, meta, sources }),
       ).rejects.toThrow(/hash mismatch/i);
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 
   it('clean=true removes stale staged npm/abs dirs', async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), 'stan-stage-clean-'));
+    const cwd = await makeTempDir('stan-stage-clean-');
     const stanPath = '.stan';
     try {
       await mkdir(path.join(cwd, '.stan', 'context', 'npm', 'stale'), {
@@ -165,7 +165,7 @@ describe('stageDependencyContext', () => {
         readFile(path.join(cwd, '.stan', 'context', 'npm', 'stale', 'x.txt')),
       ).rejects.toBeTruthy();
     } finally {
-      await rm(cwd, { recursive: true, force: true });
+      await cleanupTempDir(cwd);
     }
   });
 });

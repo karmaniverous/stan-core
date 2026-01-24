@@ -1,8 +1,9 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import type { FileOp } from './file-ops';
 import { executeFileOps, parseFileOpsBlock } from './file-ops';
 
@@ -54,9 +55,7 @@ describe('file-ops parser', () => {
 
 describe('file-ops execution (recursive mv/rm)', () => {
   it('mv moves a directory tree; rm removes a non-empty directory', async () => {
-    const root = await mkdtemp(
-      path.join(process.env.TMPDIR ?? process.cwd(), 'stan-fops-'),
-    );
+    const root = await makeTempDir('stan-fops-');
     // Create a small tree: a/dir/file.txt
     const aDir = path.join(root, 'a', 'dir');
     await mkdir(aDir, { recursive: true });
@@ -84,13 +83,11 @@ describe('file-ops execution (recursive mv/rm)', () => {
     };
     expect(await s('a/dir/file.txt')).toBe(false);
     expect(await s('b/a/dir/file.txt')).toBe(false);
-    await rm(root, { recursive: true, force: true });
+    await cleanupTempDir(root);
   });
 
   it('cp copies a file and creates parent directories (no overwrite)', async () => {
-    const root = await mkdtemp(
-      path.join(process.env.TMPDIR ?? process.cwd(), 'stan-fops-cp-'),
-    );
+    const root = await makeTempDir('stan-fops-cp-');
     await mkdir(path.join(root, 'src'), { recursive: true });
     await writeFile(path.join(root, 'src', 'a.txt'), 'hello\n', 'utf8');
 
@@ -115,6 +112,6 @@ describe('file-ops execution (recursive mv/rm)', () => {
     expect(out2.results[0]?.status).toBe('failed');
     expect(out2.results[0]?.message ?? '').toMatch(/destination exists/i);
 
-    await rm(root, { recursive: true, force: true });
+    await cleanupTempDir(root);
   });
 });

@@ -3,6 +3,8 @@
  * locator hash/size checks); filesystem IO only; no console output.
  * @module
  */
+import { isUnder, normalizePrefix } from '@/stan/path/prefix';
+
 import type { DependencyMetaFile, DependencyMetaNode } from './schema';
 import { parseDependencyStateFile } from './schema';
 import { computeSelectedNodeIds } from './state';
@@ -12,7 +14,6 @@ import type {
   DependencyValidationMismatch,
   ValidateDependencySelectionResult,
 } from './validate/types';
-import { isUnder, normalize } from './validate/util/path';
 
 export type { DependencyValidationMismatch, ValidateDependencySelectionResult };
 
@@ -22,7 +23,7 @@ export type { DependencyValidationMismatch, ValidateDependencySelectionResult };
  *
  * - Computes selected node IDs from meta+state closure (excludes win).
  * - Validates external nodes only:
- *   - npm nodes under `<stanPath>/context/npm/**` by locating `<pkgName>@<pkgVersion>`
+ *   - npm nodes under `<stanPath>/context/npm/**` by locating `<pkgName>\@<pkgVersion>`
  *     in the current install and hashing `<pathInPackage>`.
  *   - abs nodes under `<stanPath>/context/abs/**` by hashing `locatorAbs`.
  *
@@ -47,7 +48,7 @@ export const validateDependencySelection = async (args: {
   const checkedNodeIds: string[] = [];
   const mismatches: DependencyValidationMismatch[] = [];
 
-  const base = normalize(stanPath);
+  const base = normalizePrefix(stanPath);
 
   const getNode = (nodeId: string): DependencyMetaNode | undefined =>
     meta.nodes[nodeId];

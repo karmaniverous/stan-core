@@ -1,11 +1,11 @@
 import { existsSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { withMockTarCapture } from '../test/helpers';
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 void withMockTarCapture('TAR');
 
 import { createArchive } from './archive';
@@ -15,12 +15,12 @@ describe('createArchive', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-arch-'));
+    dir = await makeTempDir('stan-arch-');
     await writeFile(path.join(dir, 'a.txt'), 'A', 'utf8');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

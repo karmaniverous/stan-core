@@ -4,15 +4,16 @@ Last updated: 2026-01-24Z
 
 ## Current focus
 
-- stan-cli wiring: consume and present `onSelectionReport` (presentation-only; engine remains silent). See `.stan/interop/stan-cli/20260123-233830Z-selection-report-wiring.md`.
-- Repo policy update: “swappable core” is no longer a concept; do not reference it in stan-core docs or prompts.
+- DRY pass across stan-core runtime + tests.
+- Centralize SSR-safe dynamic export resolution used by archive/diff/fs paths.
+- Reduce test flake and repetition by standardizing temp-dir creation/cleanup.
 
 ## Working model (high signal)
 
-- User-facing docs (README and `guides/stan-assistant-guide.md`) should match implemented behavior (selection precedence, archive/diff/snapshot semantics, context mode, patch pipeline, File Ops, validator switches).
-- Internal docs (system prompt parts + TSDoc) should also match implementation to avoid governance drift.
-- Meta archive behavior: includes system docs + dependency meta; includes `.stan/context/dependency.state.json` when present; excludes staged payloads under `.stan/context/{npm,abs}/**` by omission and excludes `.stan/system/.docs.meta.json`.
+- Prefer small, feature-scoped helpers over “god utils” (especially for path normalization where semantics differ).
+- For SSR robustness, use a shared resolver that prefers named exports and falls back to default properties (and optionally callable default export) with clear error messages.
+- For tests, use a common mkdtemp/cleanup helper to avoid Windows EBUSY/ENOTEMPTY flake.
 
 ## Open questions
 
-- None in stan-core right now; waiting on stan-cli presentation wiring for selection report summaries (engine stays presentation-free).
+- None; continue sweeping remaining tests/modules for duplicated `toPosix/normalizePrefix/isUnder/uniqSorted` patterns where semantics match.

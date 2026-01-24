@@ -1,9 +1,9 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 import { createArchive } from './archive';
 let calls: Array<{
   file: string;
@@ -16,7 +16,7 @@ describe('createArchive integrates classifier (excludes binaries, surfaces warni
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-arch-class-'));
+    dir = await makeTempDir('stan-arch-class-');
     // Initialize tar mock capture for this suite; reset calls each run.
     const { withMockTarCapture } = await import('../test/helpers');
     const state = withMockTarCapture('TAR');
@@ -25,7 +25,7 @@ describe('createArchive integrates classifier (excludes binaries, surfaces warni
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

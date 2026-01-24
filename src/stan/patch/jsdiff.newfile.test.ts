@@ -1,9 +1,9 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { applyWithJsDiff } from './jsdiff';
 
 describe('applyWithJsDiff — creates new files when old side is /dev/null', () => {
@@ -12,11 +12,11 @@ describe('applyWithJsDiff — creates new files when old side is /dev/null', () 
   const readUtf8 = (p: string) => readFile(p, 'utf8');
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(tmpdir(), 'stan-jsdiff-newfile-'));
+    dir = await makeTempDir('stan-jsdiff-newfile-');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('creates a new file from a /dev/null patch (LF)', async () => {

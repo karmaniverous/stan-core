@@ -1,5 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import {} from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -33,16 +32,18 @@ vi.mock('../jsdiff', () => ({
   applyWithJsDiff: () => Promise.resolve(jsResult),
 }));
 
+import { cleanupTempDir, makeTempDir } from '../../../test/tmp';
+
 describe('applyPatchPipeline (git path and jsdiff fallback)', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(tmpdir(), 'stan-pipeline-'));
+    dir = await makeTempDir('stan-pipeline-');
     vi.resetModules();
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

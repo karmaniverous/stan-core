@@ -9,10 +9,12 @@ import path from 'node:path';
 
 import fg from 'fast-glob';
 
+import { normalizePrefix } from '@/stan/path/prefix';
+import { toPosix } from '@/stan/path/repo';
+
 import type { DependencyMetaNode } from '../schema';
 import type { DependencyValidationMismatch } from './types';
 import { sha256FileAbs } from './util/hash';
-import { normalize, toPosix } from './util/path';
 
 type NpmRef = { pkgName: string; pkgVersion: string; pathInPackage: string };
 
@@ -35,8 +37,8 @@ export const parseNpmNodeId = (
   stanPath: string,
   nodeId: string,
 ): NpmRef | null => {
-  const base = normalize(stanPath);
-  const rel = normalize(nodeId);
+  const base = normalizePrefix(stanPath);
+  const rel = normalizePrefix(nodeId);
   const prefix = `${base}/context/npm/`;
   if (!rel.startsWith(prefix)) return null;
 

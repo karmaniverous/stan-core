@@ -18,6 +18,7 @@ import {
   surfaceArchiveWarnings,
 } from './archive/util';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
+import { functionGuard, resolveExport } from './util/ssr/resolve-export';
 
 type TarLike = {
   create: (
@@ -52,27 +53,6 @@ export type CreateArchiveOptions = {
   onSelectionReport?: (report: SelectionReport) => void;
 };
 
-/**
- * SSR‑safe resolver for classifyForArchive (named‑or‑default).
- * Prefer the named export; fall back to default.classifyForArchive.
- */
-const getClassifyForArchive = async (): Promise<
-  (typeof import('./classifier'))['classifyForArchive']
-> => {
-  try {
-    const mod = await import('./classifier');
-    const named = (mod as { classifyForArchive?: unknown }).classifyForArchive;
-    const viaDefault = (mod as { default?: { classifyForArchive?: unknown } })
-      .default?.classifyForArchive;
-    const fn = (typeof named === 'function' ? named : viaDefault) as
-      | (typeof import('./classifier'))['classifyForArchive']
-      | undefined;
-    if (typeof fn === 'function') return fn;
-  } catch {
-    /* ignore */
-  }
-  throw new Error('classifyForArchive export not found in ./classifier');
-};
 /**
  * Create `stanPath/output/archive.tar` (or custom file name) from the repo root.
  *
@@ -126,7 +106,14 @@ export async function createArchive(
   // Classify prior to archiving:
   // - exclude binaries
   // - flag large text (not excluded)
-  const classifyForArchive = await getClassifyForArchive();
+  type ClassifyForArchive =
+    (typeof import('./classifier'))['classifyForArchive'];
+  const classifyForArchive = await resolveExport(
+    () => import('./classifier'),
+    'classifyForArchive',
+    functionGuard<ClassifyForArchive>(),
+    { moduleLabel: './classifier', acceptCallableDefault: true },
+  );
   const { textFiles, excludedBinaries, largeText, warningsBody } =
     await classifyForArchive(cwd, files);
   const filesForArchive = textFiles;

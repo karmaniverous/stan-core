@@ -1,20 +1,20 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import {} from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { applyWithJsDiff } from './jsdiff';
 
 describe('applyWithJsDiff — invalid diff handling', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(tmpdir(), 'stan-jsdiff-err-'));
+    dir = await makeTempDir('stan-jsdiff-err-');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('returns failure outcome without throwing on invalid unified diff', async () => {

@@ -18,6 +18,7 @@ import {
   surfaceArchiveWarnings,
 } from '@/stan/archive/util';
 import { ensureOutAndDiff } from '@/stan/fs';
+import { functionGuard, resolveExport } from '@/stan/util/ssr/resolve-export';
 
 type TarLike = {
   create: (
@@ -51,28 +52,6 @@ const uniqSorted = (xs: string[]): string[] =>
   Array.from(new Set(xs.map((s) => toPosix(s).trim()).filter(Boolean))).sort(
     (a, b) => a.localeCompare(b),
   );
-
-/**
- * SSR-safe resolver for `classifyForArchive` (named-or-default).
- * Prefer the named export; fall back to default.classifyForArchive.
- */
-const getClassifyForArchive = async (): Promise<
-  (typeof import('@/stan/classifier'))['classifyForArchive']
-> => {
-  try {
-    const mod = await import('@/stan/classifier');
-    const named = (mod as { classifyForArchive?: unknown }).classifyForArchive;
-    const viaDefault = (mod as { default?: { classifyForArchive?: unknown } })
-      .default?.classifyForArchive;
-    const fn = (typeof named === 'function' ? named : viaDefault) as
-      | (typeof import('@/stan/classifier'))['classifyForArchive']
-      | undefined;
-    if (typeof fn === 'function') return fn;
-  } catch {
-    /* ignore */
-  }
-  throw new Error('classifyForArchive export not found in @/stan/classifier');
-};
 
 /**
  * Create `stanPath/output/archive.tar` (or custom file name) from an explicit
@@ -117,7 +96,12 @@ export async function createArchiveFromFiles(
   // Classify prior to archiving:
   // - exclude binaries
   // - flag large text (not excluded)
-  const classifyForArchive = await getClassifyForArchive();
+  const classifyForArchive = await resolveExport(
+    () => import('@/stan/classifier'),
+    'classifyForArchive',
+    functionGuard<(typeof import('@/stan/classifier'))['classifyForArchive']>(),
+    { moduleLabel: '@/stan/classifier', acceptCallableDefault: true },
+  );
   const { textFiles, excludedBinaries, largeText, warningsBody } =
     await classifyForArchive(cwd, files);
   surfaceArchiveWarnings(warningsBody, options.onArchiveWarnings);

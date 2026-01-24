@@ -1,9 +1,9 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../../test/tmp';
 // Force git path to "fail" and jsdiff to report invalid, so the creation
 // fallback runs and writes the target file. This avoids any real git usage.
 vi.mock('../apply', () => ({
@@ -32,11 +32,11 @@ describe('creation fallback — preserves leading ".stan/" segment', () => {
   const readUtf8 = (p: string) => readFile(p, 'utf8');
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(tmpdir(), 'stan-create-dot-'));
+    dir = await makeTempDir('stan-create-dot-');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 

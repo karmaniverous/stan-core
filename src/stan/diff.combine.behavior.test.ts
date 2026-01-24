@@ -1,10 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { withMockTarCapture } from '../test/helpers';
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
 import { createArchive } from './archive';
 import { createArchiveDiff } from './diff';
 const { calls } = withMockTarCapture('TAR');
@@ -13,12 +13,12 @@ describe('combine archiving behavior (outputs inside archives)', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-combine-'));
+    dir = await makeTempDir('stan-combine-');
     calls.length = 0;
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
     vi.restoreAllMocks();
   });
 
