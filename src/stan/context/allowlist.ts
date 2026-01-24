@@ -1,7 +1,8 @@
 /**
  * Computes context-mode allowlist plans (Base + dependency closure), applying
  * explicit excludes as hard denials and identifying stageable external nodeIds
- * under <stanPath>/context/npm/** and <stanPath>/context/abs/**; filesystem IO only; no console output.
+ * under <stanPath>/context/npm/** and <stanPath>/context/abs/**; filesystem IO
+ * only; no console output.
  * @module
  */
 
@@ -23,11 +24,6 @@ import { computeSelectedNodeIds } from './state';
 
 const toPosix = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
-
-const uniqSorted = (xs: string[]): string[] =>
-  Array.from(new Set(xs.map((s) => toPosix(s).trim()).filter(Boolean))).sort(
-    (a, b) => a.localeCompare(b),
-  );
 
 const normalizePrefix = (p: string): string =>
   toPosix(p)
@@ -141,12 +137,15 @@ export const computeContextAllowlistPlan = async (args: {
   const depStateExists =
     all.includes(depStateRel) && existsSync(resolve(cwd, depStateRel));
 
-  const baseFiles = uniqSortedStrings([
-    ...sysFiles,
-    depMetaRel,
-    ...(depStateExists ? [depStateRel] : []),
-    ...repoRootBaseFiles,
-  ]);
+  const baseFiles = uniqSortedStrings(
+    [
+      ...sysFiles,
+      depMetaRel,
+      ...(depStateExists ? [depStateRel] : []),
+      ...repoRootBaseFiles,
+    ],
+    toPosix,
+  );
 
   // Dependency state input:
   // - prefer explicit state passed by caller
@@ -179,10 +178,9 @@ export const computeContextAllowlistPlan = async (args: {
     .filter((p) => !isExcluded(p))
     .filter((p) => !isReserved(p));
 
-  const stageNodeIds = uniqSorted(
+  const stageNodeIds = uniqSortedStrings(
     selectedFiltered.filter((id) => isStageableNodeId(stanRel, id)),
   );
-  const stageNodeIdsSorted = uniqSortedStrings(stageNodeIds);
 
   // Allowlist is Base + selected closure.
   const allowlistFiles = uniqSortedStrings(
@@ -194,7 +192,7 @@ export const computeContextAllowlistPlan = async (args: {
   return {
     baseFiles,
     selectedNodeIds: uniqSortedStrings(selectedFiltered),
-    stageNodeIds: stageNodeIdsSorted,
+    stageNodeIds,
     allowlistFiles,
     usedDiskState,
   };

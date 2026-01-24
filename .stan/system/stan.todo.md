@@ -230,4 +230,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added a system-level directive to prefer established, type-safe, tree-shakable dependencies (e.g., radash, zod) over home-grown solutions to well-traveled problems.
 - Refactor: use radash for uniq+sort helpers
   - Added a small shared helper (`src/stan/util/array/uniq.ts`) backed by Radash `unique` and migrated repeated “uniq + sorted strings” patterns to it in allowlist/context modules.
-  - Added focused unit coverage for the new helper.
+  - Added focused unit coverage for the new helper.
+- Refactor: remove leftover uniqSorted in ctx allowlist
+  - Removed the remaining local `uniqSorted` helper in `src/stan/context/allowlist.ts`.
+  - Standardized stage node ID sorting on the shared Radash-backed helper to keep semantics uniform and deterministic.
