@@ -98,7 +98,6 @@
   "peerDependencies": {
     "@karmaniverous/stan-context": ">=0.0.0"
   },
-  "peerDependenciesMeta": {},
   "publishConfig": {
     "access": "public"
   },

@@ -178,6 +178,22 @@ When dependency graph mode is enabled, the engine can create a small `archive.me
 - Includes repo-root (top-level) base files selected by current selection config
 - Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission
 
+## Dependency graph mode: TypeScript injection (host contract)
+
+When you call `buildDependencyMeta(...)`, `@karmaniverous/stan-core` delegates dependency graph generation to its peer dependency `@karmaniverous/stan-context`.
+
+TypeScript must be provided by the host environment (typically `stan-cli`) via either `typescript` (preferred) or `typescriptPath`. `stan-core` does not attempt to resolve or import TypeScript itself; it passes these values through to `stan-context`.
+
+If neither `typescript` nor `typescriptPath` is provided, `buildDependencyMeta` will throw (the error originates from `stan-context`).
+
+Minimal example:
+
+```ts
+import ts from 'typescript';
+import { buildDependencyMeta } from '@karmaniverous/stan-core';
+await buildDependencyMeta({ cwd: process.cwd(), stanPath: '.stan', typescript: ts });
+```
+
 ## Environment variables
 
 See [Env Vars](./guides/env-vars.md) for a complete list of environment variable switches observed by the engine, tests, and release scripts.

@@ -4,20 +4,15 @@ Last updated: 2026-01-24Z
 
 ## Current focus
 
-- Fix context-mode DX: avoid brittle TypeScript resolution failures in `stan run --context`.
-- Implement TS injection pass-through in stan-core:
-  - stan-core no longer imports/gates TypeScript for dependency graph mode.
-  - stan-core passes host-injected `typescript` / `typescriptPath` through to stan-context.
-  - stan-core externalizes `@karmaniverous/stan-context` to avoid bundling-related loader issues.
-- Next: stan-cli should inject its own runtime TypeScript (module or resolved entry path) when invoking context mode.
+- Ensure stan-core’s human-facing docs clearly state the TypeScript injection contract for context/dependency graph mode (without duplicating stan-context docs).
+- Add a short README section: `buildDependencyMeta(...)` requires host-provided `typescript` or `typescriptPath`; stan-core only passes through to stan-context and does not resolve TS itself.
 
 ## Working model (high signal)
 
-- Root issue: relying on ambient `import('typescript')` resolution from inside bundled dependencies is brittle and yields poor error messages.
-- Solution: host-provided TS injection (module or absolute `typescriptPath`) + stan-context-owned validation/error reporting.
-- This matches future VS Code extension needs (IDE tsdk path) while keeping repo installs lightweight.
+- TS injection is a host responsibility (stan-cli/IDE/service). stan-core stays presentation-free and avoids brittle ambient module resolution by delegating validation/errors to stan-context.
+- Documentation should make the stan-core boundary explicit: “pass-through only; errors originate from stan-context.”
 
 ## Decisions
 
-- Accept stan-context constraint: `typescriptPath` is loaded via `require()` and must be a CommonJS entry module; inject `typescript` module instead when only an ESM entrypoint exists.
-- stan-core should support both `typescript` and `typescriptPath` pass-through and must not gate TS itself.
+- Keep stan-core docs minimal and stan-core-specific; defer full injection semantics and constraints to stan-context documentation.
+- Treat missing injection as a caller configuration error; surface (do not wrap) stan-context’s thrown error.

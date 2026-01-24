@@ -293,4 +293,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Extended `buildDependencyMeta` args to accept `typescript` and `typescriptPath` (host-provided) and pass them through to `generateDependencyGraph`.
   - Updated tests to assert pass-through behavior and to ensure missing-injection failures originate from stan-context (not a core-side gate).
   - Externalized `@karmaniverous/stan-context` in Rollup to prevent bundling and avoid runtime loader/resolution regressions.
-  - Updated requirements/docs to reflect the new host-injection contract.
+  - Updated requirements/docs to reflect the new host-injection contract.
+
+- Docs: clarify TypeScript injection contract in README
+  - Documented that `buildDependencyMeta(...)` requires host-provided `typescript` or `typescriptPath`.
+  - Clarified that stan-core does not resolve/import TypeScript; it passes through to stan-context and surfaces stan-context errors.
