@@ -249,4 +249,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Docs: apply module docblocks to root tools/configs
   - Added/converted `@module` docblocks for `tools/gen-system.ts`, `rollup.config.ts`, and `vitest.config.ts`.
-  - Ensures compliance with dependency graph quality rules for non-test code files.
+  - Ensures compliance with dependency graph quality rules for non-test code files.
+
+- Refactor: decompose response validator (long-file compliance)
+  - Split `src/stan/validate/response.ts` (approx 350 lines) into:
+    - `types.ts`, `blocks.ts`, `validate.ts`, `index.ts`.
+  - Preserved public API surface in `index.ts` so imports in `src/stan/index.ts` remain valid (Node resolution handles directory index).
+  - Updated tests to import from `validate.ts` (internal) or index as appropriate.

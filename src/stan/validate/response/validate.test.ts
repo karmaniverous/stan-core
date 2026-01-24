@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateOrThrow, validateResponseMessage } from './response';
+import { validateOrThrow, validateResponseMessage } from './validate';
 const makeOkMessage = (): string => {
   return [
     '## UPDATED: src/x.ts',

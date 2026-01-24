@@ -7,6 +7,7 @@ Last updated: 2026-01-24Z
 - Apply Radash across the stan-core codebase where it is a clear fit (replace home-grown or repeated “utility” patterns with radash equivalents).
 - Keep lint + typecheck + tests green during the sweep (avoid strictFunctionTypes contravariance traps and `require-await` noise).
 - Module docblock rollout is nearly complete; ensuring root config and tools are compliant.
+- Decomposed `src/stan/validate/response.ts` (>300 LOC) into structured modules (`types`, `blocks`, `validate`, `index`) to satisfy the long-file policy.
 
 ## Working model (high signal)
 
