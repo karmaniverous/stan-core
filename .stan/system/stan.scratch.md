@@ -4,16 +4,19 @@ Last updated: 2026-01-24Z
 
 ## Current focus
 
-- Update system prompt parts per stan-cli interop feedback: the Response Format post-compose checklist must explicitly enforce the scratch patch requirement.
-- Strengthen system-level code-quality guardrails:
-  - Aggressively avoid `any`; if unavoidable, pause for a design discussion, then use narrow scope and add inline rationale next to the `any`.
-  - Avoid `eslint-disable`; if unavoidable, pause for a design discussion, then scope narrowly and add inline rationale next to the disablement.
-- Clarify in `.stan/system/stan.project.md` that “update the system prompt” means updating `.stan/system/parts/*.md` and regenerating `.stan/system/stan.system.md`.
+- Fix context-mode DX: avoid brittle TypeScript resolution failures in `stan run --context`.
+- Adopt “TypeScript injection” design:
+  - Host provides TS explicitly as a path/provider (stan-cli now; IDE/repo later).
+  - stan-context becomes the only component that directly cares about TS availability.
+  - stan-core stops gating on TS presence and just threads host inputs through.
 
 ## Working model (high signal)
 
-- Incoming interop note (read-only): `.stan/imports/stan-cli/20260124-190000Z-system-prompt-checklist-gap.md` requested adding scratch verification to the final gating checklist.
+- Current failure mode: stan-core throws a generic “install typescript” error even when TS is present, likely due to dynamic import + bundling/resolution edge cases.
+- Design goal: eliminate reliance on ambient package resolution for TS by letting the host pass an explicit TS entrypoint path (or loader).
+- This matches future VS Code extension needs (IDE tsdk path) while keeping repo installs lightweight.
 
 ## Decisions
 
-- After applying these patches, regenerate the monolith (`.stan/system/stan.system.md`) via the repo’s prompt assembly step (e.g., `tsx tools/gen-system.ts` or `npm run build`).
+- Post an interop request to stan-context proposing `typescriptPath`/`typescriptRequired` (or a loader callback) on `generateDependencyGraph`, with actionable error reporting when required TS cannot be loaded.
+- After stan-context supports injection, update stan-core and stan-cli to pass through the configured TS source (stan-cli dependency by default).

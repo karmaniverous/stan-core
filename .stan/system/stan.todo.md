@@ -282,4 +282,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Prompt: enforce scratch checklist + code-quality guardrails
   - Updated Response Format post-compose checklist to require a Patch for `<stanPath>/system/stan.scratch.md` whenever any Patch blocks are present (interop request from stan-cli).
   - Strengthened system-level guidance to avoid `any` and avoid `eslint-disable` without a prior design discussion and inline rationale.
-  - Clarified in `.stan/system/stan.project.md` that “update system prompt” means updating `.stan/system/parts/*.md` and regenerating the monolith.
+  - Clarified in `.stan/system/stan.project.md` that “update system prompt” means updating `.stan/system/parts/*.md` and regenerating the monolith.
+
+- Interop: request TS injection support in stan-context
+  - Posted an outgoing interop note to stan-context proposing a host-provided TypeScript entrypoint path/provider option for `generateDependencyGraph`.
+  - Intended outcome: eliminate brittle ambient TS resolution from bundled outputs and make stan-cli context mode “just work” without repo-local installs.
