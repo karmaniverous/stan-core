@@ -4,20 +4,16 @@ Last updated: 2026-01-24Z
 
 ## Current focus
 
-- Apply Radash across the stan-core codebase where it is a clear fit (replace home-grown or repeated “utility” patterns with radash equivalents).
-- Keep lint + typecheck + tests green during the sweep (avoid strictFunctionTypes contravariance traps and `require-await` noise).
-- Module docblock rollout is nearly complete; ensuring root config and tools are compliant.
-- Decomposed `src/stan/validate/response.ts` (>300 LOC) into structured modules; restored missing dependency-mode validation logic to fix tests.
-- Decomposed `src/stan/patch/file-ops.ts` (>300 LOC) into structured modules (`types`, `parse`, `exec`, `index`) to satisfy the long-file policy.
-- Decomposed `src/stan/context/build.ts` (>300 LOC) into structured modules (`types`, `graph`, `normalize`, `index`) to satisfy the long-file policy.
-- Fixed test imports and lint issues in the decomposed build modules.
-- Resolved "unnecessary conditional" lint errors in context build modules.
+- Update system prompt parts per stan-cli interop feedback: the Response Format post-compose checklist must explicitly enforce the scratch patch requirement.
+- Strengthen system-level code-quality guardrails:
+  - Aggressively avoid `any`; if unavoidable, pause for a design discussion, then use narrow scope and add inline rationale next to the `any`.
+  - Avoid `eslint-disable`; if unavoidable, pause for a design discussion, then scope narrowly and add inline rationale next to the disablement.
+- Clarify in `.stan/system/stan.project.md` that “update the system prompt” means updating `.stan/system/parts/*.md` and regenerating `.stan/system/stan.system.md`.
 
 ## Working model (high signal)
 
-- For SSR robustness, use a shared resolver that prefers named exports and falls back to default properties (and optionally callable default export) with clear error messages.
-- For generic utility needs (dedupe, select/filter, object shaping), prefer Radash over local ad-hoc implementations when semantics match; then remove redundant local helpers.
+- Incoming interop note (read-only): `.stan/imports/stan-cli/20260124-190000Z-system-prompt-checklist-gap.md` requested adding scratch verification to the final gating checklist.
 
 ## Decisions
 
-- Path normalization: Consolidate `isUnder` / `matchesPrefix` logic to use `src/stan/path/prefix.ts` everywhere. This ensures consistent POSIX handling and reduces duplicated normalization code.
+- After applying these patches, regenerate the monolith (`.stan/system/stan.system.md`) via the repo’s prompt assembly step (e.g., `tsx tools/gen-system.ts` or `npm run build`).

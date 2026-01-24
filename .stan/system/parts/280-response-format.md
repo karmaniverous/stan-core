@@ -106,6 +106,10 @@ Before sending a reply, verify all of the following:
 4. Section headings
    - Headings match the template exactly (names and order).
 
-5. Documentation cadence and dev plan maintenance
-   - Normal replies: if any Patch block is present, include a Patch for `<stanPath>/system/stan.todo.md` (unless deletions-only or explicitly plan-only) and end with a Commit Message block.
+5. Documentation cadence and required companion patches
+   - Normal replies: if any Patch block is present, you MUST include:
+     - A Patch for `<stanPath>/system/stan.scratch.md` (rewrite to match the current objective).
+     - A Patch for `<stanPath>/system/stan.todo.md` (unless deletions-only or explicitly plan-only).
+     - A `## Commit Message` block (last).
+   - If any required companion patch is missing, STOP and recompose before sending.
    - Keep the dev plan under 300 lines by pruning whole oldest Completed entries when needed; do not rewrite retained Completed entries.

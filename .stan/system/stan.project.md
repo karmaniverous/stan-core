@@ -10,6 +10,12 @@ The goals:
 
 ---
 
+## System prompt updates mean updating parts
+
+- In this repo, `.stan/system/stan.system.md` is a generated monolith assembled from `.stan/system/parts/*.md` (see `tools/gen-system.ts`).
+- When we discuss “updating the system prompt”, we mean updating one or more system prompt PARTS under `.stan/system/parts/` and regenerating the monolith.
+- Do not manually edit `.stan/system/stan.system.md`.
+
 ## 1) Multi‑instance imports and disambiguation (authoritative vs contextual)
 
 - You may see multiple files named “stan.requirements.md” and “stan.todo.md” in a single archive (local + imported copies from other STAN repos).

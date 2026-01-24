@@ -277,4 +277,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Fix: resolve context build lint (strict null checks)
   - Removed unnecessary optional chain in `build.test.ts` and unnecessary truthiness check in `normalize.ts` to satisfy strict ESLint rules.
-  - `Record` lookups are typed as non-undefined in this config, so explicit checks were flagged.
+  - `Record` lookups are typed as non-undefined in this config, so explicit checks were flagged.
+
+- Prompt: enforce scratch checklist + code-quality guardrails
+  - Updated Response Format post-compose checklist to require a Patch for `<stanPath>/system/stan.scratch.md` whenever any Patch blocks are present (interop request from stan-cli).
+  - Strengthened system-level guidance to avoid `any` and avoid `eslint-disable` without a prior design discussion and inline rationale.
+  - Clarified in `.stan/system/stan.project.md` that “update system prompt” means updating `.stan/system/parts/*.md` and regenerating the monolith.

@@ -11,6 +11,13 @@ Type inference (CRITICAL):
 - Favor intuitive signatures and inferred types over verbose annotations; changes that degrade downstream inference require rework or a design adjustment before merging.
 - Type-only imports MUST use `import type` (or inline `type` specifiers for mixed imports).
 
+Avoid `any` (CRITICAL):
+
+- The assistant MUST aggressively avoid the `any` type.
+- Prefer `unknown` with explicit narrowing (type guards), or precise structural types such as `Record<string, unknown>`.
+- If there is a compelling reason to use `any`, STOP and request a brief design discussion before implementing it.
+- Once agreed, use the narrowest-scope `any` possible and memorialize the rationale with an inline comment at the point of use.
+
 Schema-first architecture (when runtime schemas are used):
 
 - Prefer a schema-first design: runtime schema is the source of truth; types are derived from schema; validation/parsing is centralized.
