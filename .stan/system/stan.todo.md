@@ -220,4 +220,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Adjusted `resolve-export` tests to avoid `require-await` violations.
   - Refactored `functionGuard` typing to avoid `Function` and satisfy strict lint rules; removed an unused helper file flagged by Knip.
 - Fix: resolve-export lint errors (functionGuard)
-  - Updated `functionGuard` to avoid the unsafe `Function` type and satisfy `no-unnecessary-type-parameters` without changing runtime behavior.
+  - Updated `functionGuard` to avoid the unsafe `Function` type and satisfy `no-unnecessary-type-parameters` without changing runtime behavior.
+- Fix: resolve-export typecheck regression (strictFunctionTypes)
+  - Adjusted the internal “any function” constraint to avoid parameter contravariance issues and restore `tsc` green.

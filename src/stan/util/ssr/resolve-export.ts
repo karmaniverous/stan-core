@@ -26,7 +26,12 @@ const asRecord = (v: unknown): Record<string, unknown> | null => {
 const hasOwn = (o: object, k: string): boolean =>
   Object.prototype.hasOwnProperty.call(o, k);
 
-type AnyFn = (...args: unknown[]) => unknown;
+/**
+ * “Any function” constraint that is compatible with `strictFunctionTypes`.
+ * Using `never[]` avoids contravariance issues that make `(x: string) => ...`
+ * fail to satisfy `(...args: unknown[]) => unknown`.
+ */
+type AnyFn = (...args: never[]) => unknown;
 
 /**
  * Runtime guard for functions.
