@@ -113,7 +113,7 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     const absId = absNorm ?? '';
     const node = out.meta.nodes[absId];
     expect(node).toBeDefined();
-    expect(node?.locatorAbs).toBe(absFileAbs.replace(/\\/g, '/'));
+    expect(node.locatorAbs).toBe(absFileAbs.replace(/\\/g, '/'));
 
     // Edges are preserved only among kept targets
     expect(out.meta.edges[srcId].some((e) => e.target === npmNorm)).toBe(true);

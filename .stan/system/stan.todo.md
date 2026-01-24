@@ -273,4 +273,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Fix: resolve context build test and lint errors
   - Corrected test import path (`../../test/tmp` -> `../../../test/tmp`) in `src/stan/context/build/build.test.ts`.
-  - Resolved TSDoc syntax warning in `graph.ts` and unnecessary optional chain in `normalize.ts`.
+  - Resolved TSDoc syntax warning in `graph.ts` and unnecessary optional chain in `normalize.ts`.
+
+- Fix: resolve context build lint (strict null checks)
+  - Removed unnecessary optional chain in `build.test.ts` and unnecessary truthiness check in `normalize.ts` to satisfy strict ESLint rules.
+  - `Record` lookups are typed as non-undefined in this config, so explicit checks were flagged.
