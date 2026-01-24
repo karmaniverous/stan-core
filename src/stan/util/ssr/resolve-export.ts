@@ -26,15 +26,21 @@ const asRecord = (v: unknown): Record<string, unknown> | null => {
 const hasOwn = (o: object, k: string): boolean =>
   Object.prototype.hasOwnProperty.call(o, k);
 
+type AnyFn = (...args: unknown[]) => unknown;
+
 /**
  * Runtime guard for functions.
  *
  * Note: this intentionally does not validate the full signature. It exists to
  * type-narrow dynamic imports in SSR-safe code paths.
+ *
+ * @param _hint - Optional type hint (ignored at runtime). This exists to ensure
+ * the type parameter is used in the function signature for strict lint rules.
  */
-export const functionGuard = <T extends Function>(): ((
-  v: unknown,
-) => v is T) => {
+export const functionGuard = <T extends AnyFn>(
+  _hint?: T,
+): ((v: unknown) => v is T) => {
+  void _hint;
   return (v: unknown): v is T => typeof v === 'function';
 };
 

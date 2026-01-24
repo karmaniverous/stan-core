@@ -5,7 +5,7 @@ Last updated: 2026-01-24Z
 ## Current focus
 
 - Finish the DRY pass across stan-core runtime + tests.
-- Keep lint + Knip clean while doing the sweep (no unused imports/files; avoid `require-await` noise).
+- Keep lint + Knip clean while doing the sweep (unblock strict ESLint; avoid `require-await` noise).
 - Continue reducing test flake and repetition by standardizing temp-dir creation/cleanup.
 
 ## Working model (high signal)

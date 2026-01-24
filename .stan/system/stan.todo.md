@@ -218,4 +218,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Chore: fix lint + knip hygiene
   - Removed unused imports in tests and diff modules flagged by ESLint.
   - Adjusted `resolve-export` tests to avoid `require-await` violations.
-  - Refactored `functionGuard` typing to avoid `Function` and satisfy strict lint rules; removed an unused helper file flagged by Knip.
+  - Refactored `functionGuard` typing to avoid `Function` and satisfy strict lint rules; removed an unused helper file flagged by Knip.
+- Fix: resolve-export lint errors (functionGuard)
+  - Updated `functionGuard` to avoid the unsafe `Function` type and satisfy `no-unnecessary-type-parameters` without changing runtime behavior.
