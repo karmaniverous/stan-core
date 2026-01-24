@@ -6,6 +6,7 @@ Last updated: 2026-01-24Z
 
 - Apply Radash across the stan-core codebase where it is a clear fit (replace home-grown or repeated “utility” patterns with radash equivalents).
 - Keep lint + typecheck + tests green during the sweep (avoid strictFunctionTypes contravariance traps and `require-await` noise).
+- Path normalization consolidation is complete and verified.
 
 ## Working model (high signal)
 

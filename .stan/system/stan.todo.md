@@ -241,4 +241,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - DRY follow-through: test temp-dirs + path helpers
   - Standardized test temp-dir usage across the codebase to use `src/test/tmp.ts` (`makeTempDir`/`cleanupTempDir`).
-  - Consolidated `matchesPrefix`/`isUnder` logic in `src/stan/fs.ts`, `src/stan/fs/match.ts`, and `src/stan/fs/reserved.ts` to use shared `@/stan/path/prefix`.
+  - Consolidated `matchesPrefix`/`isUnder` logic in `src/stan/fs.ts`, `src/stan/fs/match.ts`, and `src/stan/fs/reserved.ts` to use shared `@/stan/path/prefix`.
+
+- Fix: resolve reference error in match.ts refactor
+  - Corrected `src/stan/fs/match.ts` to call `normalizePrefix` instead of the removed local `normalize` helper inside `makeGlobMatcher`.
+  - Verified unit tests (`src/stan/fs.match.test.ts`) now pass.
