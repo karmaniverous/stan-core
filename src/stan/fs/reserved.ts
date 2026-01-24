@@ -10,8 +10,7 @@ import {
   ARCHIVE_WARNINGS,
 } from '@/stan/archive/constants';
 import { isUnder } from '@/stan/path/prefix';
-
-const norm = (s: string): string => s.replace(/\\/g, '/');
+import { toPosix } from '@/stan/path/repo';
 
 /** Reserved workspace subpaths never included in archives by policy. */
 export const isReservedWorkspacePath = (
@@ -24,12 +23,13 @@ export const isReservedWorkspacePath = (
 
 /** Reserved archive file names under <stanPath>/output. */
 export const isOutputArchivePath = (stanPath: string, p: string): boolean => {
-  const base = norm(stanPath);
+  const base = toPosix(stanPath);
+  const rel = toPosix(p);
   return (
-    norm(p) === `${base}/output/${ARCHIVE_TAR}` ||
-    norm(p) === `${base}/output/${ARCHIVE_DIFF_TAR}` ||
-    norm(p) === `${base}/output/${ARCHIVE_META_TAR}` ||
-    norm(p) === `${base}/output/${ARCHIVE_WARNINGS}`
+    rel === `${base}/output/${ARCHIVE_TAR}` ||
+    rel === `${base}/output/${ARCHIVE_DIFF_TAR}` ||
+    rel === `${base}/output/${ARCHIVE_META_TAR}` ||
+    rel === `${base}/output/${ARCHIVE_WARNINGS}`
   );
 };
 

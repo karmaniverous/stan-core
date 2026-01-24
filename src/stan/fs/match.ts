@@ -9,26 +9,20 @@
  */
 import picomatch from 'picomatch';
 
-import { isUnder } from '@/stan/path/prefix';
+import { isUnder, normalizePrefix } from '@/stan/path/prefix';
 
 const hasGlob = (p: string): boolean =>
   /[*?[\]{}()!]/.test(p) || p.includes('**');
 
-const normalize = (p: string): string =>
-  p
-    .replace(/\\/g, '/')
-    .replace(/^\.\/+/, '')
-    .replace(/\/+$/, '');
-
 const toMatcher = (pattern: string): ((f: string) => boolean) => {
-  const pat = normalize(pattern);
+  const pat = normalizePrefix(pattern);
   if (!hasGlob(pat)) {
     if (!pat) return () => false;
     // isUnder(prefix, file)
     return (f: string) => isUnder(pat, f);
   }
   const isMatch = picomatch(pat, { dot: true });
-  return (f: string) => isMatch(normalize(f));
+  return (f: string) => isMatch(normalizePrefix(f));
 };
 
 /**

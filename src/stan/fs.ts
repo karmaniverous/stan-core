@@ -13,8 +13,11 @@ import { ensureDir } from 'fs-extra';
 import ignoreFactory from 'ignore';
 import picomatch from 'picomatch';
 
-import { isReservedWorkspacePath } from './fs/reserved';
-import { isUnder } from './path/prefix';
+import {
+  isReservedWorkspacePath,
+  isUnder as isUnderReserved,
+} from './fs/reserved';
+import { isUnder, normalizePrefix } from './path/prefix';
 import type { StanDirs } from './paths';
 import { functionGuard, resolveExport } from './util/ssr/resolve-export';
 
@@ -61,10 +64,7 @@ const hasGlob = (p: string): boolean =>
 type Matcher = (f: string) => boolean;
 
 const toMatcher = (pattern: string): Matcher => {
-  const pat = pattern
-    .replace(/\\/g, '/')
-    .replace(/^\.\/+/, '')
-    .replace(/\/+$/, '');
+  const pat = normalizePrefix(pattern);
   if (!hasGlob(pat)) {
     if (!pat) return () => false;
     return (f) => isUnder(pat, f);
@@ -150,7 +150,7 @@ export async function filterFiles(
   ];
 
   if (!includeOutputDir) {
-    denyMatchers.push((f) => isUnder(`${stanRel}/output`, f));
+    denyMatchers.push((f) => isUnderReserved(`${stanRel}/output`, f));
   }
 
   // Base selection (deny list applied)
@@ -170,7 +170,7 @@ export async function filterFiles(
       (f: string) => isReservedWorkspacePath(stanRel, f),
       ...(includeOutputDir
         ? []
-        : [(f: string) => isUnder(`${stanRel}/output`, f)]),
+        : [(f: string) => isUnderReserved(`${stanRel}/output`, f)]),
       // Excludes take precedence over includes.
       ...excludes.map(toMatcher),
     ];
