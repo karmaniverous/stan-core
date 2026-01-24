@@ -428,6 +428,13 @@ Type inference (CRITICAL):
 - Favor intuitive signatures and inferred types over verbose annotations; changes that degrade downstream inference require rework or a design adjustment before merging.
 - Type-only imports MUST use `import type` (or inline `type` specifiers for mixed imports).
 
+Avoid `any` (CRITICAL):
+
+- The assistant MUST aggressively avoid the `any` type.
+- Prefer `unknown` with explicit narrowing (type guards), or precise structural types such as `Record<string, unknown>`.
+- If there is a compelling reason to use `any`, STOP and request a brief design discussion before implementing it.
+- Once agreed, use the narrowest-scope `any` possible and memorialize the rationale with an inline comment at the point of use.
+
 Schema-first architecture (when runtime schemas are used):
 
 - Prefer a schema-first design: runtime schema is the source of truth; types are derived from schema; validation/parsing is centralized.
@@ -498,6 +505,12 @@ Formatting and linting are enforced by the repository configuration; this system
 Assistant guidance
 - When emitting patches, respect house style; do not rewrap narrative Markdown outside the allowed contexts.
 - Opportunistic repair is allowed for local sections you are already modifying (e.g., unwrap manually wrapped paragraphs), but avoid repo‑wide reflows as part of unrelated changes.
+
+ESLint rule disablements (extraordinary)
+
+- The assistant MUST NOT add `eslint-disable` comments without a prior design discussion and agreement.
+- If a disablement is approved, scope it as narrowly as possible (prefer `eslint-disable-next-line <rule>`) and include an inline comment explaining the rationale and (when applicable) the removal plan.
+- Do not disable lint rules as a workaround for missing types; prefer proper typing, `unknown` + narrowing, or refactoring to smaller units.
 
 # CRITICAL: Layout
 
@@ -1258,6 +1271,10 @@ Before sending a reply, verify all of the following:
 4. Section headings
    - Headings match the template exactly (names and order).
 
-5. Documentation cadence and dev plan maintenance
-   - Normal replies: if any Patch block is present, include a Patch for `<stanPath>/system/stan.todo.md` (unless deletions-only or explicitly plan-only) and end with a Commit Message block.
+5. Documentation cadence and required companion patches
+   - Normal replies: if any Patch block is present, you MUST include:
+     - A Patch for `<stanPath>/system/stan.scratch.md` (rewrite to match the current objective).
+     - A Patch for `<stanPath>/system/stan.todo.md` (unless deletions-only or explicitly plan-only).
+     - A `## Commit Message` block (last).
+   - If any required companion patch is missing, STOP and recompose before sending.
    - Keep the dev plan under 300 lines by pruning whole oldest Completed entries when needed; do not rewrite retained Completed entries.

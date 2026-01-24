@@ -2,10 +2,17 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.6.1](https://github.com/karmaniverous/stan-core/compare/0.6.0...0.6.1)
+
+- docs: tighten prompt checklist + quality rules [`f25a256`](https://github.com/karmaniverous/stan-core/commit/f25a2565b2a42b9f989ce035962bddbbc4922dfb)
+
 #### [0.6.0](https://github.com/karmaniverous/stan-core/compare/0.5.1...0.6.0)
+
+> 24 January 2026
 
 - docs: codify module docs policy + wire lint [`82a81ae`](https://github.com/karmaniverous/stan-core/commit/82a81ae321d3be492799b2b33cf1761ddeb51512)
 - feat: context allowlist archiving building blocks [`1f32262`](https://github.com/karmaniverous/stan-core/commit/1f32262d40211effe52ccf7b76413dd546f057c9)
+- chore: release v0.6.0 [`e2018ff`](https://github.com/karmaniverous/stan-core/commit/e2018ff3ead4e3ee98bfe06bda72b4d17b5f0d61)
 - refactor: DRY SSR resolver and test temps [`d025814`](https://github.com/karmaniverous/stan-core/commit/d025814cfb8969ecb019d8e779f3e19f895beb3e)
 - refactor: split context validate into modules [`2cdffec`](https://github.com/karmaniverous/stan-core/commit/2cdffecc08f1a413c1949b6cedaf81c42b44e167)
 - refactor: decompose response validator module [`7f961e0`](https://github.com/karmaniverous/stan-core/commit/7f961e0566e200d538af359f58d6a8f1c7cd91b6)
