@@ -13,7 +13,8 @@ import { ensureDir } from 'fs-extra';
 import ignoreFactory from 'ignore';
 import picomatch from 'picomatch';
 
-import { isReservedWorkspacePath, isUnder } from './fs/reserved';
+import { isReservedWorkspacePath } from './fs/reserved';
+import { isUnder } from './path/prefix';
 import type { StanDirs } from './paths';
 import { functionGuard, resolveExport } from './util/ssr/resolve-export';
 
@@ -54,11 +55,6 @@ const buildIgnoreFromGitignore = async (
   }
 };
 
-const matchesPrefix = (f: string, p: string): boolean => {
-  const norm = p.replace(/\\/g, '/').replace(/\/+$/, '');
-  return f === norm || f.startsWith(norm + '/');
-};
-
 const hasGlob = (p: string): boolean =>
   /[*?[\]{}()!]/.test(p) || p.includes('**');
 
@@ -71,7 +67,7 @@ const toMatcher = (pattern: string): Matcher => {
     .replace(/\/+$/, '');
   if (!hasGlob(pat)) {
     if (!pat) return () => false;
-    return (f) => matchesPrefix(f, pat);
+    return (f) => isUnder(pat, f);
   }
   const isMatch = picomatch(pat, { dot: true });
   return (f) => isMatch(f);
@@ -141,14 +137,14 @@ export async function filterFiles(
   // Deny list used to compute base selection
   const denyMatchers: Matcher[] = [
     // default denials by prefix
-    (f: string) => matchesPrefix(f, 'node_modules'),
-    (f: string) => matchesPrefix(f, '.git'),
+    (f: string) => isUnder('node_modules', f),
+    (f: string) => isUnder('.git', f),
     // .gitignore (full semantics via "ignore")
     ...(ig ? [(f: string) => ig.ignores(f)] : []),
     // user excludes (glob or prefix)
     ...excludes.map(toMatcher),
     // default: exclude nested sub‑packages by prefix
-    ...subpkgDirs.map((d) => (f: string) => matchesPrefix(f, d)),
+    ...subpkgDirs.map((d) => (f: string) => isUnder(d, f)),
     // Reserved workspace paths (diff/patch) are always excluded by policy.
     (f: string) => isReservedWorkspacePath(stanRel, f),
   ];
@@ -169,7 +165,7 @@ export async function filterFiles(
 
     const blocked: Matcher[] = [
       // .git is always excluded (never include, even via includes)
-      (f: string) => matchesPrefix(f, '.git'),
+      (f: string) => isUnder('.git', f),
       // Still reserve-exclude patch/diff even if explicitly included.
       (f: string) => isReservedWorkspacePath(stanRel, f),
       ...(includeOutputDir

@@ -14,6 +14,6 @@ Last updated: 2026-01-24Z
 - For SSR robustness, use a shared resolver that prefers named exports and falls back to default properties (and optionally callable default export) with clear error messages.
 - For generic utility needs (dedupe, select/filter, object shaping), prefer Radash over local ad-hoc implementations when semantics match; then remove redundant local helpers.
 
-## Open questions
+## Decisions
 
-- None.
+- Path normalization: Consolidate `isUnder` / `matchesPrefix` logic to use `src/stan/path/prefix.ts` everywhere. This ensures consistent POSIX handling and reduces duplicated normalization code.

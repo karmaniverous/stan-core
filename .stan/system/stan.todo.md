@@ -6,9 +6,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- DRY follow-through: finish the test sweep + remaining duplicated helpers
-  - Convert remaining `mkdtemp/rm` test patterns to `src/test/tmp.ts` (`makeTempDir`/`cleanupTempDir`) for consistency and Windows stability.
-
 - Context mode (`--context`) follow-through: stan-cli wiring
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
@@ -240,4 +237,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Refactor: consolidate path helpers in context modules
   - Replaced duplicated `toPosix`, `normalizePrefix`, and `isUnder` implementations in `src/stan/context/allowlist.ts`, `archive-flow.ts`, `budget.ts`, and `stage.ts` with imports from `src/stan/path/repo.ts` and `src/stan/path/prefix.ts`.
-  - Verified that `repo.toPosix` (which strips leading `./`) is safe for the affected use cases (node IDs, glob matching, and `stageRootFor`).
+  - Verified that `repo.toPosix` (which strips leading `./`) is safe for the affected use cases (node IDs, glob matching, and `stageRootFor`).
+
+- DRY follow-through: test temp-dirs + path helpers
+  - Standardized test temp-dir usage across the codebase to use `src/test/tmp.ts` (`makeTempDir`/`cleanupTempDir`).
+  - Consolidated `matchesPrefix`/`isUnder` logic in `src/stan/fs.ts`, `src/stan/fs/match.ts`, and `src/stan/fs/reserved.ts` to use shared `@/stan/path/prefix`.

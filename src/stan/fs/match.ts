@@ -9,6 +9,8 @@
  */
 import picomatch from 'picomatch';
 
+import { isUnder } from '@/stan/path/prefix';
+
 const hasGlob = (p: string): boolean =>
   /[*?[\]{}()!]/.test(p) || p.includes('**');
 
@@ -18,16 +20,12 @@ const normalize = (p: string): string =>
     .replace(/^\.\/+/, '')
     .replace(/\/+$/, '');
 
-const matchesPrefix = (file: string, prefix: string): boolean => {
-  const norm = normalize(prefix);
-  return file === norm || file.startsWith(norm + '/');
-};
-
 const toMatcher = (pattern: string): ((f: string) => boolean) => {
   const pat = normalize(pattern);
   if (!hasGlob(pat)) {
     if (!pat) return () => false;
-    return (f: string) => matchesPrefix(normalize(f), pat);
+    // isUnder(prefix, file)
+    return (f: string) => isUnder(pat, f);
   }
   const isMatch = picomatch(pat, { dot: true });
   return (f: string) => isMatch(normalize(f));

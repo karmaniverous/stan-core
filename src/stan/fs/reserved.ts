@@ -9,21 +9,17 @@ import {
   ARCHIVE_TAR,
   ARCHIVE_WARNINGS,
 } from '@/stan/archive/constants';
+import { isUnder } from '@/stan/path/prefix';
 
 const norm = (s: string): string => s.replace(/\\/g, '/');
-const under = (prefix: string, p: string): boolean => {
-  const a = norm(prefix).replace(/\/+$/, '');
-  const b = norm(p);
-  return b === a || b.startsWith(`${a}/`);
-};
 
 /** Reserved workspace subpaths never included in archives by policy. */
 export const isReservedWorkspacePath = (
   stanPath: string,
   p: string,
 ): boolean => {
-  const base = norm(stanPath);
-  return under(`${base}/diff`, p) || under(`${base}/patch`, p);
+  // isUnder normalizes, so we can pass stanPath directly or pre-join
+  return isUnder(`${stanPath}/diff`, p) || isUnder(`${stanPath}/patch`, p);
 };
 
 /** Reserved archive file names under <stanPath>/output. */
@@ -38,4 +34,4 @@ export const isOutputArchivePath = (stanPath: string, p: string): boolean => {
 };
 
 // re-export utility for callers that need a prefix check
-export const isUnder = under;
+export { isUnder };
