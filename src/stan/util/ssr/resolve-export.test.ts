@@ -6,7 +6,7 @@ describe('resolveExport (SSR-safe named-or-default export resolver)', () => {
   it('prefers named export when present', async () => {
     const fn = () => 'ok';
     const out = await resolveExport(
-      async () => ({ foo: fn }),
+      () => Promise.resolve({ foo: fn }),
       'foo',
       functionGuard<() => string>(),
       { moduleLabel: 'x' },
@@ -17,7 +17,7 @@ describe('resolveExport (SSR-safe named-or-default export resolver)', () => {
   it('falls back to default.<name> when named export is missing', async () => {
     const fn = () => 'ok';
     const out = await resolveExport(
-      async () => ({ default: { foo: fn } }),
+      () => Promise.resolve({ default: { foo: fn } }),
       'foo',
       functionGuard<() => string>(),
       { moduleLabel: 'x' },
@@ -28,7 +28,7 @@ describe('resolveExport (SSR-safe named-or-default export resolver)', () => {
   it('accepts callable default export when enabled', async () => {
     const fn = () => 'ok';
     const out = await resolveExport(
-      async () => ({ default: fn }),
+      () => Promise.resolve({ default: fn }),
       'foo',
       functionGuard<() => string>(),
       { moduleLabel: 'x', acceptCallableDefault: true },
@@ -39,9 +39,7 @@ describe('resolveExport (SSR-safe named-or-default export resolver)', () => {
   it('throws a clear error when import fails', async () => {
     await expect(
       resolveExport(
-        async () => {
-          throw new Error('boom');
-        },
+        () => Promise.reject(new Error('boom')),
         'foo',
         functionGuard<() => string>(),
         { moduleLabel: 'x' },
@@ -52,7 +50,7 @@ describe('resolveExport (SSR-safe named-or-default export resolver)', () => {
   it('throws when export cannot be resolved', async () => {
     await expect(
       resolveExport(
-        async () => ({ default: {} }),
+        () => Promise.resolve({ default: {} }),
         'foo',
         (v): v is string => {
           return typeof v === 'string';

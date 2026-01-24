@@ -215,3 +215,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added a shared SSR-safe export resolver (`src/stan/util/ssr/resolve-export.ts`) and migrated archive/diff/fs call sites to use it.
   - Hoisted diff snapshot/sentinel filenames into `src/stan/diff/constants.ts` and deduplicated sha256 hashing via `src/stan/diff/hash.ts`.
   - Split vitest-free filesystem cleanup into `src/test/fs.ts`, added `src/test/tmp.ts`, and began a broad test sweep to standardize temp dir usage.
+- Chore: fix lint + knip hygiene
+  - Removed unused imports in tests and diff modules flagged by ESLint.
+  - Adjusted `resolve-export` tests to avoid `require-await` violations.
+  - Refactored `functionGuard` typing to avoid `Function` and satisfy strict lint rules; removed an unused helper file flagged by Knip.

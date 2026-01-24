@@ -4,9 +4,9 @@ Last updated: 2026-01-24Z
 
 ## Current focus
 
-- DRY pass across stan-core runtime + tests.
-- Centralize SSR-safe dynamic export resolution used by archive/diff/fs paths.
-- Reduce test flake and repetition by standardizing temp-dir creation/cleanup.
+- Finish the DRY pass across stan-core runtime + tests.
+- Keep lint + Knip clean while doing the sweep (no unused imports/files; avoid `require-await` noise).
+- Continue reducing test flake and repetition by standardizing temp-dir creation/cleanup.
 
 ## Working model (high signal)
 
@@ -16,4 +16,4 @@ Last updated: 2026-01-24Z
 
 ## Open questions
 
-- None; continue sweeping remaining tests/modules for duplicated `toPosix/normalizePrefix/isUnder/uniqSorted` patterns where semantics match.
+- None; continue sweeping remaining tests/modules for duplicated helpers where semantics truly match.
