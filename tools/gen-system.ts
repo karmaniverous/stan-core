@@ -1,3 +1,8 @@
+/**
+ * CLI tool to assemble <stanPath>/system/stan.system.md from parts; filesystem
+ * IO only; invoked via npm script; no exports for library consumption.
+ * @module
+ */
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 

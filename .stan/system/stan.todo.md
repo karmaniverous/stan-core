@@ -245,4 +245,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Fix: resolve reference error in match.ts refactor
   - Corrected `src/stan/fs/match.ts` to call `normalizePrefix` instead of the removed local `normalize` helper inside `makeGlobMatcher`.
-  - Verified unit tests (`src/stan/fs.match.test.ts`) now pass.
+  - Verified unit tests (`src/stan/fs.match.test.ts`) now pass.
+
+- Docs: apply module docblocks to root tools/configs
+  - Added/converted `@module` docblocks for `tools/gen-system.ts`, `rollup.config.ts`, and `vitest.config.ts`.
+  - Ensures compliance with dependency graph quality rules for non-test code files.

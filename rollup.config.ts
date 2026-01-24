@@ -1,4 +1,8 @@
-/** See <stanPath>/system/stan.project.md for global requirements. */
+/**
+ * Rollup build configuration; handles ESM/DTS bundling and docs copy; see
+ * <stanPath>/system/stan.project.md for global requirements.
+ * @module
+ */
 import aliasPlugin, { type Alias } from '@rollup/plugin-alias';
 import commonjsPlugin from '@rollup/plugin-commonjs';
 import jsonPlugin from '@rollup/plugin-json';
