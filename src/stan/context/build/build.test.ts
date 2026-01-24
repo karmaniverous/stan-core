@@ -7,7 +7,7 @@ import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 // Stub dynamic deps module so we can simulate missing deps deterministically.
 let typeScriptOk = true;
 let graphFactory: (() => unknown) | null = null;
-vi.mock('./deps', () => ({
+vi.mock('../deps', () => ({
   __esModule: true,
   loadTypeScript: () => {
     if (!typeScriptOk) throw new Error('no typescript');
@@ -21,7 +21,7 @@ vi.mock('./deps', () => ({
   },
 }));
 
-import { buildDependencyMeta } from './build';
+import { buildDependencyMeta } from './index';
 
 describe('buildDependencyMeta (context mode: deps + normalization)', () => {
   it('throws when TypeScript cannot be imported (only when invoked)', async () => {

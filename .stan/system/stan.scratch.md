@@ -9,6 +9,7 @@ Last updated: 2026-01-24Z
 - Module docblock rollout is nearly complete; ensuring root config and tools are compliant.
 - Decomposed `src/stan/validate/response.ts` (>300 LOC) into structured modules; restored missing dependency-mode validation logic to fix tests.
 - Decomposed `src/stan/patch/file-ops.ts` (>300 LOC) into structured modules (`types`, `parse`, `exec`, `index`) to satisfy the long-file policy.
+- Decomposed `src/stan/context/build.ts` (>300 LOC) into structured modules (`types`, `graph`, `normalize`, `index`) to satisfy the long-file policy.
 
 ## Working model (high signal)
 

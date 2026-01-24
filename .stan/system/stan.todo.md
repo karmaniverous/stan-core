@@ -264,4 +264,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Refactor: decompose File Ops module (long-file compliance)
   - Split `src/stan/patch/file-ops.ts` (approx 23KB) into `types.ts`, `parse.ts`, `exec.ts`, and `index.ts`.
   - Updated tests to import from the decomposed modules.
+  - Maintains public API compatibility via `index.ts` re-exports.
+
+- Refactor: decompose build module (long-file compliance)
+  - Split `src/stan/context/build.ts` (approx 22KB) into `types.ts`, `graph.ts`, `normalize.ts`, and `index.ts`.
+  - Updated `build.test.ts` imports.
   - Maintains public API compatibility via `index.ts` re-exports.
