@@ -13,6 +13,7 @@ import type { SelectionReport } from '@/stan/archive/report';
 import { surfaceSelectionReport } from '@/stan/archive/report';
 import { makeTarFilter } from '@/stan/archive/util';
 import { ensureOutAndDiff, filterFiles, listFiles } from '@/stan/fs';
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
 
 type TarLike = {
   create: (
@@ -71,14 +72,12 @@ export async function createMetaArchive(
   const hasState =
     all.includes(depStateRel) && existsSync(resolve(cwd, depStateRel));
 
-  const files = Array.from(
-    new Set<string>([
-      ...sys,
-      depMetaRel,
-      ...(hasState ? [depStateRel] : []),
-      ...repoRootBaseFiles,
-    ]),
-  ).sort((a, b) => a.localeCompare(b));
+  const files = uniqSortedStrings([
+    ...sys,
+    depMetaRel,
+    ...(hasState ? [depStateRel] : []),
+    ...repoRootBaseFiles,
+  ]);
 
   const archivePath = resolve(outDir, ARCHIVE_META_TAR);
   surfaceSelectionReport(

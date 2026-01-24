@@ -23,6 +23,7 @@ import {
 } from '@/stan/diff/constants';
 import { computeFileHashes } from '@/stan/diff/hash';
 import { ensureOutAndDiff } from '@/stan/fs';
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
 import { functionGuard, resolveExport } from '@/stan/util/ssr/resolve-export';
 
 export type { SnapshotUpdateMode };
@@ -40,11 +41,6 @@ type TarLike = {
 
 const toPosix = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
-
-const uniqSorted = (xs: string[]): string[] =>
-  Array.from(new Set(xs.map((s) => toPosix(s).trim()).filter(Boolean))).sort(
-    (a, b) => a.localeCompare(b),
-  );
 
 const snapshotPathFor = (diffDir: string): string =>
   join(diffDir, ARCHIVE_SNAPSHOT_FILE);
@@ -98,7 +94,7 @@ export async function createArchiveDiffFromFiles(args: {
     onSelectionReport,
   } = args;
 
-  const files = uniqSorted(relFiles);
+  const files = uniqSortedStrings(relFiles, toPosix);
 
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -120,7 +116,7 @@ export async function createArchiveDiffFromFiles(args: {
   const classifyForArchive = await getClassifyForArchive();
   const { textFiles, excludedBinaries, largeText, warningsBody } =
     await classifyForArchive(cwd, changedRaw);
-  const changed = uniqSorted(textFiles);
+  const changed = uniqSortedStrings(textFiles);
 
   surfaceArchiveWarnings(warningsBody, onArchiveWarnings);
 

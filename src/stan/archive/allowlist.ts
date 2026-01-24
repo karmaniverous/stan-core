@@ -18,6 +18,7 @@ import {
   surfaceArchiveWarnings,
 } from '@/stan/archive/util';
 import { ensureOutAndDiff } from '@/stan/fs';
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
 import { functionGuard, resolveExport } from '@/stan/util/ssr/resolve-export';
 
 type TarLike = {
@@ -48,11 +49,6 @@ export type CreateArchiveFromFilesOptions = {
 const toPosix = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
 
-const uniqSorted = (xs: string[]): string[] =>
-  Array.from(new Set(xs.map((s) => toPosix(s).trim()).filter(Boolean))).sort(
-    (a, b) => a.localeCompare(b),
-  );
-
 /**
  * Create `stanPath/output/archive.tar` (or custom file name) from an explicit
  * allowlist of repo-relative paths.
@@ -77,7 +73,7 @@ export async function createArchiveFromFiles(
   let fileName = rawFileName ?? 'archive.tar';
   if (!fileName.endsWith('.tar')) fileName += '.tar';
 
-  const files = uniqSorted(relFiles);
+  const files = uniqSortedStrings(relFiles, toPosix);
 
   const { outDir, diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -134,7 +130,7 @@ export async function createArchiveFromFiles(
     },
     includeOutputDir
       ? composeFilesWithOutput(textFiles, stanPath)
-      : uniqSorted(textFiles),
+      : uniqSortedStrings(textFiles),
   );
 
   // Ensure prev exists on first run.

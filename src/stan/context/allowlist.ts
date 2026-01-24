@@ -15,6 +15,7 @@ import {
   isOutputArchivePath,
   isReservedWorkspacePath,
 } from '@/stan/fs/reserved';
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
 
 import type { DependencyMetaFile } from './schema';
 import { parseDependencyStateFile } from './schema';
@@ -140,7 +141,7 @@ export const computeContextAllowlistPlan = async (args: {
   const depStateExists =
     all.includes(depStateRel) && existsSync(resolve(cwd, depStateRel));
 
-  const baseFiles = uniqSorted([
+  const baseFiles = uniqSortedStrings([
     ...sysFiles,
     depMetaRel,
     ...(depStateExists ? [depStateRel] : []),
@@ -181,9 +182,10 @@ export const computeContextAllowlistPlan = async (args: {
   const stageNodeIds = uniqSorted(
     selectedFiltered.filter((id) => isStageableNodeId(stanRel, id)),
   );
+  const stageNodeIdsSorted = uniqSortedStrings(stageNodeIds);
 
   // Allowlist is Base + selected closure.
-  const allowlistFiles = uniqSorted(
+  const allowlistFiles = uniqSortedStrings(
     [...baseFiles, ...selectedFiltered]
       .filter((p) => !isExcluded(p))
       .filter((p) => !isReserved(p)),
@@ -191,8 +193,8 @@ export const computeContextAllowlistPlan = async (args: {
 
   return {
     baseFiles,
-    selectedNodeIds: uniqSorted(selectedFiltered),
-    stageNodeIds,
+    selectedNodeIds: uniqSortedStrings(selectedFiltered),
+    stageNodeIds: stageNodeIdsSorted,
     allowlistFiles,
     usedDiskState,
   };

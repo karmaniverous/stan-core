@@ -8,6 +8,8 @@
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
+
 import type { DependencyMetaFile } from './schema';
 
 const TOKEN_ESTIMATE_DIVISOR = 4;
@@ -15,11 +17,6 @@ const DEFAULT_TOP_N = 10;
 
 const toPosix = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
-
-const uniqSorted = (xs: ReadonlyArray<string>): string[] =>
-  Array.from(new Set(xs.map((s) => toPosix(s).trim()).filter(Boolean))).sort(
-    (a, b) => a.localeCompare(b),
-  );
 
 export type BudgetSource = 'meta' | 'stat' | 'missing';
 
@@ -110,9 +107,11 @@ export const summarizeContextAllowlistBudget = async (args: {
       ? Math.floor(args.topN)
       : DEFAULT_TOP_N;
 
-  const baseSet = new Set<string>(uniqSorted(plan.baseFiles));
-  const closureSet = new Set<string>(uniqSorted(plan.selectedNodeIds));
-  const allowlist = uniqSorted(plan.allowlistFiles);
+  const baseSet = new Set<string>(uniqSortedStrings(plan.baseFiles, toPosix));
+  const closureSet = new Set<string>(
+    uniqSortedStrings(plan.selectedNodeIds, toPosix),
+  );
+  const allowlist = uniqSortedStrings(plan.allowlistFiles, toPosix);
 
   const warnings: string[] = [];
 
@@ -160,7 +159,7 @@ export const summarizeContextAllowlistBudget = async (args: {
       overlap: { files: overlap.length, bytes: sumBytes(overlap) },
     },
     largest,
-    warnings: uniqSorted(warnings),
+    warnings: uniqSortedStrings(warnings),
   };
 };
 
