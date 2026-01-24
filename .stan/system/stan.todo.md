@@ -225,4 +225,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Adjusted the internal “any function” constraint to avoid parameter contravariance issues and restore `tsc` green.
 - Chore: standardize remaining test temp-dir patterns
   - Replaced remaining direct `mkdtemp/rm` usage in tests with `makeTempDir`/`cleanupTempDir` from `src/test/tmp.ts`.
-  - Ensures consistent cleanup and reduces Windows EBUSY/ENOTEMPTY flake risk.
+  - Ensures consistent cleanup and reduces Windows EBUSY/ENOTEMPTY flake risk.
+- System prompt: do not reinvent the wheel
+  - Added a system-level directive to prefer established, type-safe, tree-shakable dependencies (e.g., radash, zod) over home-grown solutions to well-traveled problems.

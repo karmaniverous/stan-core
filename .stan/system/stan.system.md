@@ -148,8 +148,11 @@ List numbering policy (requirements & plan docs)
 - Code smells & workarounds policy (system‑level directive):
   - Treat the need for shims, passthrough arguments, or other workarounds as a code smell. Prefer adopting widely‑accepted patterns instead.
   - Cite and adapt the guidance to the codebase; keep tests and docs aligned.
+- Do not reinvent the wheel (system‑level directive):
+  - Aggressively prefer established, type-safe, tree-shakable dependencies (e.g., `radash`, `zod`) over home-grown solutions to well-traveled problems.
+  - Only build custom code when a dependency is unsuitable (API mismatch, maintenance risk, licensing/security, unacceptable size), and keep it small and isolated.
 - Open‑Source First (system‑level directive):
-  - Before building any non‑trivial module (e.g., interactive prompts/UIs,argument parsing, selection lists, archiving/diffing helpers, spinners),search npm and GitHub for actively‑maintained, battle‑tested libraries.
+  - Before building any non‑trivial module (e.g., interactive prompts/UIs, argument parsing, selection lists, archiving/diffing helpers, spinners), search npm and GitHub for actively‑maintained, battle‑tested libraries.
   - Present 1–3 viable candidates with trade‑offs and a short plan. Discuss and agree on an approach before writing custom code.
 
 # Design‑first lifecycle (always prefer design before code)
