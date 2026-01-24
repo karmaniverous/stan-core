@@ -43,8 +43,7 @@ stan-core:
     - docs/**
   imports:
     peer-docs:
-      - ../peer/.stan/system/stan.requirements.md
-      - ../peer/.stan/system/stan.todo.md
+      - ../peer/.stan/system/*.md
 ```
 
 ## Workspace layout under `stanPath`
@@ -349,8 +348,8 @@ Contract (v1):
 
 Dependency requirements (loaded only when invoked):
 
-- `buildDependencyMeta` dynamically imports `typescript` and throws if it cannot be imported.
 - `buildDependencyMeta` dynamically imports `@karmaniverous/stan-context` and throws if it is not installed.
+- TypeScript is required by `@karmaniverous/stan-context` and MUST be provided explicitly by the host (module injection or `typescriptPath`).
 - This keeps non-context usage lean: these dependencies are not loaded unless the caller invokes context mode.
 
 Artifacts (under `.stan/context/`):
@@ -365,6 +364,14 @@ Artifacts (under `.stan/context/`):
 - staged external context (engine-staged for archiving):
   - `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
   - `.stan/context/abs/<sha256(sourceAbs)>/<basename>`
+
+TypeScript injection (host contract):
+
+- When building the dependency graph, the host (typically `stan-cli`) should provide TypeScript explicitly.
+- `@karmaniverous/stan-context` accepts:
+  - `typescript`: a TypeScript compiler API module (preferred when the host already has it loaded), or
+  - `typescriptPath`: an absolute path to a CommonJS entry module file (for example, from `createRequire(import.meta.url).resolve('typescript')`).
+- stan-core does not attempt to resolve TypeScript itself; it passes host-provided values through to stan-context.
 
 Archive output:
 

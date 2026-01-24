@@ -11,6 +11,10 @@ export type BuildDependencyMetaArgs = {
   nodeDescriptionLimit?: number;
   nodeDescriptionTags?: string[];
   maxErrors?: number;
+  /** Host-injected TypeScript compiler API module (passed through to stan-context). */
+  typescript?: unknown;
+  /** Host-injected absolute path to a CommonJS TypeScript entry module (passed through to stan-context). */
+  typescriptPath?: string;
 };
 
 export type NodeSource =

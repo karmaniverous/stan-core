@@ -41,6 +41,7 @@ const externalPkgs = new Set<string>([
   'clipboardy', // requires platform fallback binaries at runtime; bundling breaks resolution
   // fs-extra is a runtime dependency; keep external to avoid bundling its internals.
   'fs-extra',
+  '@karmaniverous/stan-context', // peer dependency; keep external to avoid bundling dynamic loaders
 ]);
 
 const copyDocsPlugin = (dest: string): Plugin => {

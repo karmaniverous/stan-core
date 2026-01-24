@@ -2,12 +2,13 @@
  * Dynamic loader and invoker for \@karmaniverous/stan-context.
  * @module
  */
-import { loadStanContext, loadTypeScript } from '../deps';
+import { loadStanContext } from '../deps';
 import type { BuildDependencyMetaArgs, RawResult } from './types';
 
 /**
  * Load dependencies and generate the raw dependency graph.
- * Throws if TypeScript or stan-context is missing.
+ * Throws if stan-context cannot be imported or if stan-context rejects inputs
+ * (for example, when the host did not inject TypeScript as required).
  */
 export const generateRawGraph = async (
   args: BuildDependencyMetaArgs,
@@ -18,15 +19,9 @@ export const generateRawGraph = async (
     nodeDescriptionLimit,
     nodeDescriptionTags,
     maxErrors,
+    typescript,
+    typescriptPath,
   } = args;
-
-  try {
-    await loadTypeScript();
-  } catch {
-    throw new Error(
-      'dependency graph mode requires TypeScript; install "typescript" in this environment',
-    );
-  }
 
   const mod = await loadStanContext().catch(() => {
     throw new Error(
@@ -34,11 +29,17 @@ export const generateRawGraph = async (
     );
   });
 
-  return (await mod.generateDependencyGraph({
+  const opts: Record<string, unknown> = {
     cwd,
     config: selection ?? {},
     nodeDescriptionLimit,
     nodeDescriptionTags,
     maxErrors,
-  })) as RawResult;
+  };
+  if (typeof typescript !== 'undefined') opts.typescript = typescript;
+  if (typeof typescriptPath === 'string' && typescriptPath.trim().length > 0) {
+    opts.typescriptPath = typescriptPath.trim();
+  }
+
+  return (await mod.generateDependencyGraph(opts)) as RawResult;
 };

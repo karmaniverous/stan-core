@@ -145,8 +145,9 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
   - Purpose
     - Expand the archived context beyond baseline selection using a dependency graph (“meta”) and a selection state file (“state”).
     - This supersedes facet/anchor-based archive shaping as the primary mechanism for selecting context.
-  - TypeScript strictness (graph generation)
-    - When the caller (CLI) directs stan-core to generate a dependency graph, stan-core MUST require TypeScript to be available and MUST throw if it is not available.
+  - TypeScript provisioning (graph generation)
+    - TypeScript is required by the context compiler (`@karmaniverous/stan-context`) and MUST be provided explicitly by the host (e.g., stan-cli) via injection (module or `typescriptPath`).
+    - stan-core MUST NOT attempt to import or resolve TypeScript itself; it MUST pass through host-provided TypeScript inputs to stan-context and surface stan-context’s errors.
   - Canonical files and locations
     - Dependency artifacts live under `<stanPath>/context/` (repo default: `.stan/context/`) and SHOULD be gitignored:
       - `<stanPath>/context/dependency.meta.json` (assistant-facing meta)

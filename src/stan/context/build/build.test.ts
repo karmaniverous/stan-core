@@ -4,19 +4,29 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../../test/tmp';
-// Stub dynamic deps module so we can simulate missing deps deterministically.
-let typeScriptOk = true;
+// Stub dynamic deps module so we can validate pass-through options deterministically.
 let graphFactory: (() => unknown) | null = null;
+let lastOpts: unknown = null;
+
 vi.mock('../deps', () => ({
   __esModule: true,
-  loadTypeScript: () => {
-    if (!typeScriptOk) throw new Error('no typescript');
-    return Promise.resolve({});
-  },
   loadStanContext: () => {
     return Promise.resolve({
-      generateDependencyGraph: () =>
-        Promise.resolve(graphFactory ? graphFactory() : { graph: {} }),
+      generateDependencyGraph: (opts: unknown) => {
+        lastOpts = opts;
+        const o =
+          opts && typeof opts === 'object'
+            ? (opts as Record<string, unknown>)
+            : {};
+        // Mimic stan-context behavior: reject when TS injection is missing.
+        if (
+          !Object.prototype.hasOwnProperty.call(o, 'typescript') &&
+          !Object.prototype.hasOwnProperty.call(o, 'typescriptPath')
+        ) {
+          throw new Error('stan-context: missing TypeScript injection');
+        }
+        return Promise.resolve(graphFactory ? graphFactory() : { graph: {} });
+      },
     });
   },
 }));
@@ -24,15 +34,31 @@ vi.mock('../deps', () => ({
 import { buildDependencyMeta } from './index';
 
 describe('buildDependencyMeta (context mode: deps + normalization)', () => {
-  it('throws when TypeScript cannot be imported (only when invoked)', async () => {
-    typeScriptOk = false;
+  it('passes host-injected typescript and typescriptPath through to stan-context', async () => {
     graphFactory = () => ({ graph: { nodes: {}, edges: {} } });
 
     await expect(
-      buildDependencyMeta({ cwd: process.cwd(), stanPath: '.stan' }),
-    ).rejects.toThrow(/requires TypeScript/i);
+      buildDependencyMeta({
+        cwd: process.cwd(),
+        stanPath: '.stan',
+        typescript: { injected: true },
+        typescriptPath: '/abs/typescript/lib/typescript.js',
+      }),
+    ).resolves.toBeTruthy();
 
-    typeScriptOk = true;
+    const o =
+      lastOpts && typeof lastOpts === 'object'
+        ? (lastOpts as Record<string, unknown>)
+        : {};
+    expect(o.typescript).toEqual({ injected: true });
+    expect(o.typescriptPath).toBe('/abs/typescript/lib/typescript.js');
+  });
+
+  it('does not gate TypeScript itself; errors come from stan-context when injection missing', async () => {
+    graphFactory = () => ({ graph: { nodes: {}, edges: {} } });
+    await expect(
+      buildDependencyMeta({ cwd: process.cwd(), stanPath: '.stan' }),
+    ).rejects.toThrow(/missing TypeScript injection/i);
   });
 
   it('omits builtin/missing nodes and normalizes npm + abs externals', async () => {
@@ -91,7 +117,7 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
       errors: [],
     });
 
-    const out = await buildDependencyMeta({ cwd, stanPath });
+    const out = await buildDependencyMeta({ cwd, stanPath, typescript: {} });
     const nodeIds = Object.keys(out.meta.nodes);
 
     // Builtin/missing omitted

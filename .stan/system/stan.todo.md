@@ -287,3 +287,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Interop: request TS injection support in stan-context
   - Posted an outgoing interop note to stan-context proposing a host-provided TypeScript entrypoint path/provider option for `generateDependencyGraph`.
   - Intended outcome: eliminate brittle ambient TS resolution from bundled outputs and make stan-cli context mode “just work” without repo-local installs.
+
+- Context mode DX: pass through TS injection to stan-context
+  - Removed stan-core’s direct TypeScript import/gate for dependency graph mode; stan-core now delegates TS availability to stan-context.
+  - Extended `buildDependencyMeta` args to accept `typescript` and `typescriptPath` (host-provided) and pass them through to `generateDependencyGraph`.
+  - Updated tests to assert pass-through behavior and to ensure missing-injection failures originate from stan-context (not a core-side gate).
+  - Externalized `@karmaniverous/stan-context` in Rollup to prevent bundling and avoid runtime loader/resolution regressions.
+  - Updated requirements/docs to reflect the new host-injection contract.

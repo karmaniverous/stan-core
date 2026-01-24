@@ -96,14 +96,9 @@
   "module": "dist/mjs/index.js",
   "name": "@karmaniverous/stan-core",
   "peerDependencies": {
-    "@karmaniverous/stan-context": ">=0.0.0",
-    "typescript": ">=5"
+    "@karmaniverous/stan-context": ">=0.0.0"
   },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
-  },
+  "peerDependenciesMeta": {},
   "publishConfig": {
     "access": "public"
   },
