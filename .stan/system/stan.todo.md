@@ -8,7 +8,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - DRY follow-through: finish the test sweep + remaining duplicated helpers
   - Convert remaining `mkdtemp/rm` test patterns to `src/test/tmp.ts` (`makeTempDir`/`cleanupTempDir`) for consistency and Windows stability.
-  - Continue consolidating identical `toPosix/normalizePrefix/isUnder/uniqSorted` variants where semantics truly match (avoid behavior drift).
 
 - Context mode (`--context`) follow-through: stan-cli wiring
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
@@ -237,4 +236,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Refactor: use uniqSortedStrings in context helpers
   - `src/stan/context/archive-flow.ts`: replaced local Set-based `uniq` with shared `uniqSortedStrings` for deterministic include/stage lists.
   - `src/stan/context/state.ts`: replaced local Set+sort helper with shared `uniqSortedStrings`.
-  - `src/stan/context/validate/npm.ts`: replaced Set+sort root de-dupe with `uniqSortedStrings`.
+  - `src/stan/context/validate/npm.ts`: replaced Set+sort root de-dupe with `uniqSortedStrings`.
+
+- Refactor: consolidate path helpers in context modules
+  - Replaced duplicated `toPosix`, `normalizePrefix`, and `isUnder` implementations in `src/stan/context/allowlist.ts`, `archive-flow.ts`, `budget.ts`, and `stage.ts` with imports from `src/stan/path/repo.ts` and `src/stan/path/prefix.ts`.
+  - Verified that `repo.toPosix` (which strips leading `./`) is safe for the affected use cases (node IDs, glob matching, and `stageRootFor`).

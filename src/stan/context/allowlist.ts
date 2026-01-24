@@ -16,25 +16,13 @@ import {
   isOutputArchivePath,
   isReservedWorkspacePath,
 } from '@/stan/fs/reserved';
+import { isUnder, normalizePrefix } from '@/stan/path/prefix';
+import { toPosix } from '@/stan/path/repo';
 import { uniqSortedStrings } from '@/stan/util/array/uniq';
 
 import type { DependencyMetaFile } from './schema';
 import { parseDependencyStateFile } from './schema';
 import { computeSelectedNodeIds } from './state';
-
-const toPosix = (p: string): string =>
-  p.replace(/\\/g, '/').replace(/^\.\/+/, '');
-
-const normalizePrefix = (p: string): string =>
-  toPosix(p)
-    .replace(/^\.\/+/, '')
-    .replace(/\/+$/, '');
-
-const isUnder = (prefix: string, rel: string): boolean => {
-  const a = normalizePrefix(prefix);
-  const b = normalizePrefix(rel);
-  return b === a || b.startsWith(`${a}/`);
-};
 
 const isStageableNodeId = (stanPath: string, nodeId: string): boolean => {
   const base = normalizePrefix(stanPath);

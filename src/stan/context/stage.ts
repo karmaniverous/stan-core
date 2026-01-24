@@ -19,21 +19,11 @@ import path from 'node:path';
 
 import { ensureDir, remove } from 'fs-extra';
 
+import { isUnder, normalizePrefix } from '@/stan/path/prefix';
+import { toPosix } from '@/stan/path/repo';
+
 import type { NodeSource } from './build';
 import type { DependencyMetaNode } from './schema';
-
-const toPosix = (p: string): string => p.replace(/\\/g, '/');
-
-const normalizePrefix = (p: string): string =>
-  toPosix(p)
-    .replace(/^\.\/+/, '')
-    .replace(/\/+$/, '');
-
-const isUnder = (prefix: string, rel: string): boolean => {
-  const a = normalizePrefix(prefix);
-  const b = normalizePrefix(rel);
-  return b === a || b.startsWith(`${a}/`);
-};
 
 const computeSha256Hex = (buf: Buffer): string =>
   createHash('sha256').update(buf).digest('hex');

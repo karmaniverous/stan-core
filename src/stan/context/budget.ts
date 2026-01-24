@@ -8,15 +8,13 @@
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 
+import { toPosix } from '@/stan/path/repo';
 import { uniqSortedStrings } from '@/stan/util/array/uniq';
 
 import type { DependencyMetaFile } from './schema';
 
 const TOKEN_ESTIMATE_DIVISOR = 4;
 const DEFAULT_TOP_N = 10;
-
-const toPosix = (p: string): string =>
-  p.replace(/\\/g, '/').replace(/^\.\/+/, '');
 
 export type BudgetSource = 'meta' | 'stat' | 'missing';
 

@@ -5,7 +5,7 @@ Last updated: 2026-01-24Z
 ## Current focus
 
 - Apply Radash across the stan-core codebase where it is a clear fit (replace home-grown or repeated “utility” patterns with radash equivalents).
-- Start with low-risk, behavior-preserving wins (e.g., “unique + sorted strings” helpers) and keep deterministic ordering semantics explicit.
+- Finish DRY follow-through: consolidate path normalization helpers and standardize test temp-dir usage.
 - Keep lint + typecheck + tests green during the sweep (avoid strictFunctionTypes contravariance traps and `require-await` noise).
 
 ## Working model (high signal)

@@ -15,6 +15,7 @@ import type { CreateArchiveOptions } from '../archive';
 import { createArchive } from '../archive';
 import type { SnapshotUpdateMode } from '../diff';
 import { createArchiveDiff } from '../diff';
+import { isUnder, normalizePrefix } from '../path/prefix';
 import { uniqSortedStrings } from '../util/array/uniq';
 import type { NodeSource } from './build';
 import type {
@@ -27,21 +28,8 @@ import type { StageDependencyContextResult } from './stage';
 import { stageDependencyContext } from './stage';
 import { computeSelectedNodeIds } from './state';
 
-const toPosix = (p: string): string => p.replace(/\\/g, '/');
-
-const normalizePrefix = (p: string): string =>
-  toPosix(p)
-    .replace(/^\.\/+/, '')
-    .replace(/\/+$/, '');
-
 const contextIncludeGlob = (stanPath: string): string =>
   `${normalizePrefix(stanPath)}/context/**`;
-
-const isUnder = (prefix: string, rel: string): boolean => {
-  const a = normalizePrefix(prefix);
-  const b = normalizePrefix(rel);
-  return b === a || b.startsWith(`${a}/`);
-};
 
 const isStageableNodeId = (stanPath: string, nodeId: string): boolean => {
   const base = normalizePrefix(stanPath);
