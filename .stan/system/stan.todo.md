@@ -255,4 +255,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Split `src/stan/validate/response.ts` (approx 350 lines) into:
     - `types.ts`, `blocks.ts`, `validate.ts`, `index.ts`.
   - Preserved public API surface in `index.ts` so imports in `src/stan/index.ts` remain valid (Node resolution handles directory index).
-  - Updated tests to import from `validate.ts` (internal) or index as appropriate.
+  - Updated tests to import from `validate.ts` (internal) or index as appropriate.
+
+- Fix: restore dependency mode validation logic
+  - Restored the "missing state patch vs no-change signal" check in `src/stan/validate/response/validate.ts`.
+  - Resolved lint error (unused import `extractH2SectionBody`) and fixed the failing dependency-mode test.

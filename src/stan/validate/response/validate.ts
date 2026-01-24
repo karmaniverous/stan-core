@@ -179,6 +179,32 @@ export const validateResponseMessage = (
     }
   }
 
+  // 5) Dependency state update enforcement (context mode)
+  if (options.dependencyMode) {
+    const sp = options.stanPath?.trim() || '.stan';
+    const depState = `${toPosix(sp)}/context/dependency.state.json`;
+
+    const patchTargets = patches.flatMap((p) => {
+      const diffs = parseDiffHeaders(p.body);
+      return diffs.length > 0 ? diffs.map((d) => toPosix(d.b)) : [];
+    });
+    const hasStatePatch = patchTargets.includes(depState);
+
+    const inputBody = extractH2SectionBody(text, 'Input Data Changes') ?? '';
+    const hasNoChangeSignal =
+      /^\s*-\s*dependency\.state\.json:\s*no change\s*$/m.test(inputBody);
+
+    if (hasStatePatch && hasNoChangeSignal) {
+      errors.push(
+        'dependency mode: both a dependency.state.json Patch and the "dependency.state.json: no change" signal were present; choose exactly one',
+      );
+    } else if (!hasStatePatch && !hasNoChangeSignal) {
+      errors.push(
+        'dependency mode: missing dependency state update; include either a Patch for dependency.state.json or a bullet line "dependency.state.json: no change" under "## Input Data Changes"',
+      );
+    }
+  }
+
   return { ok: errors.length === 0, errors, warnings };
 };
 
