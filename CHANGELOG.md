@@ -2,9 +2,19 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.7.0](https://github.com/karmaniverous/stan-core/compare/0.6.1...0.7.0)
+
+- feat(context): pass TS injection to stan-context [`c1a0d06`](https://github.com/karmaniverous/stan-core/commit/c1a0d063ba5cf70a278b47e9c7e497d8cb5e0807)
+- docs: request TS injection in stan-context [`a7a975f`](https://github.com/karmaniverous/stan-core/commit/a7a975fb6cd026dbcafdddc71b3b571f6b42a8c6)
+- docs: clarify TS injection in stan-core README [`be2e175`](https://github.com/karmaniverous/stan-core/commit/be2e175222f6fc142b70bc396a4b53cd7d652763)
+- updated dependency [`ae71dd2`](https://github.com/karmaniverous/stan-core/commit/ae71dd28f2f75d591b03745a715e1d37fcb85796)
+
 #### [0.6.1](https://github.com/karmaniverous/stan-core/compare/0.6.0...0.6.1)
 
+> 24 January 2026
+
 - docs: tighten prompt checklist + quality rules [`f25a256`](https://github.com/karmaniverous/stan-core/commit/f25a2565b2a42b9f989ce035962bddbbc4922dfb)
+- chore: release v0.6.1 [`0ca3fe5`](https://github.com/karmaniverous/stan-core/commit/0ca3fe55b2d6e19b738fc98539569d0b6d13e52c)
 
 #### [0.6.0](https://github.com/karmaniverous/stan-core/compare/0.5.1...0.6.0)
 
