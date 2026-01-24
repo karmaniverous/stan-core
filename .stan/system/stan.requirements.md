@@ -42,24 +42,6 @@ STAN MUST support a short-term memory device that persists across turns and thre
   - Use this pattern only where dynamic resolution is required for test/SSR robustness; prefer normal static imports for production code paths whenever possible.
   - Do not introduce side effects or console I/O in the resolver; keep it pure and presentation-free.
 
-## 0) Swappable Core (engine integration contract)
-
-stan-cli MUST be able to run against any compatible stan-core at runtime.
-
-- Loader expectations
-  - stan-core exports a constant `CORE_VERSION: string`.
-  - stan-core publishes a stable, documented API surface (see “Public API”).
-  - stan-core provides prompt helpers required by the CLI:
-    - `getPackagedSystemPromptPath(): string | null` resolves packaged `dist/stan.system.md`.
-    - `assembleSystemMonolith(cwd, stanPath)` assembles `<stanPath>/system/parts/*.md` into `<stanPath>/system/stan.system.md` in dev workflows (quiet helper; no logs).
-
-- Packaging
-  - Dist: ESM output under `dist/mjs` with `.d.ts` types under `dist/types`.
-  - The published package is ESM-only (no CommonJS `require()` entrypoint).
-  - No CLI binaries or TTY dependencies in the engine package.
-
----
-
 ## 1) stan-core — Requirements (engine)
 
 ### Context mode (`--context`) — allowlist-only archiving (v1)
@@ -155,7 +137,7 @@ Dependency state update enforcement (assistant + tooling contract)
 
 ### Purpose
 
-Provide a cohesive, dependency‑light engine that implements the durable capabilities of STAN as pure TypeScript services. The engine is transport‑agnostic and swappable at runtime.
+Provide a cohesive, dependency‑light engine that implements the durable capabilities of STAN as pure TypeScript services. The engine is transport‑agnostic.
 
 ### Scope
 

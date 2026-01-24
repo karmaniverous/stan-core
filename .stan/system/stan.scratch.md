@@ -1,10 +1,11 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-23Z
+Last updated: 2026-01-24Z
 
 ## Current focus
 
-- Follow through on stan-cli wiring to consume and present `onSelectionReport` (presentation-only; engine remains silent). See `.stan/interop/stan-cli/20260123-233830Z-selection-report-wiring.md`.
+- stan-cli wiring: consume and present `onSelectionReport` (presentation-only; engine remains silent). See `.stan/interop/stan-cli/20260123-233830Z-selection-report-wiring.md`.
+- Repo policy update: “swappable core” is no longer a concept; do not reference it in stan-core docs or prompts.
 
 ## Working model (high signal)
 

@@ -203,4 +203,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Replaced `src/stan/context/validate.ts` with a small orchestrator and moved implementation into `src/stan/context/validate/**` (npm/abs/path/hash/types).
   - Intended outcome: satisfy the ≤300 LOC module cap while keeping the public API stable (`validateDependencySelection*` exports unchanged).
 - Lint: fix tsdoc/syntax warnings in validate modules
-  - Escaped `@` in TSDoc prose (`pkg\@version`, `package\@version`) to satisfy `eslint-plugin-tsdoc` and keep lint clean.
+  - Escaped `@` in TSDoc prose (`pkg\@version`, `package\@version`) to satisfy `eslint-plugin-tsdoc` and keep lint clean.
+- Docs: retire “swappable core” concept
+  - Removed the swappable-core requirement section and dropped `--core` references from project-level prompt guidance.
+  - Keep stan-core framed as a presentation-free engine/library without “swappable core” positioning.
