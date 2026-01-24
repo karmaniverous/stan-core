@@ -269,4 +269,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Refactor: decompose build module (long-file compliance)
   - Split `src/stan/context/build.ts` (approx 22KB) into `types.ts`, `graph.ts`, `normalize.ts`, and `index.ts`.
   - Updated `build.test.ts` imports.
-  - Maintains public API compatibility via `index.ts` re-exports.
+  - Maintains public API compatibility via `index.ts` re-exports.
+
+- Fix: resolve context build test and lint errors
+  - Corrected test import path (`../../test/tmp` -> `../../../test/tmp`) in `src/stan/context/build/build.test.ts`.
+  - Resolved TSDoc syntax warning in `graph.ts` and unnecessary optional chain in `normalize.ts`.

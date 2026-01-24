@@ -134,7 +134,7 @@ export const normalizeGraph = async (
     };
     if (newId.startsWith(`${toPosix(stanPath)}/context/abs/`)) {
       const src = sources[newId];
-      if (src?.kind === 'abs') node.locatorAbs = src.locatorAbs;
+      if (src && src.kind === 'abs') node.locatorAbs = src.locatorAbs;
     }
     nodesOut[newId] = node;
   }

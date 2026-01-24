@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { cleanupTempDir, makeTempDir } from '../../test/tmp';
+import { cleanupTempDir, makeTempDir } from '../../../test/tmp';
 // Stub dynamic deps module so we can simulate missing deps deterministically.
 let typeScriptOk = true;
 let graphFactory: (() => unknown) | null = null;
@@ -39,21 +39,23 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     const cwd = await makeTempDir('stan-meta-build-');
     const stanPath = '.stan';
 
+    const write = (p: string, c: string) => writeFile(p, c, 'utf8');
+    const json = (o: unknown) => JSON.stringify(o, null, 2);
+
     // Create a fake package under node_modules/pkg
     const pkgRoot = path.join(cwd, 'node_modules', 'pkg');
     await mkdir(pkgRoot, { recursive: true });
-    await writeFile(
+    await write(
       path.join(pkgRoot, 'package.json'),
-      JSON.stringify({ name: 'pkg', version: '1.0.0' }, null, 2),
-      'utf8',
+      json({ name: 'pkg', version: '1.0.0' }),
     );
     const pkgFileAbs = path.join(pkgRoot, 'index.d.ts');
-    await writeFile(pkgFileAbs, 'export {};\n', 'utf8');
+    await write(pkgFileAbs, 'export {};\n');
 
     // Create an abs file outside repo root
     const outside = await makeTempDir('stan-abs-');
     const absFileAbs = path.join(outside, 'x.d.ts');
-    await writeFile(absFileAbs, 'export type X = 1;\n', 'utf8');
+    await write(absFileAbs, 'export type X = 1;\n');
 
     const srcId = 'src/a.ts';
     const npmOld = pkgFileAbs; // absolute
@@ -108,10 +110,10 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
       id.startsWith(`${stanPath}/context/abs/`),
     );
     expect(absNorm).toBeTruthy();
-    const absId = absNorm as string;
-    expect(out.meta.nodes[absId].locatorAbs).toBe(
-      absFileAbs.replace(/\\/g, '/'),
-    );
+    const absId = absNorm ?? '';
+    const node = out.meta.nodes[absId];
+    expect(node).toBeDefined();
+    expect(node?.locatorAbs).toBe(absFileAbs.replace(/\\/g, '/'));
 
     // Edges are preserved only among kept targets
     expect(out.meta.edges[srcId].some((e) => e.target === npmNorm)).toBe(true);

@@ -1,5 +1,5 @@
 /**
- * Dynamic loader and invoker for @karmaniverous/stan-context.
+ * Dynamic loader and invoker for \@karmaniverous/stan-context.
  * @module
  */
 import { loadStanContext, loadTypeScript } from '../deps';

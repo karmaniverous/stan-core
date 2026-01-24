@@ -10,6 +10,7 @@ Last updated: 2026-01-24Z
 - Decomposed `src/stan/validate/response.ts` (>300 LOC) into structured modules; restored missing dependency-mode validation logic to fix tests.
 - Decomposed `src/stan/patch/file-ops.ts` (>300 LOC) into structured modules (`types`, `parse`, `exec`, `index`) to satisfy the long-file policy.
 - Decomposed `src/stan/context/build.ts` (>300 LOC) into structured modules (`types`, `graph`, `normalize`, `index`) to satisfy the long-file policy.
+- Fixed test imports and lint issues in the decomposed build modules.
 
 ## Working model (high signal)
 
