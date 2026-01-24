@@ -6,7 +6,7 @@ Last updated: 2026-01-24Z
 
 - Finish the DRY pass across stan-core runtime + tests.
 - Keep lint + Knip + typecheck clean while doing the sweep (avoid strict-function-types gotchas and `require-await` noise).
-- Continue reducing test flake and repetition by standardizing temp-dir creation/cleanup.
+- Continue reducing test flake and repetition by standardizing temp-dir creation/cleanup (finish remaining mkdtemp/rm conversions).
 
 ## Working model (high signal)
 

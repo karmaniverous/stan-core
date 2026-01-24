@@ -1,20 +1,21 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { findConfigPathSync, resolveStanPathSync } from '@/stan/config';
 
+import { cleanupTempDir, makeTempDir } from '../test/tmp';
+
 describe('config discovery and fallback stanPath', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-discover-'));
+    dir = await makeTempDir('stan-discover-');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('returns null when no config exists and resolves default stanPath', async () => {

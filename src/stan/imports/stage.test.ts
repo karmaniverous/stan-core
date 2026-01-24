@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { prepareImports } from './stage';
 
 const read = (p: string) => readFile(p, 'utf8');
@@ -12,11 +12,11 @@ describe('prepareImports (staging under <stanPath>/imports)', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(path.join(os.tmpdir(), 'stan-imports-'));
+    dir = await makeTempDir('stan-imports-');
   });
 
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await cleanupTempDir(dir);
   });
 
   it('stages files per label and preserves tail under glob-parent', async () => {
