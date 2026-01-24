@@ -259,4 +259,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Fix: restore dependency mode validation logic
   - Restored the "missing state patch vs no-change signal" check in `src/stan/validate/response/validate.ts`.
-  - Resolved lint error (unused import `extractH2SectionBody`) and fixed the failing dependency-mode test.
+  - Resolved lint error (unused import `extractH2SectionBody`) and fixed the failing dependency-mode test.
+
+- Refactor: decompose File Ops module (long-file compliance)
+  - Split `src/stan/patch/file-ops.ts` (approx 23KB) into `types.ts`, `parse.ts`, `exec.ts`, and `index.ts`.
+  - Updated tests to import from the decomposed modules.
+  - Maintains public API compatibility via `index.ts` re-exports.

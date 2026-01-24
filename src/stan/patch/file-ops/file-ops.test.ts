@@ -3,9 +3,10 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { cleanupTempDir, makeTempDir } from '../../test/tmp';
-import type { FileOp } from './file-ops';
-import { executeFileOps, parseFileOpsBlock } from './file-ops';
+import { cleanupTempDir, makeTempDir } from '../../../test/tmp';
+import { executeFileOps } from './exec';
+import { parseFileOpsBlock } from './parse';
+import type { FileOp } from './types';
 
 const msg = [
   '## UPDATED: docs',
