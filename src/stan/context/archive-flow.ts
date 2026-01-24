@@ -15,6 +15,7 @@ import type { CreateArchiveOptions } from '../archive';
 import { createArchive } from '../archive';
 import type { SnapshotUpdateMode } from '../diff';
 import { createArchiveDiff } from '../diff';
+import { uniqSortedStrings } from '../util/array/uniq';
 import type { NodeSource } from './build';
 import type {
   DependencyEdgeType,
@@ -32,8 +33,6 @@ const normalizePrefix = (p: string): string =>
   toPosix(p)
     .replace(/^\.\/+/, '')
     .replace(/\/+$/, '');
-
-const uniq = (xs: string[]): string[] => Array.from(new Set(xs));
 
 const contextIncludeGlob = (stanPath: string): string =>
   `${normalizePrefix(stanPath)}/context/**`;
@@ -96,9 +95,9 @@ export const prepareDependencyContext = (args: {
     const fallback = Array.isArray(nodeIdsWhenNoState)
       ? nodeIdsWhenNoState
       : [];
-    const stageNodeIds = uniq(fallback.map(normalizePrefix)).filter((id) =>
-      isStageableNodeId(stanPath, id),
-    );
+    const stageNodeIds = uniqSortedStrings(
+      fallback.map(normalizePrefix),
+    ).filter((id) => isStageableNodeId(stanPath, id));
     return { includes, selectedNodeIds: [], stageNodeIds };
   }
 
@@ -169,7 +168,10 @@ export const createArchiveWithDependencyContext = async (args: {
     clean: dependency.clean ?? false,
   });
 
-  const includes = uniq([...(archive?.includes ?? []), ...plan.includes]);
+  const includes = uniqSortedStrings([
+    ...(archive?.includes ?? []),
+    ...plan.includes,
+  ]);
   const archivePath = await createArchive(cwd, stanPath, {
     ...(archive ?? {}),
     includes,
@@ -212,7 +214,10 @@ export const createArchiveDiffWithDependencyContext = async (args: {
     clean: dependency.clean ?? false,
   });
 
-  const includes = uniq([...(diff.includes ?? []), ...plan.includes]);
+  const includes = uniqSortedStrings([
+    ...(diff.includes ?? []),
+    ...plan.includes,
+  ]);
 
   const out = await createArchiveDiff({
     cwd,

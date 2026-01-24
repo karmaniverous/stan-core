@@ -233,4 +233,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added focused unit coverage for the new helper.
 - Refactor: remove leftover uniqSorted in ctx allowlist
   - Removed the remaining local `uniqSorted` helper in `src/stan/context/allowlist.ts`.
-  - Standardized stage node ID sorting on the shared Radash-backed helper to keep semantics uniform and deterministic.
+  - Standardized stage node ID sorting on the shared Radash-backed helper to keep semantics uniform and deterministic.
+- Refactor: use uniqSortedStrings in context helpers
+  - `src/stan/context/archive-flow.ts`: replaced local Set-based `uniq` with shared `uniqSortedStrings` for deterministic include/stage lists.
+  - `src/stan/context/state.ts`: replaced local Set+sort helper with shared `uniqSortedStrings`.
+  - `src/stan/context/validate/npm.ts`: replaced Set+sort root de-dupe with `uniqSortedStrings`.

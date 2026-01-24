@@ -14,14 +14,13 @@
  * @module
  */
 
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
+
 import type {
   DependencyEdgeType,
   DependencyMetaFile,
   NormalizedDependencyStateEntry,
 } from './schema';
-
-const sortUnique = (arr: string[]): string[] =>
-  Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
 
 const allowedKinds = (kinds: DependencyEdgeType[]): Set<DependencyEdgeType> =>
   new Set(kinds);
@@ -106,7 +105,7 @@ export const computeSelectedNodeIds = (args: {
   const final: string[] = [];
   for (const id of includeSet) if (!excludeSet.has(id)) final.push(id);
 
-  return sortUnique(final);
+  return uniqSortedStrings(final);
 };
 
 export default { expandEntry, computeSelectedNodeIds };

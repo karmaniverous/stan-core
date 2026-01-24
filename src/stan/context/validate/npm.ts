@@ -11,6 +11,7 @@ import fg from 'fast-glob';
 
 import { normalizePrefix } from '@/stan/path/prefix';
 import { toPosix } from '@/stan/path/repo';
+import { uniqSortedStrings } from '@/stan/util/array/uniq';
 
 import type { DependencyMetaNode } from '../schema';
 import type { DependencyValidationMismatch } from './types';
@@ -119,9 +120,7 @@ export const findPackageRoots = async (
     // best-effort: pnpm layout not present
   }
 
-  return Array.from(new Set(out.map((p) => toPosix(p)))).sort((a, b) =>
-    a.localeCompare(b),
-  );
+  return uniqSortedStrings(out, toPosix);
 };
 
 export const validateNpmNode = async (args: {
