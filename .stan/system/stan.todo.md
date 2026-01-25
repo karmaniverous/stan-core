@@ -9,7 +9,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Breaking: adopt dependency context meta/state v2 (compact) end-to-end
   - Switch assistant-facing `.stan/context/dependency.meta.json` and `.stan/context/dependency.state.json` to v2 compact formats (nodeId = archive address; externals normalized to staged `.stan/context/**` paths).
   - Use stan-context `summarizeDependencySelection` for closure + deterministic byte sizing.
-  - Accept integrity checks as `size` + 128-bit sha256 prefix (base64url, no padding); remove persisted absolute locators from assistant-facing meta/state.
+  - Persist host-private `.stan/context/dependency.map.json` (ephemeral, regenerated each `stan run -c`) containing canonical nodeId → locatorAbs + size + full sha256 for staging verification.
+  - Remove content hashes from assistant-facing `dependency.meta.json` (context preservation); `dependency.map.json` is omitted from archives by allowlist selection.
+  - Keep disk staging (Option A): stage selected external bytes into `.stan/context/**` prior to archiving so the assistant can read them from archives.
   - Coordinate stan-cli + stan-context releases and update docs + system prompt parts in lockstep.
 
 - Context mode (`--context`) follow-through: stan-cli wiring
@@ -307,4 +309,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Design: lock dependency context v2 direction
   - Confirmed the v2 model: nodeId is the archive address; externals are normalized to staged `.stan/context/**` paths; source locators are transient to `stan run -c`.
-  - Next: implement v2 meta/state in stan-core and coordinate stan-cli + stan-context updates.
+  - Next: implement v2 meta/state in stan-core and coordinate stan-cli + stan-context updates.
+
+- Design: host-private dependency.map.json; no hashes in assistant meta
+  - Confirmed `dependency.meta.json` is assistant-facing and should omit content hashes to preserve context budget.
+  - Confirmed `dependency.map.json` is host-private, regenerated each `stan run -c`, and is the source of truth for locatorAbs + full sha256 + size during staging verification.

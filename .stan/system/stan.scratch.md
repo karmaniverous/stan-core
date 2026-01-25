@@ -5,17 +5,19 @@ Last updated: 2026-01-25Z
 ## Current focus
 
 - Adopt dependency context meta/state v2 (compact) end-to-end across STAN.
-- Update stan-core to generate v2 `dependency.meta.json` (nodeId = archive address; externals normalized to staged `.stan/context/**` paths).
-- Update stan-core to accept and validate v2 `dependency.state.json` (v=2, i/x, kindMask bitmask).
+- Persist host-private `.stan/context/dependency.map.json` (ephemeral, regenerated each `stan run -c`) with canonical nodeId → locatorAbs + size + full sha256 for staging verification.
+- Remove content hashes from assistant-facing `dependency.meta.json` (context preservation).
+- Keep disk staging (Option A): stage selected externals into `.stan/context/**` as archive-addressable bytes for archiving and assistant use.
 - Consume `summarizeDependencySelection` from stan-context for closure + deterministic sizing.
-- Coordinate stan-cli to treat v2 meta/state as authoritative during `stan run -c`.
+- Gather interop feedback from stan-context and stan-cli before implementation.
 
 ## Working model (high signal)
 
 - The assistant must only ever see archive-addressable nodeIds (repo-relative paths); externals are always staged under `.stan/context/**`.
-- Source OS paths are transient to `stan run -c` and must not be written into assistant-facing meta files.
+- OS source locators must not be written into assistant-facing meta; they live only in host-private `dependency.map.json` and are never archived.
 
 ## Decisions
 
 - Breaking changes are acceptable; optimize for compactness and deterministic selection.
-- Integrity checks use `size` + 128-bit sha256 prefix (base64url, no padding) as “good enough”.
+- Assistant-facing meta omits content hashes entirely.
+- Staging verification uses full sha256 + size from `dependency.map.json`.
