@@ -102,7 +102,7 @@ Meta archive alignment
 Budgeting and selection heuristics (assistant contract)
 
 - Token estimation is approximate and deterministic:
-  - Treat `metadata.size` (bytes) as a proxy for characters.
+  - Treat file size in bytes as a proxy for characters.
   - Estimate tokens as `bytes / 4`.
 - Context-mode archive size target:
   - The archive payload SHOULD occupy roughly half of the assistant’s usable context budget.
@@ -137,7 +137,7 @@ Dependency state update enforcement (assistant + tooling contract)
 
 ### Purpose
 
-Provide a cohesive, dependency‑light engine that implements the durable capabilities of STAN as pure TypeScript services. The engine is transport‑agnostic.
+Provide a cohesive, dependency-light engine that implements the durable capabilities of STAN as pure TypeScript services. The engine is transport-agnostic.
 
 ### Scope
 
@@ -150,8 +150,8 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
     - stan-core MUST NOT attempt to import or resolve TypeScript itself; it MUST pass through host-provided TypeScript inputs to stan-context and surface stan-context’s errors.
   - Canonical files and locations
     - Dependency artifacts live under `<stanPath>/context/` (repo default: `.stan/context/`) and SHOULD be gitignored:
-      - `<stanPath>/context/dependency.meta.json` (assistant-facing meta)
-      - `<stanPath>/context/dependency.state.json` (assistant-authored state)
+      - `<stanPath>/context/dependency.meta.json` (assistant-facing meta; v2 compact)
+      - `<stanPath>/context/dependency.state.json` (assistant-authored state; v2 compact)
       - staged external files:
         - `<stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
         - `<stanPath>/context/abs/<sha256(sourceAbs)>/<basename>`
@@ -163,25 +163,37 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
         - The meta archive MUST include dependency state when it exists (assistant-authored selection intent).
         - The meta archive MUST exclude staged payloads under `<stanPath>/context/{npm,abs}/**`.
         - The meta archive MUST exclude `<stanPath>/system/.docs.meta.json`.
-  - Node IDs (graph + state)
+  - Node IDs (graph + state; v2 invariant)
     - Node IDs MUST be repo-relative POSIX paths.
-    - External nodes MUST NOT use literal `node_modules/...` paths as node IDs; they MUST be normalized to the staged `<stanPath>/context/...` paths so the assistant can select files that exist within archives deterministically.
-  - Meta requirements (assistant-facing)
-    - The dependency meta file MUST include:
-      - deterministic graph nodes and edges (JSON-serializable),
-      - per-node `metadata.hash` (sha256) and `metadata.size` (bytes) when applicable,
-      - per-node `description` (when available from the context compiler),
-      - `locatorAbs` ONLY for abs/outside-root nodes (used for strict undo validation).
-    - The meta file MUST NOT include absolute-path locators for npm nodes.
-  - State file schema (v1; durable contract)
-    - `DependencyEdgeType = 'runtime' | 'type' | 'dynamic'`
-    - `DependencyStateEntry = string | [string, number] | [string, number, DependencyEdgeType[]]`
+    - Node IDs MUST be archive-addressable paths: the path where the file exists inside archives.
+    - External node IDs MUST be normalized to staged `<stanPath>/context/**` paths so the assistant never sees `node_modules/**` paths or OS absolute paths in the graph.
+    - OS-level source resolution (where bytes come from) is transient to `stan run -c` and MUST NOT be written into assistant-facing meta/state.
+  - Meta requirements (assistant-facing; v2 compact)
+    - The dependency meta file MUST be compact and deterministic and MUST support stable decoding by assistants:
+      - Stable decode tables:
+        - Node kind index: `0` = source, `1` = external, `2` = builtin, `3` = missing.
+        - Edge kind mask: runtime = `1`, type = `2`, dynamic = `4`, all = `7`.
+        - Edge resolution mask (meta only): explicit = `1`, implicit = `2`, both = `3` (if omitted, defaults to explicit-only).
+      - Compact shape (high-level):
+        - `v: 2`
+        - `n: Record<string, { k: 0|1|2|3; s?: number; h?: string; d?: string; e?: [...] }>`
+      - Hash representation:
+        - For integrity-sensitive nodes (source/external), `s` is size in bytes.
+        - For integrity-sensitive nodes (source/external), `h` is a 128-bit sha256 prefix encoded as base64url without padding.
+      - Edges:
+        - Outgoing adjacency list `e` is stored as tuples to reduce size:
+          - `[targetId, kindMask]`
+          - `[targetId, kindMask, resMask]`
+        - There MUST be at most one edge per `(source,target)` pair; multiple underlying edges MUST be merged by OR’ing masks.
+    - The meta file MUST NOT include OS absolute-path locators for external nodes.
+  - State file schema (v2; durable contract)
+    - `DependencyStateEntryV2 = string | [string, number] | [string, number, number]`
       - string is `nodeId`
       - number is recursion depth (defaults to `0` when omitted; `0` means include only that nodeId)
-      - edgeKinds defaults to `['runtime', 'type', 'dynamic']` when omitted
-    - `DependencyStateFile = { include: DependencyStateEntry[]; exclude?: DependencyStateEntry[] }`
+      - number (third element) is `kindMask` bitmask (defaults to `7` when omitted)
+    - `DependencyStateFileV2 = { v: 2; i: DependencyStateEntryV2[]; x?: DependencyStateEntryV2[] }`
       - Excludes win over includes.
-      - Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
+      - Expansion traverses outgoing edges up to depth, restricted to `kindMask`.
   - Expansion precedence (dependency mode)
     - In `--context`, archive selection is allowlist-only (Base + selected closure) and explicit `excludes` are hard denials.
     - Reserved denials and binary exclusion always win.
@@ -190,30 +202,31 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
       - never create, patch, or delete files under `.stan/imports/**`.
     - Engine SHOULD NOT attempt to deduplicate between `.stan/imports/**` and `<stanPath>/context/**`; selection decisions are handled at the assistant state level.
   - Undo/redo (strict validation; CLI + engine seam)
-    - Undo/redo MUST fail immediately when the restored dependency selection cannot be satisfied by the current environment.
-    - Validation MUST be per-file hash (sha256), derived from the restored meta:
-      - For npm nodes: locate `<pkgName>@<pkgVersion>` in the current install and validate `<pathInPackage>` hashes match `metadata.hash`.
-      - For abs nodes: validate the file at `locatorAbs` hashes to `metadata.hash`.
-    - This strict mismatch detection MUST be performed even if cached archives contain older staged bytes; mismatch is defined as environment incompatibility.
+    - Undo/redo MUST fail immediately when the restored dependency selection cannot be satisfied by the current host run.
+    - Validation/integrity enforcement MUST be per-file `s` (bytes) + 128-bit sha256 prefix `h` (base64url, no padding) derived from meta v2.
+    - The host (typically stan-cli) MUST rebuild dependency meta at `stan run -c` and use compiler-resolved source locations transiently to stage external bytes into `.stan/context/**`.
+    - The host MUST refuse to stage (and therefore refuse to archive) when any selected external node cannot be resolved or fails `(s,h)` verification.
+    - The engine MUST NOT persist OS absolute locators in assistant-facing meta/state.
+    - Note: this seam intentionally keeps meta thin and archive-addressable; it is acceptable that OS locators are runtime-only.
 
 - Configuration (namespaced; canonical)
   - Config files are namespaced by consumer at the top level. Canonical keys:
-    - `stan-core`: engine‑owned object; REQUIRED by the engine.
-    - `stan-cli`: CLI‑owned object; out of scope for the engine.
+    - `stan-core`: engine-owned object; REQUIRED by the engine.
+    - `stan-cli`: CLI-owned object; out of scope for the engine.
   - The engine MUST read and strictly validate only the `stan-core` block with the minimal schema:
-    - `stanPath: string (non‑empty)`,
+    - `stanPath: string (non-empty)`,
     - `includes?: string[]` (default `[]`),
     - `excludes?: string[]` (default `[]`),
     - `imports?: Record<string, string|string[]>` (normalized to arrays).
   - Unknown keys inside `stan-core` MAY be rejected (strict schema). Unknown keys outside `stan-core` are ignored by the engine.
-  - Root‑level legacy shapes and vendor extensions (e.g., `x-stan-cli`) are not part of the canonical model. Transitional acceptance is permitted only insofar as needed to keep STAN functional while both packages release the namespaced change.
+  - Root-level legacy shapes and vendor extensions (e.g., `x-stan-cli`) are not part of the canonical model. Transitional acceptance is permitted only insofar as needed to keep STAN functional while both packages release the namespaced change.
   - Expose typed loaders (sync/async) that:
     - resolve config path,
     - select the `stan-core` object (error when missing),
     - return the minimal `ContextConfig` shape.
 
 - Filesystem selection
-  - Enumerate repository files (POSIX‑normalized paths).
+  - Enumerate repository files (POSIX-normalized paths).
   - Apply selection rules:
     - default denials (`node_modules`, `.git`),
     - `.gitignore` semantics,
@@ -240,45 +253,45 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
   - Warnings must be exposed via return values and/or optional callbacks (no console I/O).
   - Dependency Graph inclusion:
     - If `@karmaniverous/stan-context` is available and Context Mode is enabled, generate the dependency graph.
-    - Embed the graph JSON in the archive as `<stanPath>/context/dependency.meta.json`.
-    - External node IDs MUST be normalized to staged `<stanPath>/context/...` paths.
-    - Include `description` in the embedded meta for assistant prioritization.
+    - Embed the graph JSON in the archive as `<stanPath>/context/dependency.meta.json` (v2 compact).
+    - External node IDs MUST be normalized to staged `<stanPath>/context/**` paths.
+    - Include node descriptions when available.
 
 - Snapshotting
-  - Compute per‑file content hashes for the filtered selection.
+  - Compute per-file content hashes for the filtered selection.
   - Read/write the diff snapshot (`.archive.snapshot.json`) and manage the sentinel (`.stan_no_changes`) path when there are no changes.
 
 - Patch engine
   - Accept patch input as a string.
-  - Worktree‑first apply pipeline:
+  - Worktree-first apply pipeline:
     - `git apply` cascade (p1→p0 variants with tolerant flags),
     - jsdiff fallback (whitespace/EOL tolerance, preserves original EOLs for edits),
-    - structured outcome (attempt captures, per‑file failures).
-  - File Ops pre‑ops:
-    - `mv`, `rm`, `rmdir`, `mkdirp` with normalized, safe repo‑relative paths and a dry‑run mode.
+    - structured outcome (attempt captures, per-file failures).
+  - File Ops pre-ops:
+    - `mv`, `cp`, `rm`, `rmdir`, `mkdirp` with normalized, safe repo-relative paths and a dry-run mode.
 
 - Imports staging
   - Stage external artifacts under `<stanPath>/imports/<label>/...`:
     - Resolve globs,
-    - Preserve “tail” paths relative to glob‑parent,
+    - Preserve “tail” paths relative to glob-parent,
     - Summarize staged files per label.
 
 - Validation utilities (optional)
-  - Response‑format validator for assistant replies:
+  - Response-format validator for assistant replies:
     - One Patch per file,
     - Correct `diff --git` header count/order,
     - Commit Message last,
     - TODO cadence rule.
 
-- Prompt helpers (engine‑side utilities)
+- Prompt helpers (engine-side utilities)
   - `getPackagedSystemPromptPath` (dist monolith lookup).
   - `assembleSystemMonolith` (assemble parts → monolith; quiet, no logs).
 
-### Non‑goals
+### Non-goals
 
 - No CLI/TTY responsibilities (no Commander, no clipboard, no editor spawning).
 - No console output; diagnostics/warnings must flow back as data or via optional callbacks to the caller (CLI).
-- No long‑running interactive state (transport‑agnostic services only).
+- No long-running interactive state (transport-agnostic services only).
 
 ### Public API (representative; stable)
 
@@ -312,22 +325,22 @@ Provide a cohesive, dependency‑light engine that implements the durable capabi
 Notes
 
 - API must remain deterministic across runs for identical inputs.
-- Paths are POSIX repo‑relative on input and output.
+- Paths are POSIX repo-relative on input and output.
 
 ### Operational constraints
 
 - Determinism: selection/archiving/snapshotting are deterministic for identical inputs.
-- Path hygiene: external inputs/outputs use POSIX repo‑relative paths.
-- Side‑effect bounds: changes are limited to documented workspace paths (e.g., `<stanPath>/output`, `<stanPath>/diff`, `<stanPath>/patch`).
+- Path hygiene: external inputs/outputs use POSIX repo-relative paths.
+- Side-effect bounds: changes are limited to documented workspace paths (e.g., `<stanPath>/output`, `<stanPath>/diff`, `<stanPath>/patch`).
 
 ### Dependencies
 
 - Allowed at runtime: `tar`, `fs-extra`.
 - Not allowed: clipboard libraries, CLI frameworks, TTY/presentation utilities.
 
-### Cross‑repo configuration alignment (CLI perspective)
+### Cross-repo configuration alignment (CLI perspective)
 
-- CLI MUST read and validate only the `stan-cli` top‑level object (strict schema).
+- CLI MUST read and validate only the `stan-cli` top-level object (strict schema).
 - Legacy vendor extensions (e.g., `x-stan-cli`) and legacy root keys are not canonical; any temporary acceptance is for the shortest possible transition window to keep STAN functional.
 
 ### Patch ingestion — creation fallback (engine behavior)
@@ -339,7 +352,7 @@ Improve success on “new document” diffs commonly malformed in chat:
   - Only when confidently identified as a creation patch (`/dev/null → b/<path>` or equivalent “add only” hunks).
 - Behavior
   1. Extract payload by stripping diff headers and removing leading “+” from payload lines.
-  2. Normalize EOL to LF for the written file (no pre‑existing EOL to preserve).
+  2. Normalize EOL to LF for the written file (no pre-existing EOL to preserve).
   3. Ensure parent directories exist and create the file atomically.
 - Guardrails
   - Never applies to edits of existing files.
@@ -350,15 +363,15 @@ Improve success on “new document” diffs commonly malformed in chat:
 - Coverage for:
   - Config loaders and schema error messages (namespaced `stan-core` block).
   - Selection semantics (includes vs excludes precedence; reserved workspace exclusions; includes re-inclusion).
-  - Archive classification (binary exclusion, large‑text flags) and warnings surfacing (returns/callback).
-  - Diff archive + snapshot handling (changed/no‑changes sentinel).
+  - Archive classification (binary exclusion, large-text flags) and warnings surfacing (returns/callback).
+  - Diff archive + snapshot handling (changed/no-changes sentinel).
   - Patch pipeline:
     - git apply attempt captures are structured and summarized,
     - jsdiff fallback on CRLF/LF variations,
     - creation fallback (simple, nested paths, sandbox/check).
-  - File Ops parsing/execution (safety checks, dry‑run).
+  - File Ops parsing/execution (safety checks, dry-run).
   - Prompt helpers (packaged path, assemble parts).
-  - Response‑format validator (ordering, duplicate patches, commit position, TODO cadence).
+  - Response-format validator (ordering, duplicate patches, commit position, TODO cadence).
 
 ### Documentation & versioning
 
@@ -366,11 +379,11 @@ Improve success on “new document” diffs commonly malformed in chat:
 - API docs reflect only engine surfaces (no CLI guidance).
 - Release notes highlight any behavior changes in selection, archiving, patch application, or validation.
 
-### Cross‑repo coordination (engine perspective)
+### Cross-repo coordination (engine perspective)
 
-- Imports bridge (context only; read‑only under `.stan/imports/**`)
+- Imports bridge (context only; read-only under `.stan/imports/**`)
   - Typical label in stan-core: `cli-docs` → stage peer docs or threads as needed (narrow patterns).
-  - Never write to `.stan/imports/**`; treat as read‑only context for archiving and dev‑plan decisions.
+  - Never write to `.stan/imports/**`; treat as read-only context for archiving and dev-plan decisions.
 
 - Interop threads (lightweight, deterministic)
   - Outgoing messages: `.stan/interop/stan-cli/<UTC>-<slug>.md` (atomic Markdown).
