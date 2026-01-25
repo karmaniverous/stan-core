@@ -1,7 +1,8 @@
 /**
  * Creates a "meta" archive (system docs + dependency meta, plus optional
- * dependency state and repo-root base files); excludes staged payloads by
- * omission and excludes `<stanPath>/system/.docs.meta.json`; filesystem IO only.
+ * repo-root base files); omits dependency state (clean slate); excludes staged
+ * payloads by omission and excludes `<stanPath>/system/.docs.meta.json`;
+ * filesystem IO only.
  * @module
  */
 
@@ -33,15 +34,20 @@ export async function createMetaArchive(
   options?: {
     /** Optional callback for a deterministic selection report (engine remains silent by default). */
     onSelectionReport?: (report: SelectionReport) => void;
+    /**
+     * When true, include `<stanPath>/output/**` contents inside the meta archive
+     * (combine mode). Known STAN archive files remain excluded by tar filter.
+     */
+    includeOutputDir?: boolean;
   },
 ): Promise<string> {
   const { outDir } = await ensureOutAndDiff(cwd, stanPath);
+  const includeOutputDir = options?.includeOutputDir === true;
 
   const stanRel = stanPath.replace(/\\/g, '/');
   const systemPrefix = `${stanRel}/system/`;
   const docsMetaRel = `${stanRel}/system/.docs.meta.json`;
   const depMetaRel = `${stanRel}/context/dependency.meta.json`;
-  const depStateRel = `${stanRel}/context/dependency.state.json`;
 
   const all = await listFiles(cwd);
 
@@ -68,15 +74,11 @@ export async function createMetaArchive(
   });
   const repoRootBaseFiles = filtered.filter((p) => !p.includes('/'));
 
-  // Include dependency state when present (assistant-authored selection intent).
-  const hasState =
-    all.includes(depStateRel) && existsSync(resolve(cwd, depStateRel));
-
   const files = uniqSortedStrings([
     ...sys,
     depMetaRel,
-    ...(hasState ? [depStateRel] : []),
     ...repoRootBaseFiles,
+    ...(includeOutputDir ? [`${stanRel}/output`] : []),
   ]);
 
   const archivePath = resolve(outDir, ARCHIVE_META_TAR);

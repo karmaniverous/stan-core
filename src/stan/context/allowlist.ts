@@ -147,6 +147,8 @@ export const computeContextAllowlistPlan = async (args: {
   const hasStateRaw = stateRaw !== null;
 
   const isExcluded = makeGlobMatcher(excludes);
+  const isExcludedOutsideStan = (p: string): boolean =>
+    !isUnder(stanRel, p) && isExcluded(p);
   const isReserved = (p: string): boolean =>
     isReservedWorkspacePath(stanRel, p) || isOutputArchivePath(stanRel, p);
 
@@ -163,7 +165,7 @@ export const computeContextAllowlistPlan = async (args: {
   // Apply explicit excludes as hard denials and reserved denials always.
   const selectedFiltered = selectedNodeIds
     .map(normalizePrefix)
-    .filter((p) => !isExcluded(p))
+    .filter((p) => !isExcludedOutsideStan(p))
     .filter((p) => !isReserved(p));
 
   const stageNodeIds = uniqSortedStrings(
@@ -173,7 +175,7 @@ export const computeContextAllowlistPlan = async (args: {
   // Allowlist is Base + selected closure.
   const allowlistFiles = uniqSortedStrings(
     [...baseFiles, ...selectedFiltered]
-      .filter((p) => !isExcluded(p))
+      .filter((p) => !isExcludedOutsideStan(p))
       .filter((p) => !isReserved(p)),
   );
 

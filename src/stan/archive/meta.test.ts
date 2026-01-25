@@ -55,7 +55,7 @@ describe('createMetaArchive', () => {
       'utf8',
     );
 
-    // dependency state should be included when present
+    // dependency state exists on disk but MUST be omitted from meta archive
     await writeFile(
       path.join(dir, stan, 'context', 'dependency.state.json'),
       '{"include":[]}\n',
@@ -84,7 +84,6 @@ describe('createMetaArchive', () => {
       expect.arrayContaining([
         `${stan}/system/stan.system.md`,
         `${stan}/context/dependency.meta.json`,
-        `${stan}/context/dependency.state.json`,
         'README.md',
       ]),
     );
@@ -93,10 +92,50 @@ describe('createMetaArchive', () => {
     expect(files).not.toEqual(
       expect.arrayContaining([
         `${stan}/system/.docs.meta.json`,
+        `${stan}/context/dependency.state.json`,
         `${stan}/context/npm/x/1.0.0/index.d.ts`,
         'src/a.ts',
       ]),
     );
+  });
+
+  it('includeOutputDir=true includes <stanPath>/output (combine) while tar filter excludes archive files', async () => {
+    // Minimal required dependency meta
+    await mkdir(path.join(dir, stan, 'context'), { recursive: true });
+    await writeFile(
+      path.join(dir, stan, 'context', 'dependency.meta.json'),
+      '{"schemaVersion":1,"nodes":{},"edges":{}}\n',
+      'utf8',
+    );
+
+    // system file (so the meta archive isn't empty besides dep meta)
+    await mkdir(path.join(dir, stan, 'system'), { recursive: true });
+    await writeFile(
+      path.join(dir, stan, 'system', 'stan.system.md'),
+      '# sys\n',
+      'utf8',
+    );
+
+    // output tree (combine payload)
+    await mkdir(path.join(dir, stan, 'output'), { recursive: true });
+    await writeFile(path.join(dir, stan, 'output', 'lint.txt'), 'ok\n', 'utf8');
+    await writeFile(
+      path.join(dir, stan, 'output', 'archive.tar'),
+      'old\n',
+      'utf8',
+    );
+
+    await createMetaArchive(dir, stan, undefined, { includeOutputDir: true });
+
+    const call = calls.find((c) => c.file.endsWith('archive.meta.tar'));
+    expect(call).toBeTruthy();
+    const files = call?.files ?? [];
+    expect(files).toEqual(expect.arrayContaining([`${stan}/output`]));
+
+    // Tar filter should still exclude archive files under output
+    expect(typeof call?.filter).toBe('function');
+    const f = call?.filter as (p: string, s: unknown) => boolean;
+    expect(f(`${stan}/output/archive.tar`, undefined)).toBe(false);
   });
 
   it('throws when dependency meta is missing', async () => {

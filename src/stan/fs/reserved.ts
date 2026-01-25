@@ -12,13 +12,22 @@ import {
 import { isUnder } from '@/stan/path/prefix';
 import { toPosix } from '@/stan/path/repo';
 
+const DEPENDENCY_MAP_FILE = 'dependency.map.json';
+
 /** Reserved workspace subpaths never included in archives by policy. */
 export const isReservedWorkspacePath = (
   stanPath: string,
   p: string,
 ): boolean => {
   // isUnder normalizes, so we can pass stanPath directly or pre-join
-  return isUnder(`${stanPath}/diff`, p) || isUnder(`${stanPath}/patch`, p);
+  const base = toPosix(stanPath);
+  const rel = toPosix(p);
+  return (
+    isUnder(`${base}/diff`, rel) ||
+    isUnder(`${base}/patch`, rel) ||
+    // Host-private dependency map must never be archived.
+    rel === `${base}/context/${DEPENDENCY_MAP_FILE}`
+  );
 };
 
 /** Reserved archive file names under <stanPath>/output. */

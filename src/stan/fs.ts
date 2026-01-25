@@ -113,6 +113,14 @@ export type FilterOptions = {
  *     excludes always win).
  *   - Reserved exclusions still apply: `stanPath/diff` is always excluded;
  *     `stanPath/output` is excluded when `includeOutputDir` is false.
+ *
+ * Engine-owned `<stanPath>/**` behavior:
+ * - Config `includes` and `excludes` are ignored for paths under `<stanPath>/**`.
+ * - `.gitignore` is still honored under `<stanPath>/**` EXCEPT for:
+ *   - `<stanPath>/system/**` (excluding `<stanPath>/system/.docs.meta.json`)
+ *   - `<stanPath>/imports/**`
+ *   These are treated as engine-owned and always included unless denied by
+ *   reserved workspace rules.
  * Paths are compared using POSIX separators.
  * @param files - Repo‑relative paths to consider.
  * @param options - See {@link FilterOptions}.
@@ -129,39 +137,76 @@ export async function filterFiles(
   }: FilterOptions,
 ): Promise<string[]> {
   const stanRel = stanPath.replace(/\\/g, '/');
+  const isInStan = (f: string): boolean => isUnder(stanRel, f);
+  const systemRel = `${stanRel}/system`;
+  const importsRel = `${stanRel}/imports`;
+  const docsMetaRel = `${systemRel}/.docs.meta.json`;
+
+  const isEngineOwnedStanFile = (f: string): boolean => {
+    // System docs and staged imports are engine-owned; they must remain
+    // selectable regardless of `.gitignore` or config includes/excludes.
+    if (isUnder(systemRel, f) && f !== docsMetaRel) return true;
+    if (isUnder(importsRel, f)) return true;
+    return false;
+  };
+
   // Default sub‑package exclusion: any directory that contains its own package.json
   const subpkgDirs = detectSubpackageDirs(files, stanRel);
 
   const ig = await buildIgnoreFromGitignore(cwd);
 
-  // Deny list used to compute base selection
-  const denyMatchers: Matcher[] = [
+  const excludeMatchers = excludes.map(toMatcher);
+  const subpkgMatchers: Matcher[] = subpkgDirs.map(
+    (d) => (f: string) => isUnder(d, f),
+  );
+
+  const isConfigExcluded = (f: string): boolean => {
+    // Config excludes are hard denials outside stanPath; ignored under stanPath.
+    if (isInStan(f)) return false;
+    return excludeMatchers.some((m) => m(f));
+  };
+  const isConfigIncluded = (f: string, allowMatchers: Matcher[]): boolean => {
+    // Config includes are additive outside stanPath; ignored under stanPath.
+    if (isInStan(f)) return false;
+    return allowMatchers.some((m) => m(f));
+  };
+
+  // Base selection (deterministic; engine-owned STAN exceptions applied).
+  const base = files.filter((f) => {
     // default denials by prefix
-    (f: string) => isUnder('node_modules', f),
-    (f: string) => isUnder('.git', f),
-    // .gitignore (full semantics via "ignore")
-    ...(ig ? [(f: string) => ig.ignores(f)] : []),
-    // user excludes (glob or prefix)
-    ...excludes.map(toMatcher),
+    if (isUnder('node_modules', f)) return false;
+    if (isUnder('.git', f)) return false;
+
+    // Reserved workspace paths are always excluded by policy.
+    if (isReservedWorkspacePath(stanRel, f)) return false;
+
+    // Output dir is excluded by default unless explicitly included by mode.
+    if (!includeOutputDir && isUnderReserved(`${stanRel}/output`, f))
+      return false;
+
+    // Engine-owned STAN docs/imports are always included (unless denied above).
+    if (isEngineOwnedStanFile(f)) return true;
+
+    // gitignore applies normally elsewhere (including most of <stanPath>/**).
+    if (ig && ig.ignores(f)) return false;
+
+    // Config excludes apply outside <stanPath>/**
+    if (isConfigExcluded(f)) return false;
+
     // default: exclude nested sub‑packages by prefix
-    ...subpkgDirs.map((d) => (f: string) => isUnder(d, f)),
-    // Reserved workspace paths (diff/patch) are always excluded by policy.
-    (f: string) => isReservedWorkspacePath(stanRel, f),
-  ];
+    if (subpkgMatchers.some((m) => m(f))) return false;
 
-  if (!includeOutputDir) {
-    denyMatchers.push((f) => isUnderReserved(`${stanRel}/output`, f));
-  }
-
-  // Base selection (deny list applied)
-  const base = files.filter((f) => !denyMatchers.some((m) => m(f)));
+    return true;
+  });
 
   // Additive includes: union with base, but excludes and reserved denials still win.
   if (includes.length > 0) {
     const allowMatchers: Matcher[] = includes.map(toMatcher);
     // Build union: start from base, add includes (even if gitignored/default-denied)
     const inUnion = new Set<string>(base);
-    for (const f of files) if (allowMatchers.some((m) => m(f))) inUnion.add(f);
+    for (const f of files) {
+      if (isConfigIncluded(f, allowMatchers)) inUnion.add(f);
+    }
 
     const blocked: Matcher[] = [
       // .git is always excluded (never include, even via includes)
@@ -172,7 +217,7 @@ export async function filterFiles(
         ? []
         : [(f: string) => isUnderReserved(`${stanRel}/output`, f)]),
       // Excludes take precedence over includes.
-      ...excludes.map(toMatcher),
+      ...excludeMatchers.map((m) => (f: string) => !isInStan(f) && m(f)),
     ];
 
     const final = new Set<string>(

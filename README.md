@@ -12,7 +12,7 @@ This package exposes the STAN engine as a library:
 - File Ops: safe mv/cp/rm/rmdir/mkdirp block as “pre‑ops”
 - Config loading/validation (top‑level `stan-core` in stan.config.yml|json)
 - Imports staging under <stanPath>/imports/<label>/…
-- Imports safety: patch + File Ops refuse to modify <stanPath>/imports/** when the correct stanPath is provided
+- Imports safety: patch + File Ops refuse to modify <stanPath>/imports/\*\* when the correct stanPath is provided
 - Response‑format validator (optional)
 
 For the CLI and TTY runner, see @karmaniverous/stan-cli.
@@ -174,8 +174,9 @@ When dependency graph mode is enabled, the engine can create a small `archive.me
 
 - Includes `<stanPath>/system/**` (excluding `<stanPath>/system/.docs.meta.json`)
 - Includes `<stanPath>/context/dependency.meta.json` (required)
-- Includes `<stanPath>/context/dependency.state.json` when present
+- Omits `<stanPath>/context/dependency.state.json` always (clean slate for selections)
 - Includes repo-root (top-level) base files selected by current selection config
+- Optionally includes `<stanPath>/output/**` when `includeOutputDir: true` (combine mode); archive files are still excluded by tar filter
 - Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission
 
 ## Dependency graph mode: TypeScript injection (host contract)
@@ -191,7 +192,11 @@ Minimal example:
 ```ts
 import ts from 'typescript';
 import { buildDependencyMeta } from '@karmaniverous/stan-core';
-await buildDependencyMeta({ cwd: process.cwd(), stanPath: '.stan', typescript: ts });
+await buildDependencyMeta({
+  cwd: process.cwd(),
+  stanPath: '.stan',
+  typescript: ts,
+});
 ```
 
 ## Environment variables

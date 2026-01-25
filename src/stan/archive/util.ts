@@ -16,6 +16,7 @@ import {
  * - <stanPath>/output/archive.diff.tar
  * - <stanPath>/output/archive.warnings.txt
  * - <stanPath>/patch/**
+ * - <stanPath>/context/dependency.map.json
  */
 export const makeTarFilter = (stanPath: string) => {
   const base = stanPath.replace(/\\/g, '/');

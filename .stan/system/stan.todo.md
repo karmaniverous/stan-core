@@ -328,4 +328,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Confirmed config `excludes` are hard denials for dependency-selected repo paths outside `.stan/**`.
 
 - Docs: capture v2 archive composition + next-thread plan
-  - Updated scratch and requirements to record the locked v2 + combine + context META omission-of-state contract and the concrete Slice 1 implementation plan for the next thread.
+  - Updated scratch and requirements to record the locked v2 + combine + context META omission-of-state contract and the concrete Slice 1 implementation plan for the next thread.
+
+- Context mode: engine-owned `<stanPath>/**` selection + meta archive clean-slate
+  - Implemented engine-owned STAN selection exceptions (`<stanPath>/system/**` excluding `.docs.meta.json`, and `<stanPath>/imports/**`) and ignored config includes/excludes under `<stanPath>/**`.
+  - Reserved host-private `<stanPath>/context/dependency.map.json` so it is never selected/archived.
+  - Updated `archive.meta.tar` behavior to omit dependency state always (clean slate) and added optional `<stanPath>/output/**` inclusion for combine mode (archive files still excluded by tar filter).
+  - Added focused regression tests and aligned README docs.
