@@ -2,8 +2,28 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.8.0](https://github.com/karmaniverous/stan-core/compare/0.7.0...0.8.0)
+
+- feat: dependency context v2 (compact meta/state + map-driven validation) [`7b62101`](https://github.com/karmaniverous/stan-core/commit/7b62101cd6a4d399a8a798a9037e3df2b64494cf)
+- feat: engine-owned .stan selection + meta clean-slate [`01d826a`](https://github.com/karmaniverous/stan-core/commit/01d826a39566e045869c54f93508c28f0fec57ab)
+- fix: update context tests and exports for dependency v2 [`cc82116`](https://github.com/karmaniverous/stan-core/commit/cc821163680f0c6350759b6198c6c093ce752edf)
+- docs: lock dependency context v2 direction [`e2a50ed`](https://github.com/karmaniverous/stan-core/commit/e2a50edf6be3d81dba07a0fc71a8a879b885862a)
+- docs: update dev plan with completed dependency context v2 [`53aad4a`](https://github.com/karmaniverous/stan-core/commit/53aad4a559c5ad7c46728985db52dc741da08003)
+- docs: lock context v2 archive composition [`e2dfe4f`](https://github.com/karmaniverous/stan-core/commit/e2dfe4f8dfe730252088a5d8525af00ed705c775)
+- fix: resolve v2 context typecheck and lint errors [`0356523`](https://github.com/karmaniverous/stan-core/commit/035652383f0bd2ad2b34f14d27b9cb59222656ae)
+- docs: plan dependency.map.json + no-hash meta [`55e833b`](https://github.com/karmaniverous/stan-core/commit/55e833b31b742f14080ae13e5ef2e35112637833)
+- fix: resolve remaining lint errors in context normalize [`5aced6f`](https://github.com/karmaniverous/stan-core/commit/5aced6fa0d063542f206c1c1bcf0b71552fc2168)
+- fix: resolve dependency context v2 type exports and lint [`f4f2276`](https://github.com/karmaniverous/stan-core/commit/f4f22762f587845f7293a00defbceb8ae709f466)
+- docs: prep v2 archive rules for next thread [`967ca62`](https://github.com/karmaniverous/stan-core/commit/967ca62887dbec8d5e1de877638750481c7b0d96)
+- fix: restore .stan/context include + test import [`5f792ba`](https://github.com/karmaniverous/stan-core/commit/5f792ba9d403c42e940ea5274a7cd4e56f92416e)
+- fix: resolve final lint error in context normalize [`84d430f`](https://github.com/karmaniverous/stan-core/commit/84d430f556796f65d89b11a5f72dc360c9273080)
+- fix: resolve lint errors in context normalize and state [`730878d`](https://github.com/karmaniverous/stan-core/commit/730878ddedc472b9ae7a2c34c80b656f14c4f90e)
+
 #### [0.7.0](https://github.com/karmaniverous/stan-core/compare/0.6.1...0.7.0)
 
+> 24 January 2026
+
+- chore: release v0.7.0 [`cb683d3`](https://github.com/karmaniverous/stan-core/commit/cb683d3ff0c784b458647e3419978bf7ac6ca2c7)
 - feat(context): pass TS injection to stan-context [`c1a0d06`](https://github.com/karmaniverous/stan-core/commit/c1a0d063ba5cf70a278b47e9c7e497d8cb5e0807)
 - docs: request TS injection in stan-context [`a7a975f`](https://github.com/karmaniverous/stan-core/commit/a7a975fb6cd026dbcafdddc71b3b571f6b42a8c6)
 - docs: clarify TS injection in stan-core README [`be2e175`](https://github.com/karmaniverous/stan-core/commit/be2e175222f6fc142b70bc396a4b53cd7d652763)
