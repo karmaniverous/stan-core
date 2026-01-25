@@ -25,6 +25,7 @@ Last updated: 2026-01-25Z
   - Engine-owned STAN selection exceptions: include `<stanPath>/system/**` (excluding `.docs.meta.json`) and `<stanPath>/imports/**` regardless of `.gitignore`/config.
   - Reserved `<stanPath>/context/dependency.map.json` so it is never archived.
   - Meta archive omits dependency state always; optional include `<stanPath>/output/**` for combine mode.
+  - Follow-up fix: allow `includes` to re-include gitignored `<stanPath>/context/**` for dependency archive-flow wrappers; fixed test tmp import path.
 
 ## Context note
 

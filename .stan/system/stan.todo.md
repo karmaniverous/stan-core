@@ -334,4 +334,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Implemented engine-owned STAN selection exceptions (`<stanPath>/system/**` excluding `.docs.meta.json`, and `<stanPath>/imports/**`) and ignored config includes/excludes under `<stanPath>/**`.
   - Reserved host-private `<stanPath>/context/dependency.map.json` so it is never selected/archived.
   - Updated `archive.meta.tar` behavior to omit dependency state always (clean slate) and added optional `<stanPath>/output/**` inclusion for combine mode (archive files still excluded by tar filter).
-  - Added focused regression tests and aligned README docs.
+  - Added focused regression tests and aligned README docs.
+
+- Fix: restore dependency archive-flow force-include and test imports
+  - Allow `includes` to re-include gitignored `<stanPath>/context/**` in dependency archive-flow wrappers; fix test tmp helper import path.

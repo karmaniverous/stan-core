@@ -115,7 +115,10 @@ export type FilterOptions = {
  *     `stanPath/output` is excluded when `includeOutputDir` is false.
  *
  * Engine-owned `<stanPath>/**` behavior:
- * - Config `includes` and `excludes` are ignored for paths under `<stanPath>/**`.
+ * - Config `excludes` are ignored for paths under `<stanPath>/**`.
+ * - Additive `includes` may be used by callers to force-include engine-owned
+ *   areas (for example, `<stanPath>/context/**` in context flows), but reserved
+ *   denials still win.
  * - `.gitignore` is still honored under `<stanPath>/**` EXCEPT for:
  *   - `<stanPath>/system/**` (excluding `<stanPath>/system/.docs.meta.json`)
  *   - `<stanPath>/imports/**`
@@ -166,8 +169,8 @@ export async function filterFiles(
     return excludeMatchers.some((m) => m(f));
   };
   const isConfigIncluded = (f: string, allowMatchers: Matcher[]): boolean => {
-    // Config includes are additive outside stanPath; ignored under stanPath.
-    if (isInStan(f)) return false;
+    // Includes are additive allowlist patterns; they can re-include gitignored
+    // files anywhere. Reserved and blocked denials still win.
     return allowMatchers.some((m) => m(f));
   };
 
