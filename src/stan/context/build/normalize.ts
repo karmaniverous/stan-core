@@ -234,9 +234,10 @@ export const normalizeGraph = async (
       if (e.resolution === 'implicit') rBit = 2;
       // If 'explicit', rBit = 1.
 
+      // Lint fix: byTarget.get(t) can be undefined, but TS flow analysis knows better in loops sometimes.
+      // We handle it explicitly.
       const existing = byTarget.get(t);
-      // lint: unnecessary conditional? we just need to ensure type safety.
-      const prev = existing ? existing : { kMask: 0, resMask: 0 };
+      const prev = existing ?? { kMask: 0, resMask: 0 };
       byTarget.set(t, {
         kMask: prev.kMask | kBit,
         resMask: prev.resMask | rBit,
@@ -247,8 +248,8 @@ export const normalizeGraph = async (
     // Sort targets
     const targets = Array.from(byTarget.keys()).sort();
     for (const t of targets) {
-      // We know `t` is a key in byTarget
-      const info = byTarget.get(t)!;
+      const info = byTarget.get(t);
+      if (!info) continue;
 
       // Compact tuple: [target, kMask] or [target, kMask, resMask]
       // Omit resMask if explicit-only (1)
