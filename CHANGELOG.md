@@ -2,9 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.8.1](https://github.com/karmaniverous/stan-core/compare/0.8.0...0.8.1)
+
+- export writeDependencyMapFile [`23c658a`](https://github.com/karmaniverous/stan-core/commit/23c658adfe8896d7dd1a9bdc8d7dfd97988516c6)
+
 #### [0.8.0](https://github.com/karmaniverous/stan-core/compare/0.7.0...0.8.0)
 
+> 25 January 2026
+
 - feat: dependency context v2 (compact meta/state + map-driven validation) [`7b62101`](https://github.com/karmaniverous/stan-core/commit/7b62101cd6a4d399a8a798a9037e3df2b64494cf)
+- chore: release v0.8.0 [`5776cfc`](https://github.com/karmaniverous/stan-core/commit/5776cfc6f6f3f3c53f0a4b1c17b3a4760f8b1893)
 - feat: engine-owned .stan selection + meta clean-slate [`01d826a`](https://github.com/karmaniverous/stan-core/commit/01d826a39566e045869c54f93508c28f0fec57ab)
 - fix: update context tests and exports for dependency v2 [`cc82116`](https://github.com/karmaniverous/stan-core/commit/cc821163680f0c6350759b6198c6c093ce752edf)
 - docs: lock dependency context v2 direction [`e2a50ed`](https://github.com/karmaniverous/stan-core/commit/e2a50edf6be3d81dba07a0fc71a8a879b885862a)
