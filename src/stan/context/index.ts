@@ -71,4 +71,4 @@ export type {
 } from './validate';
 export { validateDependencySelection } from './validate';
 export { validateDependencySelectionOrThrow } from './validate';
-export { writeDependencyMetaFile } from './write';
+export { writeDependencyMapFile, writeDependencyMetaFile } from './write';
