@@ -329,4 +329,4 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Replaced V1 schemas with V2 (n/e/k/s/d for meta, i/x/mask for state) and introduced host-private `dependency.map.json` for validation.
   - Updated build/stage/validate logic to use Map-driven integrity checks and V2 closure traversal.
   - Updated all unit tests to match V2 data structures and flows.
-  - Fixed typecheck and lint errors in V2 modules and tests.
+  - Resolved all typecheck and lint errors (DependencyMapNode exports, map existence checks).

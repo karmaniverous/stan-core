@@ -140,7 +140,7 @@ export type DependencyMetaNode = z.infer<typeof dependencyMetaNodeSchema>;
 export const dependencyMetaFileSchema = z
   .object({
     v: z.literal(2),
-    /** Nodes map: id -> node */
+    /** Nodes map: id -\> node */
     n: z.record(nodeIdSchema, dependencyMetaNodeSchema),
   })
   .strict();
@@ -156,6 +156,8 @@ export const dependencyMapNodeSchema = z.object({
   size: z.number().int().min(0),
   sha256: z.string(),
 });
+export type DependencyMapNode = z.infer<typeof dependencyMapNodeSchema>;
+
 export const dependencyMapFileSchema = z.object({
   v: z.literal(1),
   nodes: z.record(z.string(), dependencyMapNodeSchema),

@@ -42,6 +42,7 @@ export {
 } from './context-archive';
 export type {
   DependencyMapFile,
+  DependencyMapNode,
   DependencyMetaFile,
   DependencyMetaNode,
   DependencyStateEntry,

@@ -13,7 +13,7 @@ import { ensureDir, remove } from 'fs-extra';
 import { isUnder, normalizePrefix } from '@/stan/path/prefix';
 import { toPosix } from '@/stan/path/repo';
 
-import type { DependencyMapFile, DependencyMapNode } from './schema';
+import type { DependencyMapFile } from './schema';
 
 const computeSha256Hex = (buf: Buffer): string =>
   createHash('sha256').update(buf).digest('hex');
@@ -32,7 +32,7 @@ const isStageableNodeId = (stanPath: string, nodeId: string): boolean => {
 export type StageDependencyContextArgs = {
   cwd: string;
   stanPath: string;
-  /** Host-private dependency map (canonical node -> locator/hash). */
+  /** Host-private dependency map (canonical node -\> locator/hash). */
   map: DependencyMapFile;
 
   /**
@@ -88,7 +88,9 @@ export const stageDependencyContext = async (
       continue;
     }
 
-    const entry = map.nodes[nodeId] as DependencyMapNode | undefined;
+    const entry = Object.prototype.hasOwnProperty.call(map.nodes, nodeId)
+      ? map.nodes[nodeId]
+      : undefined;
     if (!entry) {
       throw new Error(
         `dependency context staging: missing map entry for nodeId "${nodeId}"`,

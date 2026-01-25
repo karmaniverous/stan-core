@@ -234,7 +234,8 @@ export const normalizeGraph = async (
       if (e.resolution === 'implicit') rBit = 2;
       // If 'explicit', rBit = 1.
 
-      const prev = byTarget.get(t) ?? { kMask: 0, resMask: 0 };
+      const existing = byTarget.get(t);
+      const prev = existing ? existing : { kMask: 0, resMask: 0 };
       byTarget.set(t, {
         kMask: prev.kMask | kBit,
         resMask: prev.resMask | rBit,

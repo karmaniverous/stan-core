@@ -45,7 +45,7 @@ describe('summarizeContextAllowlistBudget', () => {
       const out = await summarizeContextAllowlistBudget({
         cwd,
         plan,
-        meta,
+        meta: meta as unknown as DependencyMetaFile,
         topN: 10,
       });
 
@@ -85,7 +85,7 @@ describe('summarizeContextAllowlistBudget', () => {
           selectedNodeIds: [],
           allowlistFiles: [missing],
         },
-        meta: { v: 2, n: {} },
+        meta: { v: 2, n: {} } as DependencyMetaFile,
       });
       expect(out.totalBytes).toBe(0);
       expect(out.warnings.some((w) => w.includes(missing))).toBe(true);
