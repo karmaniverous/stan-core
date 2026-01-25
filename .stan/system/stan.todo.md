@@ -326,3 +326,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Confirmed `--context` threads start from FULL or META archives (never DIFF-only).
   - Confirmed `--context meta` omits dependency state always and includes `--combine` outputs (excluding known STAN archive files).
   - Confirmed config `excludes` are hard denials for dependency-selected repo paths outside `.stan/**`.
+
+- Docs: capture v2 archive composition + next-thread plan
+  - Updated scratch and requirements to record the locked v2 + combine + context META omission-of-state contract and the concrete Slice 1 implementation plan for the next thread.

@@ -77,7 +77,7 @@ Base definition (fixed, config-driven)
 Dependency graph universe vs archive selection
 
 - The dependency graph universe is the seed for the dependency map. It MUST be sufficiently broad to support later selection via state without requiring full-archive ingestion by the assistant.
-- For v1, the dependency graph universe SHOULD be the same selection used by the pre-context archiving flow (the existing STAN selection model driven by config includes/excludes and `.gitignore` semantics), even though the context-mode archive payload is allowlist-only.
+- For v2, the dependency graph universe SHOULD be the same selection used by the non-context archiving flow (the existing selection model driven by config includes/excludes and `.gitignore` semantics), even though the context-mode archive payload is allowlist-only.
 - Archive selection begins from Base only; it does not implicitly include the full graph universe.
 
 Excludes precedence (hard denials)
