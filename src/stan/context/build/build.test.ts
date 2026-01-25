@@ -118,7 +118,7 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     });
 
     const out = await buildDependencyMeta({ cwd, stanPath, typescript: {} });
-    const nodeIds = Object.keys(out.meta.nodes);
+    const nodeIds = Object.keys(out.meta.n);
 
     // Builtin/missing omitted
     expect(nodeIds.some((id) => id.includes('node:'))).toBe(false);
@@ -137,15 +137,17 @@ describe('buildDependencyMeta (context mode: deps + normalization)', () => {
     );
     expect(absNorm).toBeTruthy();
     const absId = absNorm ?? '';
-    const node = out.meta.nodes[absId];
-    expect(node).toBeDefined();
-    expect(node.locatorAbs).toBe(absFileAbs.replace(/\\/g, '/'));
+    const mapNode = out.map.nodes[absId];
+    expect(mapNode).toBeDefined();
+    expect(mapNode.locatorAbs).toBe(absFileAbs.replace(/\\/g, '/'));
 
     // Edges are preserved only among kept targets
-    expect(out.meta.edges[srcId].some((e) => e.target === npmNorm)).toBe(true);
-    expect(out.meta.edges[srcId].some((e) => e.target.includes('node:'))).toBe(
-      false,
+    expect(out.meta.n[srcId].e?.some((tuple) => tuple[0] === npmNorm)).toBe(
+      true,
     );
+    expect(
+      out.meta.n[srcId].e?.some((tuple) => tuple[0].includes('node:')),
+    ).toBe(false);
 
     // Cleanup
     await cleanupTempDir(cwd);

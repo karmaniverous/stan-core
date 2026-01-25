@@ -2,18 +2,23 @@ import { describe, expect, it } from 'vitest';
 
 import type { DependencyMetaFile } from './schema';
 import { parseDependencyStateFile } from './schema';
+import { EDGE_KIND, NODE_KIND } from './schema';
 import { computeSelectedNodeIds } from './state';
 
-const makeMeta = (): Pick<DependencyMetaFile, 'edges'> => {
+const makeMeta = (): DependencyMetaFile => {
   return {
-    edges: {
-      'a.ts': [
-        { target: 'b.ts', kind: 'runtime' },
-        { target: 'c.ts', kind: 'type' },
-      ],
-      'b.ts': [{ target: 'd.ts', kind: 'dynamic' }],
-      'c.ts': [{ target: 'd.ts', kind: 'type' }],
-      'd.ts': [],
+    v: 2,
+    n: {
+      'a.ts': {
+        k: NODE_KIND.SOURCE,
+        e: [
+          ['b.ts', EDGE_KIND.RUNTIME],
+          ['c.ts', EDGE_KIND.TYPE],
+        ],
+      },
+      'b.ts': { k: NODE_KIND.SOURCE, e: [['d.ts', EDGE_KIND.DYNAMIC]] },
+      'c.ts': { k: NODE_KIND.SOURCE, e: [['d.ts', EDGE_KIND.TYPE]] },
+      'd.ts': { k: NODE_KIND.SOURCE },
     },
   };
 };
@@ -21,7 +26,7 @@ const makeMeta = (): Pick<DependencyMetaFile, 'edges'> => {
 describe('dependency state closure', () => {
   it('depth=0 includes only the nodeId (no traversal)', () => {
     const meta = makeMeta();
-    const st = parseDependencyStateFile({ include: [['a.ts', 0]] });
+    const st = parseDependencyStateFile({ v: 2, include: [['a.ts', 0]] });
     const out = computeSelectedNodeIds({
       meta,
       include: st.include,
@@ -32,7 +37,7 @@ describe('dependency state closure', () => {
 
   it('depth=1 includes direct outgoing deps (all kinds by default)', () => {
     const meta = makeMeta();
-    const st = parseDependencyStateFile({ include: [['a.ts', 1]] });
+    const st = parseDependencyStateFile({ v: 2, include: [['a.ts', 1]] });
     const out = computeSelectedNodeIds({
       meta,
       include: st.include,
@@ -44,7 +49,8 @@ describe('dependency state closure', () => {
   it('edgeKinds filters traversal (type-only)', () => {
     const meta = makeMeta();
     const st = parseDependencyStateFile({
-      include: [['a.ts', 2, ['type']]],
+      v: 2,
+      include: [['a.ts', 2, EDGE_KIND.TYPE]],
     });
     const out = computeSelectedNodeIds({
       meta,
@@ -58,6 +64,7 @@ describe('dependency state closure', () => {
   it('excludes win (subtract after include expansion)', () => {
     const meta = makeMeta();
     const st = parseDependencyStateFile({
+      v: 2,
       include: [['a.ts', 2]],
       exclude: [['b.ts', 1]], // b and its dynamic dep d
     });

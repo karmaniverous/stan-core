@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { computeContextAllowlistPlan } from './allowlist';
+import { EDGE_KIND, NODE_KIND } from './schema';
 
 describe('computeContextAllowlistPlan ignores config excludes under <stanPath>/**', () => {
   let dir: string;
@@ -37,14 +38,14 @@ describe('computeContextAllowlistPlan ignores config excludes under <stanPath>/*
     const seed = 'seed.ts';
 
     const meta = {
-      nodes: {},
-      edges: {
-        [seed]: [{ target: external, kind: 'type' as const }],
-        [external]: [],
+      v: 2 as const,
+      n: {
+        [seed]: { k: NODE_KIND.SOURCE, e: [[external, EDGE_KIND.TYPE]] },
+        [external]: { k: NODE_KIND.EXTERNAL },
       },
     };
 
-    const state = { include: [[seed, 1]], exclude: [] };
+    const state = { v: 2, i: [[seed, 1]], x: [] };
 
     const plan = await computeContextAllowlistPlan({
       cwd: dir,

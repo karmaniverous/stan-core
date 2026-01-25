@@ -10,7 +10,6 @@ export type {
   CreateArchiveDiffWithDependencyContextResult,
   CreateArchiveWithDependencyContextResult,
   DependencyContextInputs,
-  DependencyContextMeta,
   PrepareDependencyContextResult,
   StagePreparedDependencyContextResult,
 } from './archive-flow';
@@ -42,8 +41,7 @@ export {
   createContextArchiveWithDependencyContext,
 } from './context-archive';
 export type {
-  DependencyEdgeType,
-  DependencyMetaEdge,
+  DependencyMapFile,
   DependencyMetaFile,
   DependencyMetaNode,
   DependencyStateEntry,
@@ -51,8 +49,8 @@ export type {
   NormalizedDependencyStateEntry,
 } from './schema';
 export {
-  dependencyEdgeTypeSchema,
-  dependencyMetaEdgeSchema,
+  dependencyMapFileSchema,
+  dependencyMapNodeSchema,
   dependencyMetaFileSchema,
   dependencyMetaNodeSchema,
   dependencyStateEntrySchema,

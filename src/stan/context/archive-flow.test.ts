@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { createArchiveWithDependencyContext } from './archive-flow';
-import type { NodeSource } from './build';
+import { EDGE_KIND, NODE_KIND } from './schema';
 
 describe('createArchiveWithDependencyContext (staging + anchors)', () => {
   let dir: string;
@@ -49,21 +49,19 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
     const srcAbs = path.join(dir, 'external', 'index.d.ts');
     const body = 'export type X = 1;\n';
     await writeFile(srcAbs, body, 'utf8');
+    const size = Buffer.byteLength(body);
 
     const nodeId = '.stan/context/npm/pkg/1.0.0/index.d.ts';
 
     const meta = {
       // minimal meta shape for closure: edges must contain keys for referenced nodeIds
-      nodes: {
-        'src/a.ts': { kind: 'source' as const },
+      v: 2 as const,
+      n: {
+        'src/a.ts': { k: NODE_KIND.SOURCE, e: [[nodeId, EDGE_KIND.TYPE]] },
         [nodeId]: {
-          kind: 'external' as const,
-          metadata: { hash: '', size: body.length },
+          k: NODE_KIND.EXTERNAL,
+          s: size,
         },
-      },
-      edges: {
-        'src/a.ts': [{ target: nodeId, kind: 'type' as const }],
-        [nodeId]: [],
       },
     };
 
@@ -72,26 +70,25 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
     const hash = createHash('sha256')
       .update(Buffer.from(body, 'utf8'))
       .digest('hex');
-    (
-      meta.nodes[nodeId] as { metadata: { hash: string; size: number } }
-    ).metadata.hash = hash;
 
-    const sources: Record<string, NodeSource> = {
-      [nodeId]: {
-        kind: 'npm',
-        sourceAbs: srcAbs.replace(/\\/g, '/'),
-        pkgName: 'pkg',
-        pkgVersion: '1.0.0',
-        pathInPackage: 'index.d.ts',
+    const map = {
+      v: 1 as const,
+      nodes: {
+        [nodeId]: {
+          id: nodeId,
+          locatorAbs: srcAbs.replace(/\\/g, '/'),
+          size,
+          sha256: hash,
+        },
       },
     };
 
-    const state = { include: [['src/a.ts', 1]], exclude: [] };
+    const state = { v: 2, i: [['src/a.ts', 1]], x: [] };
 
     await createArchiveWithDependencyContext({
       cwd: dir,
       stanPath,
-      dependency: { meta, state, sources, clean: true },
+      dependency: { meta, state, map, clean: true },
       archive: { includeOutputDir: false },
     });
 

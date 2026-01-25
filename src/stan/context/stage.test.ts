@@ -5,7 +5,6 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
-import type { NodeSource } from './build';
 import { stageDependencyContext } from './stage';
 
 const sha256 = (buf: Buffer): string =>
@@ -31,40 +30,28 @@ describe('stageDependencyContext', () => {
       await writeFile(npmSrcAbs, npmBody);
       await writeFile(absSrcAbs, absBody);
 
-      const meta = {
+      const map = {
+        v: 1 as const,
         nodes: {
           [npmNodeId]: {
-            kind: 'external',
-            metadata: { size: npmBody.length, hash: sha256(npmBody) },
+            id: npmNodeId,
+            locatorAbs: npmSrcAbs.replace(/\\/g, '/'),
+            size: npmBody.length,
+            sha256: sha256(npmBody),
           },
           [absNodeId]: {
-            kind: 'external',
-            metadata: { size: absBody.length, hash: sha256(absBody) },
+            id: absNodeId,
             locatorAbs: absSrcAbs.replace(/\\/g, '/'),
+            size: absBody.length,
+            sha256: sha256(absBody),
           },
-        },
-      } as const;
-
-      const sources: Record<string, NodeSource> = {
-        [npmNodeId]: {
-          kind: 'npm',
-          sourceAbs: npmSrcAbs.replace(/\\/g, '/'),
-          pkgName: 'pkg',
-          pkgVersion: '1.0.0',
-          pathInPackage: 'index.d.ts',
-        },
-        [absNodeId]: {
-          kind: 'abs',
-          sourceAbs: absSrcAbs.replace(/\\/g, '/'),
-          locatorAbs: absSrcAbs.replace(/\\/g, '/'),
         },
       };
 
       const out = await stageDependencyContext({
         cwd,
         stanPath,
-        meta,
-        sources,
+        map,
         clean: true,
       });
 
@@ -90,26 +77,20 @@ describe('stageDependencyContext', () => {
       const body = Buffer.from('export type X = 1;\n', 'utf8');
       await writeFile(srcAbs, body);
 
-      const meta = {
+      const map = {
+        v: 1 as const,
         nodes: {
           [nodeId]: {
-            kind: 'external',
-            metadata: { size: body.length, hash: 'deadbeef' },
+            id: nodeId,
+            locatorAbs: srcAbs.replace(/\\/g, '/'),
+            size: body.length,
+            sha256: 'deadbeef', // mismatch
           },
-        },
-      } as const;
-      const sources: Record<string, NodeSource> = {
-        [nodeId]: {
-          kind: 'npm',
-          sourceAbs: srcAbs.replace(/\\/g, '/'),
-          pkgName: 'pkg',
-          pkgVersion: '1.0.0',
-          pathInPackage: 'index.d.ts',
         },
       };
 
       await expect(
-        stageDependencyContext({ cwd, stanPath, meta, sources }),
+        stageDependencyContext({ cwd, stanPath, map }),
       ).rejects.toThrow(/hash mismatch/i);
     } finally {
       await cleanupTempDir(cwd);
@@ -134,29 +115,22 @@ describe('stageDependencyContext', () => {
       await writeFile(srcAbs, body);
       const nodeId = '.stan/context/npm/pkg/1.0.0/index.d.ts';
 
-      const meta = {
+      const map = {
+        v: 1 as const,
         nodes: {
           [nodeId]: {
-            kind: 'external',
-            metadata: { size: body.length, hash: sha256(body) },
+            id: nodeId,
+            locatorAbs: srcAbs.replace(/\\/g, '/'),
+            size: body.length,
+            sha256: sha256(body),
           },
-        },
-      } as const;
-      const sources: Record<string, NodeSource> = {
-        [nodeId]: {
-          kind: 'npm',
-          sourceAbs: srcAbs.replace(/\\/g, '/'),
-          pkgName: 'pkg',
-          pkgVersion: '1.0.0',
-          pathInPackage: 'index.d.ts',
         },
       };
 
       await stageDependencyContext({
         cwd,
         stanPath,
-        meta,
-        sources,
+        map,
         clean: true,
       });
 

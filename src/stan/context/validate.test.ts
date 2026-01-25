@@ -5,6 +5,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
+import { NODE_KIND } from './schema';
 import { validateDependencySelection } from './validate';
 
 const sha256 = (s: string): string =>
@@ -29,35 +30,43 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       );
       await writeFile(path.join(pkgRoot, fileRel), body, 'utf8');
 
+      const size = Buffer.byteLength(body);
+      const hash = sha256(body);
       const nodeId = `${stanPath}/context/npm/${pkgName}/${pkgVersion}/${fileRel}`;
+
       const meta = {
+        v: 2 as const,
+        n: {
+          [nodeId]: { k: NODE_KIND.EXTERNAL, s: size },
+        },
+      };
+      const map = {
+        v: 1 as const,
         nodes: {
           [nodeId]: {
-            kind: 'external',
-            metadata: { hash: sha256(body), size: Buffer.byteLength(body) },
+            id: nodeId,
+            locatorAbs: path.join(pkgRoot, fileRel),
+            size,
+            sha256: hash,
           },
         },
-        edges: { [nodeId]: [] },
-      } as const;
-      const state = { include: [[nodeId, 0]], exclude: [] };
+      };
+      const state = { v: 2, include: [[nodeId, 0]], exclude: [] };
 
       const out = await validateDependencySelection({
-        cwd,
         stanPath,
-        meta: meta as unknown as Parameters<
-          typeof validateDependencySelection
-        >[0]['meta'],
+        meta,
+        map,
         state,
       });
       expect(out.ok).toBe(true);
       expect(out.mismatches).toEqual([]);
-      expect(out.checkedNodeIds).toEqual([nodeId]);
     } finally {
       await cleanupTempDir(cwd);
     }
   });
 
-  it('npm: reports version mismatch when name exists but version differs', async () => {
+  it('npm: reports file mismatch when locator points to wrong file', async () => {
     const cwd = await makeTempDir('stan-val-npm-ver-');
     const stanPath = '.stan';
     try {
@@ -71,28 +80,32 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       );
 
       const nodeId = `${stanPath}/context/npm/${pkgName}/1.0.0/index.d.ts`;
-      const meta = {
+      // Map points to a file that doesn't exist
+      const map = {
+        v: 1 as const,
         nodes: {
           [nodeId]: {
-            kind: 'external',
-            metadata: { hash: 'x', size: 1 },
+            id: nodeId,
+            locatorAbs: path.join(pkgRoot, 'missing.d.ts'),
+            size: 10,
+            sha256: 'x',
           },
         },
-        edges: { [nodeId]: [] },
-      } as const;
-      const state = { include: [[nodeId, 0]], exclude: [] };
+      };
+      const meta = {
+        v: 2 as const,
+        n: { [nodeId]: { k: NODE_KIND.EXTERNAL, s: 10 } },
+      };
+      const state = { v: 2, include: [[nodeId, 0]], exclude: [] };
 
       const out = await validateDependencySelection({
-        cwd,
         stanPath,
-        meta: meta as unknown as Parameters<
-          typeof validateDependencySelection
-        >[0]['meta'],
+        meta,
+        map,
         state,
       });
       expect(out.ok).toBe(false);
-      expect(out.mismatches[0]?.kind).toBe('npm');
-      expect(out.mismatches[0]?.reason).toBe('package-version-mismatch');
+      expect(out.mismatches[0]?.reason).toBe('file-missing');
     } finally {
       await cleanupTempDir(cwd);
     }
@@ -105,27 +118,29 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
     try {
       const body = 'export type A = 1;\n';
       const absFile = path.join(outside, 'a.d.ts');
+      const size = Buffer.byteLength(body);
+      const hash = sha256(body);
       await writeFile(absFile, body, 'utf8');
 
       const nodeId = `${stanPath}/context/abs/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/a.d.ts`;
       const meta = {
-        nodes: {
-          [nodeId]: {
-            kind: 'external',
-            metadata: { hash: sha256(body), size: Buffer.byteLength(body) },
-            locatorAbs: absFile.replace(/\\/g, '/'),
-          },
+        v: 2 as const,
+        n: {
+          [nodeId]: { k: NODE_KIND.EXTERNAL, s: size },
         },
-        edges: { [nodeId]: [] },
-      } as const;
-      const state = { include: [[nodeId, 0]], exclude: [] };
+      };
+      const map = {
+        v: 1 as const,
+        nodes: {
+          [nodeId]: { id: nodeId, locatorAbs: absFile, size, sha256: hash },
+        },
+      };
+      const state = { v: 2, include: [[nodeId, 0]], exclude: [] };
 
       const out = await validateDependencySelection({
-        cwd,
         stanPath,
-        meta: meta as unknown as Parameters<
-          typeof validateDependencySelection
-        >[0]['meta'],
+        meta,
+        map,
         state,
       });
       expect(out.ok).toBe(true);
@@ -145,31 +160,29 @@ describe('validateDependencySelection (strict undo/redo seam)', () => {
       await writeFile(absFile, 'changed0\n', 'utf8');
 
       const nodeId = `${stanPath}/context/abs/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/a.d.ts`;
+      const size = Buffer.byteLength('expected\n');
+      const hash = sha256('expected\n');
       const meta = {
-        nodes: {
-          [nodeId]: {
-            kind: 'external',
-            metadata: {
-              hash: sha256('expected\n'),
-              size: Buffer.byteLength('expected\n'),
-            },
-            locatorAbs: absFile.replace(/\\/g, '/'),
-          },
+        v: 2 as const,
+        n: {
+          [nodeId]: { k: NODE_KIND.EXTERNAL, s: size },
         },
-        edges: { [nodeId]: [] },
-      } as const;
-      const state = { include: [[nodeId, 0]], exclude: [] };
+      };
+      const map = {
+        v: 1 as const,
+        nodes: {
+          [nodeId]: { id: nodeId, locatorAbs: absFile, size, sha256: hash },
+        },
+      };
+      const state = { v: 2, include: [[nodeId, 0]], exclude: [] };
 
       const out = await validateDependencySelection({
-        cwd,
         stanPath,
-        meta: meta as unknown as Parameters<
-          typeof validateDependencySelection
-        >[0]['meta'],
+        meta,
+        map,
         state,
       });
       expect(out.ok).toBe(false);
-      expect(out.mismatches[0]?.kind).toBe('abs');
       expect(out.mismatches[0]?.reason).toBe('hash-mismatch');
     } finally {
       await cleanupTempDir(cwd);
