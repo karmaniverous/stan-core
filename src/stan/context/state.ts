@@ -29,7 +29,7 @@ const getOutgoing = (
   allowedMask: number,
 ): Edge[] => {
   const node = meta.n[nodeId];
-  if (!node || !node.e) return [];
+  if (!node.e) return [];
 
   const out: Edge[] = [];
   for (const tuple of node.e) {

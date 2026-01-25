@@ -213,7 +213,7 @@ export const normalizeGraph = async (
 
   for (const [oldSource, list] of Object.entries(edgesIn)) {
     const src = idMap.get(oldSource) ?? null;
-    if (!src || !nodesOut[src]) continue;
+    if (!src) continue;
 
     // Group edges by target
     const byTarget = new Map<string, { kMask: number; resMask: number }>();
@@ -235,6 +235,7 @@ export const normalizeGraph = async (
       // If 'explicit', rBit = 1.
 
       const existing = byTarget.get(t);
+      // lint: unnecessary conditional? we just need to ensure type safety.
       const prev = existing ? existing : { kMask: 0, resMask: 0 };
       byTarget.set(t, {
         kMask: prev.kMask | kBit,
@@ -246,8 +247,9 @@ export const normalizeGraph = async (
     // Sort targets
     const targets = Array.from(byTarget.keys()).sort();
     for (const t of targets) {
-      const info = byTarget.get(t);
-      if (!info) continue;
+      // We know `t` is a key in byTarget
+      const info = byTarget.get(t)!;
+
       // Compact tuple: [target, kMask] or [target, kMask, resMask]
       // Omit resMask if explicit-only (1)
       if (info.resMask === 1) {
