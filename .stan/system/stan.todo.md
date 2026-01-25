@@ -331,3 +331,4 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated all unit tests to match V2 data structures and flows.
   - Resolved all typecheck and lint errors (DependencyMapNode exports, map existence checks).
   - Resolved all typecheck and lint errors (including non-null assertions).
+  - Resolved final unnecessary-conditional lint error in build/normalize.ts.

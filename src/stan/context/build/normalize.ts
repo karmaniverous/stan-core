@@ -194,7 +194,7 @@ export const normalizeGraph = async (
     // Populate Map for externals
     if (k === NODE_KIND.EXTERNAL) {
       const src = tempSources[newId];
-      if (src && 'sourceAbs' in src) {
+      if ('sourceAbs' in src) {
         const integrity = await getIntegrity(src);
         if (integrity) {
           mapNodes[newId] = {
@@ -234,10 +234,9 @@ export const normalizeGraph = async (
       if (e.resolution === 'implicit') rBit = 2;
       // If 'explicit', rBit = 1.
 
-      // Lint fix: byTarget.get(t) can be undefined, but TS flow analysis knows better in loops sometimes.
-      // We handle it explicitly.
-      const existing = byTarget.get(t);
-      const prev = existing ?? { kMask: 0, resMask: 0 };
+      // Lint fix: we guarantee initialization below if missing
+      const prev = byTarget.get(t) ?? { kMask: 0, resMask: 0 };
+
       byTarget.set(t, {
         kMask: prev.kMask | kBit,
         resMask: prev.resMask | rBit,
