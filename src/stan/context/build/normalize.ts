@@ -10,7 +10,6 @@ import {
   normalizeAbsExternal,
   normalizeRepoLocal,
   sortRecordKeys,
-  toPosix,
 } from '../normalize';
 import { normalizeNpmExternal } from '../npm';
 import type {
@@ -242,11 +241,12 @@ export const normalizeGraph = async (
       });
     }
 
-    const edgeList: DependencyMetaNode['e'] = [];
+    const edgeList: NonNullable<DependencyMetaNode['e']> = [];
     // Sort targets
     const targets = Array.from(byTarget.keys()).sort();
     for (const t of targets) {
-      const info = byTarget.get(t)!;
+      const info = byTarget.get(t);
+      if (!info) continue;
       // Compact tuple: [target, kMask] or [target, kMask, resMask]
       // Omit resMask if explicit-only (1)
       if (info.resMask === 1) {

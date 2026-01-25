@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { summarizeContextAllowlistBudget } from './budget';
-import { NODE_KIND } from './schema';
+import { type DependencyMetaFile, NODE_KIND } from './schema';
 
 describe('summarizeContextAllowlistBudget', () => {
   it('uses meta.metadata.size when present and stats repo files otherwise', async () => {
@@ -26,7 +26,7 @@ describe('summarizeContextAllowlistBudget', () => {
       const extRel = '.stan/context/npm/pkg/1.0.0/index.d.ts';
       const extBytes = 123;
 
-      const meta = {
+      const meta: DependencyMetaFile = {
         v: 2 as const,
         n: {
           [extRel]: {
@@ -45,7 +45,7 @@ describe('summarizeContextAllowlistBudget', () => {
       const out = await summarizeContextAllowlistBudget({
         cwd,
         plan,
-        meta: meta as any,
+        meta,
         topN: 10,
       });
 
@@ -85,7 +85,7 @@ describe('summarizeContextAllowlistBudget', () => {
           selectedNodeIds: [],
           allowlistFiles: [missing],
         },
-        meta: { v: 2, n: {} } as any,
+        meta: { v: 2, n: {} },
       });
       expect(out.totalBytes).toBe(0);
       expect(out.warnings.some((w) => w.includes(missing))).toBe(true);

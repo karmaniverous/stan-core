@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { computeContextAllowlistPlan } from './allowlist';
+import type { DependencyMetaFile } from './schema';
 import { EDGE_KIND, NODE_KIND } from './schema';
 
 describe('computeContextAllowlistPlan ignores config excludes under <stanPath>/**', () => {
@@ -37,10 +38,13 @@ describe('computeContextAllowlistPlan ignores config excludes under <stanPath>/*
     const external = '.stan/context/npm/pkg/1.0.0/index.d.ts';
     const seed = 'seed.ts';
 
-    const meta = {
-      v: 2 as const,
+    const meta: DependencyMetaFile = {
+      v: 2,
       n: {
-        [seed]: { k: NODE_KIND.SOURCE, e: [[external, EDGE_KIND.TYPE]] },
+        [seed]: {
+          k: NODE_KIND.SOURCE,
+          e: [[external, EDGE_KIND.TYPE] as [string, number]],
+        },
         [external]: { k: NODE_KIND.EXTERNAL },
       },
     };

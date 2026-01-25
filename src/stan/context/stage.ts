@@ -1,5 +1,5 @@
 /**
- * Stages external dependency bytes into <stanPath>/context/\{npm,abs\}/** and
+ * Stages external dependency bytes into `<stanPath>/context/{npm,abs}/**` and
  * verifies sha256/size; filesystem IO only; no console output.
  * verifies against dependency.map.json (V1).
  * @module
@@ -13,7 +13,7 @@ import { ensureDir, remove } from 'fs-extra';
 import { isUnder, normalizePrefix } from '@/stan/path/prefix';
 import { toPosix } from '@/stan/path/repo';
 
-import type { DependencyMapFile } from './schema';
+import type { DependencyMapFile, DependencyMapNode } from './schema';
 
 const computeSha256Hex = (buf: Buffer): string =>
   createHash('sha256').update(buf).digest('hex');
@@ -88,7 +88,7 @@ export const stageDependencyContext = async (
       continue;
     }
 
-    const entry = map.nodes[nodeId];
+    const entry = map.nodes[nodeId] as DependencyMapNode | undefined;
     if (!entry) {
       throw new Error(
         `dependency context staging: missing map entry for nodeId "${nodeId}"`,

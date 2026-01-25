@@ -5,7 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cleanupTempDir, makeTempDir } from '../../test/tmp';
 import { createArchiveWithDependencyContext } from './archive-flow';
-import { EDGE_KIND, NODE_KIND } from './schema';
+import {
+  type DependencyMapFile,
+  type DependencyMetaFile,
+  EDGE_KIND,
+  NODE_KIND,
+} from './schema';
 
 describe('createArchiveWithDependencyContext (staging + anchors)', () => {
   let dir: string;
@@ -53,11 +58,14 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
 
     const nodeId = '.stan/context/npm/pkg/1.0.0/index.d.ts';
 
-    const meta = {
+    const meta: DependencyMetaFile = {
       // minimal meta shape for closure: edges must contain keys for referenced nodeIds
-      v: 2 as const,
+      v: 2,
       n: {
-        'src/a.ts': { k: NODE_KIND.SOURCE, e: [[nodeId, EDGE_KIND.TYPE]] },
+        'src/a.ts': {
+          k: NODE_KIND.SOURCE,
+          e: [[nodeId, EDGE_KIND.TYPE] as [string, number]],
+        },
         [nodeId]: {
           k: NODE_KIND.EXTERNAL,
           s: size,
@@ -71,8 +79,8 @@ describe('createArchiveWithDependencyContext (staging + anchors)', () => {
       .update(Buffer.from(body, 'utf8'))
       .digest('hex');
 
-    const map = {
-      v: 1 as const,
+    const map: DependencyMapFile = {
+      v: 1,
       nodes: {
         [nodeId]: {
           id: nodeId,

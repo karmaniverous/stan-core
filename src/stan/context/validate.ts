@@ -9,7 +9,11 @@ import { readFile } from 'node:fs/promises';
 
 import { isUnder, normalizePrefix } from '@/stan/path/prefix';
 
-import type { DependencyMapFile, DependencyMetaFile } from './schema';
+import type {
+  DependencyMapFile,
+  DependencyMapNode,
+  DependencyMetaFile,
+} from './schema';
 import { parseDependencyStateFile } from './schema';
 import { computeSelectedNodeIds } from './state';
 import type {
@@ -57,7 +61,7 @@ export const validateDependencySelection = async (args: {
       isUnder(`${base}/context/npm`, nodeId) ||
       isUnder(`${base}/context/abs`, nodeId)
     ) {
-      const entry = map.nodes[nodeId];
+      const entry = map.nodes[nodeId] as DependencyMapNode | undefined;
       if (!entry) {
         mismatches.push({ nodeId, reason: 'map-missing' });
         continue;

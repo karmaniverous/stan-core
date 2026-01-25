@@ -12,8 +12,6 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
-import type { DependencyMetaNodeMetadata } from './schema';
-
 export const toPosix = (p: string): string => p.replace(/\\/g, '/');
 
 export const ensureNoTraversal = (rel: string): boolean => {
@@ -48,19 +46,6 @@ export const normalizeAbsExternal = (
   return { nodeId, locatorAbs, sourceAbsPosix };
 };
 
-export const normalizeMetadata = (m?: {
-  size?: number;
-  hash?: string;
-}): DependencyMetaNodeMetadata | undefined => {
-  if (!m) return undefined;
-  const out: DependencyMetaNodeMetadata = {};
-  if (typeof m.size === 'number' && Number.isFinite(m.size) && m.size >= 0) {
-    out.size = Math.floor(m.size);
-  }
-  if (typeof m.hash === 'string' && m.hash.length > 0) out.hash = m.hash;
-  return Object.keys(out).length ? out : undefined;
-};
-
 export const sortRecordKeys = <T>(
   obj: Record<string, T>,
 ): Record<string, T> => {
@@ -76,6 +61,5 @@ export default {
   sha256Hex,
   normalizeRepoLocal,
   normalizeAbsExternal,
-  normalizeMetadata,
   sortRecordKeys,
 };

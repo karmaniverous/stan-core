@@ -134,7 +134,7 @@ export const dependencyMetaNodeSchema = z
 export type DependencyMetaNode = z.infer<typeof dependencyMetaNodeSchema>;
 
 /**
- * Dependency meta file (v2 assistant-facing).
+ * Dependency meta file (v2 assistant\-facing).
  * Key is canonical NodeId.
  */
 export const dependencyMetaFileSchema = z
