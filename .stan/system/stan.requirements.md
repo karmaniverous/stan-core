@@ -44,7 +44,7 @@ STAN MUST support a short-term memory device that persists across turns and thre
 
 ## 1) stan-core — Requirements (engine)
 
-### Context mode (`--context`) — allowlist-only archiving (v1)
+### Context mode (`--context`) — archive composition (v2)
 
 When context mode is enabled, the archive payload MUST be allowlist-only so STAN can operate in repositories where a full project archive would exceed model context limits.
 
@@ -56,13 +56,13 @@ Definitions
 
 Hard requirements
 
-- Archive selection in context mode MUST be allowlist-only:
-  - Full and diff archives MUST include only:
-    - Base (defined below),
-    - Plus the repo-local node IDs selected by the dependency state closure,
-    - Plus staged external node IDs required by that selection (under `<stanPath>/context/{npm,abs}/...`),
-    - Minus reserved denials and binaries (reserved denials and binary exclusion always win).
-- This explicitly replaces the pre-context “archive almost everything (denylist)” behavior for `--context` runs.
+- A context-mode thread MUST start from either a FULL archive or a META archive (never a DIFF-only archive).
+- Archive selection in context mode MUST be allowlist-only and MUST be driven by:
+  - the repo-root Base selection,
+  - engine-owned STAN workspace inclusions,
+  - dependency meta and (when applicable) dependency state,
+  - and the dependency-state-selected file set (closure), with hard-denial `excludes`.
+- Config `includes` and `excludes` MUST be ignored for any paths under `<stanPath>/**`. `<stanPath>/**` selection is engine-owned.
 
 Base definition (fixed, config-driven)
 
@@ -70,7 +70,6 @@ Base definition (fixed, config-driven)
   - Base includes:
     - The “meta archive contents” (system docs + dependency meta; see below),
     - `<stanPath>/system/stan.scratch.md` (short-term memory; treated as top-of-thread context),
-    - The dependency state file (`<stanPath>/context/dependency.state.json`) when it exists,
     - Plus the repo-root files selected by the current selection config, restricted to the repo root (top-level files only).
 - Base MUST honor explicit `excludes` as hard denials (see “Excludes precedence”).
 - Base MUST NOT be expanded by dependency traversal. Dependency traversal adds only to the allowlist beyond base.
@@ -89,15 +88,15 @@ Excludes precedence (hard denials)
   - Staged external node IDs selected by dependency closure.
 - `.gitignore` semantics are applied by the existing selection model when building Base and when constructing the dependency graph universe.
 - Explicit selection via dependency state MAY override `.gitignore` (i.e., gitignored files may be included if explicitly selected), but MUST NOT override explicit `excludes` or reserved denials.
+- Config `includes`/`excludes` are ignored for `<stanPath>/**`, but `excludes` still apply to repo paths outside `<stanPath>/**`.
 
 Meta archive alignment
 
-- The meta archive produced for context mode MUST include Base inputs sufficient for the assistant to author a correct dependency state file:
+- The META archive produced for context mode MUST include Base inputs sufficient for the assistant to author a correct dependency state file:
   - System prompt docs (per existing meta archive behavior),
   - `<stanPath>/context/dependency.meta.json`,
-  - Repo-root base files (top-level files) selected by the current selection config,
-  - `<stanPath>/context/dependency.state.json` when it exists.
-- When `dependency.state.json` does not exist (new thread / fresh context-mode run), the assistant MUST respond by creating it to request the next turn’s context.
+  - Repo-root base files (top-level files) selected by the current selection config.
+- The META archive MUST omit `<stanPath>/context/dependency.state.json` even when it exists on disk so the assistant starts from a clean slate for selection directives.
 
 Budgeting and selection heuristics (assistant contract)
 
@@ -152,6 +151,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - Dependency artifacts live under `<stanPath>/context/` (repo default: `.stan/context/`) and SHOULD be gitignored:
       - `<stanPath>/context/dependency.meta.json` (assistant-facing meta; v2 compact)
       - `<stanPath>/context/dependency.state.json` (assistant-authored state; v2 compact)
+      - `<stanPath>/context/dependency.map.json` (host-private map; regenerated each `run -c`; MUST NOT be archived)
       - staged external files:
         - `<stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
         - `<stanPath>/context/abs/<sha256(sourceAbs)>/<basename>`
@@ -160,7 +160,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
       - `archive.diff.tar` (diff)
       - `archive.meta.tar` (meta; only when context mode is enabled)
         - The meta archive MUST include system files and dependency meta.
-        - The meta archive MUST include dependency state when it exists (assistant-authored selection intent).
+        - The meta archive MUST omit dependency state even when it exists so the assistant starts from a clean slate for selections.
         - The meta archive MUST exclude staged payloads under `<stanPath>/context/{npm,abs}/**`.
         - The meta archive MUST exclude `<stanPath>/system/.docs.meta.json`.
   - Node IDs (graph + state; v2 invariant)
@@ -169,22 +169,9 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - External node IDs MUST be normalized to staged `<stanPath>/context/**` paths so the assistant never sees `node_modules/**` paths or OS absolute paths in the graph.
     - OS-level source resolution (where bytes come from) is transient to `stan run -c` and MUST NOT be written into assistant-facing meta/state.
   - Meta requirements (assistant-facing; v2 compact)
-    - The dependency meta file MUST be compact and deterministic and MUST support stable decoding by assistants:
-      - Stable decode tables:
-        - Node kind index: `0` = source, `1` = external, `2` = builtin, `3` = missing.
-        - Edge kind mask: runtime = `1`, type = `2`, dynamic = `4`, all = `7`.
-        - Edge resolution mask (meta only): explicit = `1`, implicit = `2`, both = `3` (if omitted, defaults to explicit-only).
-      - Compact shape (high-level):
-        - `v: 2`
-        - `n: Record<string, { k: 0|1|2|3; s?: number; h?: string; d?: string; e?: [...] }>`
-      - Hash representation:
-        - For integrity-sensitive nodes (source/external), `s` is size in bytes.
-        - For integrity-sensitive nodes (source/external), `h` is a 128-bit sha256 prefix encoded as base64url without padding.
-      - Edges:
-        - Outgoing adjacency list `e` is stored as tuples to reduce size:
-          - `[targetId, kindMask]`
-          - `[targetId, kindMask, resMask]`
-        - There MUST be at most one edge per `(source,target)` pair; multiple underlying edges MUST be merged by OR’ing masks.
+    - The dependency meta file MUST be compact and deterministic and MUST support stable decoding by assistants.
+    - The meta file MUST NOT contain content hashes (to preserve assistant context budget). Integrity verification material lives in the host-private `dependency.map.json` file.
+    - Stable decode tables and compact shapes are engine-owned and must be documented to assistants by the host.
     - The meta file MUST NOT include OS absolute-path locators for external nodes.
   - State file schema (v2; durable contract)
     - `DependencyStateEntryV2 = string | [string, number] | [string, number, number]`
@@ -203,11 +190,12 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - Engine SHOULD NOT attempt to deduplicate between `.stan/imports/**` and `<stanPath>/context/**`; selection decisions are handled at the assistant state level.
   - Undo/redo (strict validation; CLI + engine seam)
     - Undo/redo MUST fail immediately when the restored dependency selection cannot be satisfied by the current host run.
-    - Validation/integrity enforcement MUST be per-file `s` (bytes) + 128-bit sha256 prefix `h` (base64url, no padding) derived from meta v2.
+    - Validation/integrity enforcement MUST be map-driven using host-private `dependency.map.json` (locatorAbs + full sha256 + size).
     - The host (typically stan-cli) MUST rebuild dependency meta at `stan run -c` and use compiler-resolved source locations transiently to stage external bytes into `.stan/context/**`.
-    - The host MUST refuse to stage (and therefore refuse to archive) when any selected external node cannot be resolved or fails `(s,h)` verification.
+    - The host MUST refuse to stage (and therefore refuse to archive) when any selected external node cannot be resolved or fails map-driven verification.
     - The engine MUST NOT persist OS absolute locators in assistant-facing meta/state.
     - Note: this seam intentionally keeps meta thin and archive-addressable; it is acceptable that OS locators are runtime-only.
+    - The host-private `dependency.map.json` MUST NOT be archived.
 
 - Configuration (namespaced; canonical)
   - Config files are namespaced by consumer at the top level. Canonical keys:
@@ -233,6 +221,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - `includes` (additive, override `.gitignore`),
     - `excludes` (take precedence over `includes`),
     - reserved workspace rules (exclude `<stanPath>/diff` and `<stanPath>/patch`, conditionally exclude `<stanPath>/output`).
+  - Config `includes` and `excludes` MUST be ignored for any files under `<stanPath>/**`. Selection under `<stanPath>/**` is engine-owned.
   - Context mode selection (authoritative):
     - In `--context`, archive selection is allowlist-only: Base + selected dependency closure (repo-local node IDs + staged externals), subject to reserved denials and binary exclusion.
     - Explicit `excludes` are hard denials and MUST apply to Base and closure.
@@ -246,16 +235,14 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - `archive.tar` (full selection),
     - `archive.diff.tar` (changed since snapshot with snapshot management).
   - Dependency graph mode MAY also produce:
-    - `archive.meta.tar` (system + dependency meta; includes dependency state when present; excludes staged payloads by omission).
+    - `archive.meta.tar` (system + dependency meta; omits dependency state always; excludes staged payloads by omission).
   - Classification at archive time:
     - Exclude binaries,
     - Flag large text by size and/or LOC.
   - Warnings must be exposed via return values and/or optional callbacks (no console I/O).
-  - Dependency Graph inclusion:
-    - If `@karmaniverous/stan-context` is available and Context Mode is enabled, generate the dependency graph.
-    - Embed the graph JSON in the archive as `<stanPath>/context/dependency.meta.json` (v2 compact).
-    - External node IDs MUST be normalized to staged `<stanPath>/context/**` paths.
-    - Include node descriptions when available.
+  - Combine behavior (`--combine`, host-owned):
+    - When the host requests output combination, the resulting archives MUST include `<stanPath>/output/**` (script outputs and other non-archive outputs) and MUST exclude the known STAN archive files under `<stanPath>/output/`.
+    - This applies to context-mode meta archives as well as full and diff archives.
 
 - Snapshotting
   - Compute per-file content hashes for the filtered selection.
@@ -318,7 +305,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
   - `validateResponseMessage(text) → { ok, errors, warnings }`
 - Prompt helpers
   - `getPackagedSystemPromptPath(): string | null`
-  - `assembleSystemMonolith(cwd, stanPath) → Promise<{ target: string; action: 'written' | 'skipped-no-parts' | 'skipped-no-md' }>`
+  - `assembleSystemMonolith(cwd, stanPath) → Promise<{ target: string; action: 'written' | 'skipped-no-parts' | 'skipped-no-md' }> `
 - Metadata
   - `CORE_VERSION: string`
 

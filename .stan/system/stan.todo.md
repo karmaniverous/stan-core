@@ -7,10 +7,16 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 ## Next up (priority order)
 
 - Breaking: adopt dependency context meta/state v2 (compact) end-to-end
-  - Switch assistant-facing `.stan/context/dependency.meta.json` and `.stan/context/dependency.state.json` to v2 compact formats (nodeId = archive address; externals normalized to staged `.stan/context/**` paths).
-  - Use stan-context `summarizeDependencySelection` for closure + deterministic byte sizing.
-  - Persist host-private `.stan/context/dependency.map.json` (ephemeral, regenerated each `stan run -c`) containing canonical nodeId → locatorAbs + size + full sha256 for staging verification.
-  - Remove content hashes from assistant-facing `dependency.meta.json` (context preservation); `dependency.map.json` is omitted from archives by allowlist selection.
+  - Align archive composition rules across non-context, `--context`, and `--context meta`:
+    - Config `includes`/`excludes` are ignored for `<stanPath>/**` paths (engine-owned STAN selection under `.stan/**`).
+    - Context threads start from FULL or META archives (never DIFF-only).
+    - `--context meta` omits dependency state always (clean slate for selections) but includes dependency meta and `--combine` outputs.
+    - `--context full` includes dependency meta + dependency state (when present) + all state-selected files, with config `excludes` as hard denials for repo paths outside `.stan/**`.
+    - `--combine` includes `.stan/output/**` inside archives but excludes known STAN archive files.
+  - Switch assistant-facing `.stan/context/dependency.meta.json` and `.stan/context/dependency.state.json` to v2 compact formats (nodeId is the archive address; externals normalized to staged `.stan/context/**` paths).
+  - Use stan-context `summarizeDependencySelection` for closure and deterministic byte sizing.
+  - Persist host-private `.stan/context/dependency.map.json` (ephemeral; regenerated each `run -c`) containing canonical nodeId → locatorAbs + size + full sha256 for staging verification.
+  - Remove content hashes from assistant-facing `dependency.meta.json` entirely; verification is map-driven and the map is never archived.
   - Keep disk staging (Option A): stage selected external bytes into `.stan/context/**` prior to archiving so the assistant can read them from archives.
   - Coordinate stan-cli + stan-context releases and update docs + system prompt parts in lockstep.
 
@@ -313,4 +319,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Design: host-private dependency.map.json; no hashes in assistant meta
   - Confirmed `dependency.meta.json` is assistant-facing and should omit content hashes to preserve context budget.
-  - Confirmed `dependency.map.json` is host-private, regenerated each `stan run -c`, and is the source of truth for locatorAbs + full sha256 + size during staging verification.
+  - Confirmed `dependency.map.json` is host-private, regenerated each `stan run -c`, and is the source of truth for locatorAbs + full sha256 + size during staging verification.
+
+- Design: lock archive composition rules for context + combine
+  - Confirmed config `includes`/`excludes` are ignored for `.stan/**` paths (engine-owned selection under `stanPath`).
+  - Confirmed `--context` threads start from FULL or META archives (never DIFF-only).
+  - Confirmed `--context meta` omits dependency state always and includes `--combine` outputs (excluding known STAN archive files).
+  - Confirmed config `excludes` are hard denials for dependency-selected repo paths outside `.stan/**`.
