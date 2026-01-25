@@ -1,12 +1,12 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-25Z
+Last updated: 2026-01-25Z (Turn 2)
 
 ## Current focus
 
 - Adopt dependency context v2 end-to-end (compact meta/state + host-private `dependency.map.json`).
-- Finish context-mode archive composition alignment across `--context` and `--context meta` (including combine behavior).
-- Implement v2 parsing/encoding + map-driven staging/validation paths in stan-core.
+- COMPLETED: v2 schemas, state traversal, map-driven staging/validation, and build normalization.
+- NEXT: Verify tests pass and refine if needed.
 
 ## Working model (high signal)
 
@@ -29,4 +29,5 @@ Last updated: 2026-01-25Z
 
 ## Context note
 
-- Next work: implement v2 meta/state codecs and map-driven staging/validation, then update context-mode allowlist planner to use v2 + `summarizeDependencySelection`.
+- Tests are likely broken by the V2 refactor (types mismatch in tests).
+- Next step: Fix unit tests to match V2 schemas.

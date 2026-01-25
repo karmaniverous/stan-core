@@ -6,20 +6,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
-- Breaking: adopt dependency context meta/state v2 (compact) end-to-end
-  - Align archive composition rules across non-context, `--context`, and `--context meta`:
-    - Config `includes`/`excludes` are ignored for `<stanPath>/**` paths (engine-owned STAN selection under `.stan/**`).
-    - Context threads start from FULL or META archives (never DIFF-only).
-    - `--context meta` omits dependency state always (clean slate for selections) but includes dependency meta and `--combine` outputs.
-    - `--context full` includes dependency meta + dependency state (when present) + all state-selected files, with config `excludes` as hard denials for repo paths outside `.stan/**`.
-    - `--combine` includes `.stan/output/**` inside archives but excludes known STAN archive files.
-  - Switch assistant-facing `.stan/context/dependency.meta.json` and `.stan/context/dependency.state.json` to v2 compact formats (nodeId is the archive address; externals normalized to staged `.stan/context/**` paths).
-  - Use stan-context `summarizeDependencySelection` for closure and deterministic byte sizing.
-  - Persist host-private `.stan/context/dependency.map.json` (ephemeral; regenerated each `run -c`) containing canonical nodeId → locatorAbs + size + full sha256 for staging verification.
-  - Remove content hashes from assistant-facing `dependency.meta.json` entirely; verification is map-driven and the map is never archived.
-  - Keep disk staging (Option A): stage selected external bytes into `.stan/context/**` prior to archiving so the assistant can read them from archives.
-  - Coordinate stan-cli + stan-context releases and update docs + system prompt parts in lockstep.
-
 - Context mode (`--context`) follow-through: stan-cli wiring
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
@@ -337,4 +323,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added focused regression tests and aligned README docs.
 
 - Fix: restore dependency archive-flow force-include and test imports
-  - Allow `includes` to re-include gitignored `<stanPath>/context/**` in dependency archive-flow wrappers; fix test tmp helper import path.
+  - Allow `includes` to re-include gitignored `<stanPath>/context/**` in dependency archive-flow wrappers; fix test tmp helper import path.
+
+- Breaking: adopt dependency context meta/state v2 (compact) end-to-end
+  - Replaced V1 schemas with V2 (n/e/k/s/d for meta, i/x/mask for state) and introduced host-private `dependency.map.json` for validation.
+  - Updated build/stage/validate logic to use Map-driven integrity checks and V2 closure traversal.

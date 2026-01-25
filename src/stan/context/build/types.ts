@@ -2,7 +2,7 @@
  * Types for dependency graph build and normalization.
  * @module
  */
-import type { DependencyMetaFile } from '../schema';
+import type { DependencyMapFile, DependencyMetaFile } from '../schema';
 
 export type BuildDependencyMetaArgs = {
   cwd: string;
@@ -30,7 +30,7 @@ export type NodeSource =
 
 export type BuildDependencyMetaResult = {
   meta: DependencyMetaFile;
-  sources: Record<string, NodeSource>;
+  map: DependencyMapFile;
   warnings: string[];
   stats?: { modules: number; edges: number; dirty: number };
 };

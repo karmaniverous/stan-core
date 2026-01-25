@@ -46,16 +46,13 @@ export type ContextAllowlistBudget = {
   warnings: string[];
 };
 
-const safeMetaSize = (
-  meta: Pick<DependencyMetaFile, 'nodes'>,
-  rel: string,
-): number | null => {
-  const node = Object.prototype.hasOwnProperty.call(meta.nodes, rel)
-    ? meta.nodes[rel]
+const safeMetaSize = (meta: DependencyMetaFile, rel: string): number | null => {
+  const node = Object.prototype.hasOwnProperty.call(meta.n, rel)
+    ? meta.n[rel]
     : undefined;
   if (!node) return null;
 
-  const size = node.metadata?.size;
+  const size = node.s;
   if (typeof size !== 'number' || !Number.isFinite(size) || size < 0)
     return null;
   return Math.floor(size);
@@ -94,7 +91,7 @@ export const summarizeContextAllowlistBudget = async (args: {
     selectedNodeIds: ReadonlyArray<string>;
     allowlistFiles: ReadonlyArray<string>;
   };
-  meta: Pick<DependencyMetaFile, 'nodes'>;
+  meta: DependencyMetaFile;
   topN?: number;
 }): Promise<ContextAllowlistBudget> => {
   const { cwd, plan, meta } = args;

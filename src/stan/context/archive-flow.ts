@@ -17,12 +17,7 @@ import type { SnapshotUpdateMode } from '../diff';
 import { createArchiveDiff } from '../diff';
 import { isUnder, normalizePrefix } from '../path/prefix';
 import { uniqSortedStrings } from '../util/array/uniq';
-import type { NodeSource } from './build';
-import type {
-  DependencyEdgeType,
-  DependencyMetaFile,
-  DependencyMetaNode,
-} from './schema';
+import type { DependencyMapFile, DependencyMetaFile } from './schema';
 import { parseDependencyStateFile } from './schema';
 import type { StageDependencyContextResult } from './stage';
 import { stageDependencyContext } from './stage';
@@ -39,24 +34,15 @@ const isStageableNodeId = (stanPath: string, nodeId: string): boolean => {
   );
 };
 
-export type DependencyContextMeta = Pick<DependencyMetaFile, 'edges'> & {
-  // Widen nodes index signature for safe runtime existence semantics.
-  nodes: Record<string, DependencyMetaNode | undefined>;
-};
-
 export type DependencyContextInputs = {
-  meta: DependencyContextMeta;
+  meta: DependencyMetaFile;
+  map: DependencyMapFile;
   /**
    * Dependency selection state (assistant-authored).
    * When present, used to compute a selected closure and stage only those nodes.
    * When absent, staging falls back to "all stageable nodes in sources".
    */
   state?: unknown;
-  /**
-   * Node source locators (produced by buildDependencyMeta).
-   * Strongly recommended for npm nodes; abs nodes may also be staged using locatorAbs from meta.
-   */
-  sources?: Record<string, NodeSource>;
 };
 
 export type PrepareDependencyContextResult = {
@@ -70,7 +56,7 @@ export type PrepareDependencyContextResult = {
 
 export const prepareDependencyContext = (args: {
   stanPath: string;
-  meta: DependencyContextMeta;
+  meta: DependencyMetaFile;
   state?: unknown;
   /** Optional override when state is omitted (default: stage all stageable nodes in sources). */
   nodeIdsWhenNoState?: string[];
@@ -110,19 +96,17 @@ export type StagePreparedDependencyContextResult =
 export const stagePreparedDependencyContext = async (args: {
   cwd: string;
   stanPath: string;
-  meta: DependencyContextMeta;
-  sources?: Record<string, NodeSource>;
+  map: DependencyMapFile;
   plan: PrepareDependencyContextResult;
   clean?: boolean;
 }): Promise<StagePreparedDependencyContextResult> => {
-  const { cwd, stanPath, meta, sources, plan, clean = false } = args;
+  const { cwd, stanPath, map, plan, clean = false } = args;
 
   // If no state was provided, stageNodeIds may be empty; caller can pass a fallback list.
   const stage = await stageDependencyContext({
     cwd,
     stanPath,
-    meta: { nodes: meta.nodes },
-    sources,
+    map,
     nodeIds: plan.stageNodeIds.length ? plan.stageNodeIds : undefined,
     clean,
   });
@@ -144,14 +128,13 @@ export const createArchiveWithDependencyContext = async (args: {
     stanPath,
     meta: dependency.meta,
     state: dependency.state,
-    nodeIdsWhenNoState: Object.keys(dependency.sources ?? {}),
+    nodeIdsWhenNoState: Object.keys(dependency.map.nodes),
   });
 
   const staged = await stagePreparedDependencyContext({
     cwd,
     stanPath,
-    meta: dependency.meta,
-    sources: dependency.sources,
+    map: dependency.map,
     plan,
     clean: dependency.clean ?? false,
   });
@@ -190,14 +173,13 @@ export const createArchiveDiffWithDependencyContext = async (args: {
     stanPath,
     meta: dependency.meta,
     state: dependency.state,
-    nodeIdsWhenNoState: Object.keys(dependency.sources ?? {}),
+    nodeIdsWhenNoState: Object.keys(dependency.map.nodes),
   });
 
   const staged = await stagePreparedDependencyContext({
     cwd,
     stanPath,
-    meta: dependency.meta,
-    sources: dependency.sources,
+    map: dependency.map,
     plan,
     clean: dependency.clean ?? false,
   });
@@ -226,8 +208,8 @@ export type DependencyContextSelectionHint = {
   nodeId: string;
   /** Traversal depth; 0 includes only nodeId. */
   depth: number;
-  /** Edge kinds to traverse. */
-  edgeKinds: DependencyEdgeType[];
+  /** Edge kinds mask. */
+  kindMask: number;
 };
 
 export type DependencyContextSummary = {

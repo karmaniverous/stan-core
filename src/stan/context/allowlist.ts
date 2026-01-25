@@ -84,7 +84,7 @@ export type ContextAllowlistPlan = {
 export const computeContextAllowlistPlan = async (args: {
   cwd: string;
   stanPath: string;
-  meta: Pick<DependencyMetaFile, 'nodes' | 'edges'>;
+  meta: DependencyMetaFile;
   state?: unknown;
   selection?: ContextModeSelection;
 }): Promise<ContextAllowlistPlan> => {

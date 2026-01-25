@@ -17,31 +17,35 @@
 import { uniqSortedStrings } from '@/stan/util/array/uniq';
 
 import type {
-  DependencyEdgeType,
   DependencyMetaFile,
   NormalizedDependencyStateEntry,
 } from './schema';
 
-const allowedKinds = (kinds: DependencyEdgeType[]): Set<DependencyEdgeType> =>
-  new Set(kinds);
-
-type Edge = { target: string; kind: DependencyEdgeType };
+type Edge = { target: string; kindMask: number };
 
 const getOutgoing = (
-  meta: Pick<DependencyMetaFile, 'edges'>,
+  meta: DependencyMetaFile,
   nodeId: string,
-  kinds: Set<DependencyEdgeType>,
+  allowedMask: number,
 ): Edge[] => {
-  const list = meta.edges[nodeId] ?? [];
-  const filtered = list.filter((e) => kinds.has(e.kind));
-  // Deterministic traversal: sort by (target, kind).
-  return filtered
-    .map((e) => ({ target: e.target, kind: e.kind }))
-    .sort((a, b) =>
-      a.target === b.target
-        ? a.kind.localeCompare(b.kind)
-        : a.target.localeCompare(b.target),
-    );
+  const node = meta.n[nodeId];
+  if (!node || !node.e) return [];
+
+  const out: Edge[] = [];
+  for (const tuple of node.e) {
+    const target = tuple[0];
+    const edgeMask = tuple[1];
+    // If edge has ANY bit that is allowed, we follow it?
+    // Or MUST the edge bit be present in allowed?
+    // Typically: if (edge.kind & allowedMask)
+    if ((edgeMask & allowedMask) !== 0) {
+      out.push({ target, kindMask: edgeMask });
+    }
+  }
+
+  // Deterministic traversal: sort by target.
+  // (V2 edges are unique by target in the compact tuple list)
+  return out.sort((a, b) => a.target.localeCompare(b.target));
 };
 
 type QueueItem = { nodeId: string; remaining: number };
@@ -51,11 +55,10 @@ type QueueItem = { nodeId: string; remaining: number };
  * BFS is used so depth is intuitive and deterministic.
  */
 export const expandEntry = (
-  meta: Pick<DependencyMetaFile, 'edges'>,
+  meta: DependencyMetaFile,
   entry: NormalizedDependencyStateEntry,
 ): Set<string> => {
   const out = new Set<string>();
-  const kinds = allowedKinds(entry.edgeKinds);
 
   const q: QueueItem[] = [{ nodeId: entry.nodeId, remaining: entry.depth }];
 
@@ -72,7 +75,7 @@ export const expandEntry = (
     out.add(cur.nodeId);
     if (cur.remaining <= 0) continue;
 
-    const nextEdges = getOutgoing(meta, cur.nodeId, kinds);
+    const nextEdges = getOutgoing(meta, cur.nodeId, entry.kindMask);
     for (const e of nextEdges) {
       q.push({ nodeId: e.target, remaining: cur.remaining - 1 });
     }
@@ -86,7 +89,7 @@ export const expandEntry = (
  * Excludes win (subtract after includes).
  */
 export const computeSelectedNodeIds = (args: {
-  meta: Pick<DependencyMetaFile, 'edges'>;
+  meta: DependencyMetaFile;
   include: NormalizedDependencyStateEntry[];
   exclude: NormalizedDependencyStateEntry[];
 }): string[] => {

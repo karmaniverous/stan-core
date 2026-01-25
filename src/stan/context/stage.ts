@@ -1,16 +1,7 @@
 /**
  * Stages external dependency bytes into <stanPath>/context/\{npm,abs\}/** and
  * verifies sha256/size; filesystem IO only; no console output.
- *
- * Stage external dependency bytes under <stanPath>/context/** prior to archiving.
- *
- * Requirements:
- * - Stage only dependency-staged external node IDs:
- *   - <stanPath>/context/npm/** and <stanPath>/context/abs/**
- * - Copy bytes from the current environment to the staged nodeId path.
- * - Verify sha256 (and size when present) matches meta.nodes[nodeId].metadata.
- * - Fail fast with a clear error message on mismatch/missing source.
- * - No console I/O; return structured results.
+ * verifies against dependency.map.json (V1).
  * @module
  */
 import { createHash } from 'node:crypto';
@@ -22,8 +13,7 @@ import { ensureDir, remove } from 'fs-extra';
 import { isUnder, normalizePrefix } from '@/stan/path/prefix';
 import { toPosix } from '@/stan/path/repo';
 
-import type { NodeSource } from './build';
-import type { DependencyMetaNode } from './schema';
+import type { DependencyMapFile } from './schema';
 
 const computeSha256Hex = (buf: Buffer): string =>
   createHash('sha256').update(buf).digest('hex');
@@ -42,16 +32,12 @@ const isStageableNodeId = (stanPath: string, nodeId: string): boolean => {
 export type StageDependencyContextArgs = {
   cwd: string;
   stanPath: string;
-  /** Parsed dependency meta (usually produced by buildDependencyMeta). */
-  meta: { nodes: Record<string, DependencyMetaNode | undefined> };
-  /**
-   * Optional source map (usually from buildDependencyMeta). If absent, abs
-   * nodes can still be staged via meta.nodes[nodeId].locatorAbs.
-   */
-  sources?: Record<string, NodeSource>;
+  /** Host-private dependency map (canonical node -> locator/hash). */
+  map: DependencyMapFile;
+
   /**
    * Optional subset of nodeIds to stage (e.g., a selection closure).
-   * If omitted, stages all nodeIds present in sources (filtered to stageable).
+   * If omitted, stages all nodeIds present in map (filtered to stageable).
    */
   nodeIds?: string[];
   /**
@@ -74,26 +60,10 @@ export type StageDependencyContextResult = {
   skipped: string[];
 };
 
-const sourceAbsForNodeId = (
-  nodeId: string,
-  sources: Record<string, NodeSource> | undefined,
-  metaNodes: Record<string, DependencyMetaNode | undefined>,
-): string | null => {
-  const viaSources = sources ? sources[nodeId] : undefined;
-  if (viaSources) {
-    if (viaSources.kind === 'npm') return viaSources.sourceAbs;
-    if (viaSources.kind === 'abs') return viaSources.sourceAbs;
-    return null; // repo nodes are not staged
-  }
-  // Fallback for abs nodes: locatorAbs is stored in meta.
-  const loc = metaNodes[nodeId]?.locatorAbs;
-  return typeof loc === 'string' && loc.trim().length ? loc.trim() : null;
-};
-
 export const stageDependencyContext = async (
   args: StageDependencyContextArgs,
 ): Promise<StageDependencyContextResult> => {
-  const { cwd, stanPath, meta, sources, nodeIds, clean = false } = args;
+  const { cwd, stanPath, map, nodeIds, clean = false } = args;
 
   const base = normalizePrefix(stanPath);
 
@@ -107,7 +77,7 @@ export const stageDependencyContext = async (
   const candidates: string[] =
     Array.isArray(nodeIds) && nodeIds.length
       ? nodeIds.map(normalizePrefix)
-      : Object.keys(sources ?? {}).map(normalizePrefix);
+      : Object.keys(map.nodes).map(normalizePrefix);
 
   const staged: StagedEntry[] = [];
   const skipped: string[] = [];
@@ -118,28 +88,29 @@ export const stageDependencyContext = async (
       continue;
     }
 
-    const node = meta.nodes[nodeId];
-    if (!node?.metadata || typeof node.metadata.hash !== 'string') {
+    const entry = map.nodes[nodeId];
+    if (!entry) {
       throw new Error(
-        `dependency context staging: missing metadata.hash for nodeId "${nodeId}"`,
+        `dependency context staging: missing map entry for nodeId "${nodeId}"`,
       );
     }
-    const expectedHash = node.metadata.hash;
-    const expectedSize = node.metadata.size;
 
-    const sourceAbsRaw = sourceAbsForNodeId(nodeId, sources, meta.nodes);
-    if (!sourceAbsRaw) {
+    const { locatorAbs, size: expectedSize, sha256: expectedHash } = entry;
+
+    let buf: Buffer;
+    try {
+      buf = await readFile(locatorAbs);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `dependency context staging: missing source locator for nodeId "${nodeId}"`,
+        `dependency context staging: failed to read locator "${locatorAbs}": ${msg}`,
       );
     }
-    const sourceAbs = sourceAbsRaw;
 
-    const buf = await readFile(sourceAbs);
     const size = buf.length;
     const hash = computeSha256Hex(buf);
 
-    if (typeof expectedSize === 'number' && expectedSize !== size) {
+    if (expectedSize !== size) {
       throw new Error(
         `dependency context staging: size mismatch for "${nodeId}" (expected ${expectedSize.toString()} bytes, got ${size.toString()} bytes)`,
       );
@@ -154,7 +125,13 @@ export const stageDependencyContext = async (
     await ensureDir(path.dirname(destAbs));
     await writeFile(destAbs, buf);
 
-    staged.push({ nodeId, sourceAbs: toPosix(sourceAbs), destAbs, hash, size });
+    staged.push({
+      nodeId,
+      sourceAbs: toPosix(locatorAbs),
+      destAbs,
+      hash,
+      size,
+    });
   }
 
   return { staged, skipped };

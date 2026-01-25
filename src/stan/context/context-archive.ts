@@ -13,8 +13,7 @@ import { createArchiveDiffFromFiles } from '@/stan/diff/allowlist';
 
 import type { ContextModeSelection } from './allowlist';
 import { computeContextAllowlistPlan } from './allowlist';
-import type { NodeSource } from './build';
-import type { DependencyMetaFile } from './schema';
+import type { DependencyMapFile, DependencyMetaFile } from './schema';
 import type { StageDependencyContextResult } from './stage';
 import { stageDependencyContext } from './stage';
 
@@ -36,9 +35,9 @@ export const createContextArchiveWithDependencyContext = async (args: {
   cwd: string;
   stanPath: string;
   dependency: {
-    meta: Pick<DependencyMetaFile, 'nodes' | 'edges'>;
+    meta: DependencyMetaFile;
+    map: DependencyMapFile;
     state?: unknown;
-    sources?: Record<string, NodeSource>;
     clean?: boolean;
   };
   selection?: ContextModeSelection;
@@ -57,8 +56,7 @@ export const createContextArchiveWithDependencyContext = async (args: {
   const stage = await stageDependencyContext({
     cwd,
     stanPath,
-    meta: { nodes: dependency.meta.nodes },
-    sources: dependency.sources,
+    map: dependency.map,
     nodeIds: plan.stageNodeIds,
     clean: dependency.clean ?? false,
   });
@@ -87,9 +85,9 @@ export const createContextArchiveDiffWithDependencyContext = async (args: {
   cwd: string;
   stanPath: string;
   dependency: {
-    meta: Pick<DependencyMetaFile, 'nodes' | 'edges'>;
+    meta: DependencyMetaFile;
+    map: DependencyMapFile;
     state?: unknown;
-    sources?: Record<string, NodeSource>;
     clean?: boolean;
   };
   selection?: ContextModeSelection;
@@ -113,8 +111,7 @@ export const createContextArchiveDiffWithDependencyContext = async (args: {
   const stage = await stageDependencyContext({
     cwd,
     stanPath,
-    meta: { nodes: dependency.meta.nodes },
-    sources: dependency.sources,
+    map: dependency.map,
     nodeIds: plan.stageNodeIds,
     clean: dependency.clean ?? false,
   });
