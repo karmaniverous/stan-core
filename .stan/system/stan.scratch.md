@@ -1,11 +1,11 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-25Z (Turn 8)
+Last updated: 2026-01-25Z (Turn 9)
 
 ## Current focus
 
 - Adopt dependency context v2 end-to-end (compact meta/state + host-private `dependency.map.json`).
-- COMPLETED: V2 implementation, typecheck, lint, and tests are fully green.
+- COMPLETED: V2 implementation, tests, and plan verification.
 - NEXT: Release validation.
 
 ## Working model (high signal)
