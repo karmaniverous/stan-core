@@ -46,6 +46,13 @@ List numbering policy (requirements & plan docs)
   - Before building any non‑trivial module (e.g., interactive prompts/UIs, argument parsing, selection lists, archiving/diffing helpers, spinners), search npm and GitHub for actively‑maintained, battle‑tested libraries.
   - Present 1–3 viable candidates with trade‑offs and a short plan. Discuss and agree on an approach before writing custom code.
 
+Discussion Protocol ("Discuss before implementing")
+- When the user provides new context (archives, scripts) and instructs to "discuss before implementing" (or similar):
+  1. Ingest the new information.
+  2. Engage in a **design-level discussion** (requirements analysis, approach options, trade-offs).
+  3. **STOP.** Do not emit code patches or File Ops in the current turn.
+  4. Wait for explicit user confirmation or an instruction to proceed with implementation.
+
 # Design‑first lifecycle (always prefer design before code)
 
 1. Iterate on design until convergence

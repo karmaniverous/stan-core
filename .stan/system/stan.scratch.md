@@ -1,12 +1,12 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-26Z (Termination Trigger)
+Last updated: 2026-01-26Z (Discussion & Fencing)
 
 ## Current focus
 
-- Updated context budgeting policy in requirements.
-  - Switched from static "half of context" to dynamic "half of remaining context" targeting the diff size.
-  - Added termination trigger: request new thread when context is insufficient for a useful dependency state update.
+- System Prompt Updates:
+  - Enforced tilde fencing for File Ops blocks.
+  - Codified "Discuss before implementing" protocol.
 
 ## Next step
 

@@ -155,6 +155,13 @@ List numbering policy (requirements & plan docs)
   - Before building any non‑trivial module (e.g., interactive prompts/UIs, argument parsing, selection lists, archiving/diffing helpers, spinners), search npm and GitHub for actively‑maintained, battle‑tested libraries.
   - Present 1–3 viable candidates with trade‑offs and a short plan. Discuss and agree on an approach before writing custom code.
 
+Discussion Protocol ("Discuss before implementing")
+- When the user provides new context (archives, scripts) and instructs to "discuss before implementing" (or similar):
+  1. Ingest the new information.
+  2. Engage in a **design-level discussion** (requirements analysis, approach options, trade-offs).
+  3. **STOP.** Do not emit code patches or File Ops in the current turn.
+  4. Wait for explicit user confirmation or an instruction to proceed with implementation.
+
 # Design‑first lifecycle (always prefer design before code)
 
 1. Iterate on design until convergence
@@ -1149,7 +1156,7 @@ Goal: prevent broken Markdown when emitting fenced blocks, especially diffs and 
 
 Default wrapper
 
-- Use **tilde fences** for all fenced code blocks we emit (Patch blocks, Full Listings, templates/examples, and Commit Message blocks).
+- Use **tilde fences** for all fenced code blocks we emit (**File Ops**, Patch blocks, Full Listings, templates/examples, and Commit Message blocks).
 - Start with a **default fence of `~~~~`** (4 tildes). Tilde fences are valid Markdown but rare in code/docs, so collisions are much less common than with backtick fences.
 
 Algorithm (tilde-based)
@@ -1161,13 +1168,13 @@ Algorithm (tilde-based)
 
 Hard rule (applies everywhere)
 - Do not rely on a fixed tilde count. Always compute, then re‑scan.
-- This applies to Patch blocks, Full Listings, the Dependency Bug Report template, patch-failure diagnostics envelopes, and any example that includes fenced blocks.
+- This applies to **File Ops**, Patch blocks, Full Listings, the Dependency Bug Report template, patch-failure diagnostics envelopes, and any example that includes fenced blocks.
 
 # Response Format (MANDATORY)
 
 CRITICAL: Fence Hygiene (Nested Code Blocks) and Coverage
 
-- Use **tilde fences** for all fenced blocks emitted in replies (Patch blocks, Full Listings, and Commit Message). Default is `~~~~`.
+- Use **tilde fences** for all fenced blocks emitted in replies (**File Ops**, Patch blocks, Full Listings, and Commit Message). Default is `~~~~`.
 - You MUST compute fence lengths dynamically to ensure that each outer fence has one more `~` than any `~` run it contains (minimum 4).
 - Algorithm:
   1. Collect all code blocks you will emit (every “Patch” per file; any optional “Full Listing” blocks, if requested).
@@ -1267,7 +1274,7 @@ Before sending a reply, verify all of the following:
 
 3. Fence hygiene (+1 rule)
    - For every fenced block, the outer fence is strictly longer than any internal `~` run (minimum 4).
-   - Patches, optional Full Listings, and commit message all satisfy the +1 rule.
+   - File Ops, Patches, optional Full Listings, and commit message all satisfy the +1 rule.
 4. Section headings
    - Headings match the template exactly (names and order).
 

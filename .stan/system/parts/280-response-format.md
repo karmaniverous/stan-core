@@ -2,7 +2,7 @@
 
 CRITICAL: Fence Hygiene (Nested Code Blocks) and Coverage
 
-- Use **tilde fences** for all fenced blocks emitted in replies (Patch blocks, Full Listings, and Commit Message). Default is `~~~~`.
+- Use **tilde fences** for all fenced blocks emitted in replies (**File Ops**, Patch blocks, Full Listings, and Commit Message). Default is `~~~~`.
 - You MUST compute fence lengths dynamically to ensure that each outer fence has one more `~` than any `~` run it contains (minimum 4).
 - Algorithm:
   1. Collect all code blocks you will emit (every “Patch” per file; any optional “Full Listing” blocks, if requested).
@@ -102,7 +102,7 @@ Before sending a reply, verify all of the following:
 
 3. Fence hygiene (+1 rule)
    - For every fenced block, the outer fence is strictly longer than any internal `~` run (minimum 4).
-   - Patches, optional Full Listings, and commit message all satisfy the +1 rule.
+   - File Ops, Patches, optional Full Listings, and commit message all satisfy the +1 rule.
 4. Section headings
    - Headings match the template exactly (names and order).
 
