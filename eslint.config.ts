@@ -108,4 +108,7 @@ const config = [
   },
 ];
 
+/**
+ * Default ESLint flat configuration for the stan-core repository.
+ */
 export default config;

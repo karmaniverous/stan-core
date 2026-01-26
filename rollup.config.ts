@@ -99,6 +99,13 @@ const commonInputOptions = (
 const outEsm = (dest: string): OutputOptions[] => [
   { dir: `${dest}/mjs`, format: 'esm', sourcemap: false },
 ];
+
+/**
+ * Builds the Rollup configuration for the runtime (ESM) library bundle.
+ *
+ * @param dest - Output directory (repo-relative), e.g. `dist`.
+ * @returns Rollup config producing ESM output under `dest/mjs`.
+ */
 export const buildLibrary = (dest: string): RollupOptions => ({
   input: 'src/index.ts',
   output: outEsm(dest),
@@ -109,6 +116,12 @@ export const buildLibrary = (dest: string): RollupOptions => ({
   ),
 });
 
+/**
+ * Builds the Rollup configuration for bundled TypeScript declaration output.
+ *
+ * @param dest - Output directory (repo-relative), e.g. `dist`.
+ * @returns Rollup config producing declaration output under `dest/types`.
+ */
 export const buildTypes = (dest: string): RollupOptions => ({
   input: 'src/index.ts',
   output: [{ dir: `${dest}/types`, format: 'esm' }],
@@ -116,4 +129,7 @@ export const buildTypes = (dest: string): RollupOptions => ({
   plugins: [alias, dtsPlugin()],
 });
 
+/**
+ * Default Rollup configuration list used by the `rollup` CLI.
+ */
 export default [buildLibrary(outputPath), buildTypes(outputPath)];

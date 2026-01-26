@@ -9,6 +9,9 @@ import { dirname, resolve } from 'node:path';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 
+/**
+ * Default Vitest configuration for the stan-core repository.
+ */
 export default defineConfig({
   resolve: {
     alias: {

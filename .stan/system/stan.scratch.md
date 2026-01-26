@@ -1,32 +1,17 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-25Z (Turn 9)
+Last updated: 2026-01-26Z
 
 ## Current focus
 
-- Adopt dependency context v2 end-to-end (compact meta/state + host-private `dependency.map.json`).
-- COMPLETED: V2 implementation, tests, and plan verification.
-- NEXT: Release validation.
+- Ensure every exported symbol has an appropriate TypeDoc/TSDoc comment.
+- This turn: added explicit docs for exported Rollup/Vitest/ESLint config exports (repo-root files available in `archive.meta.tar`).
 
-## Working model (high signal)
+## Next step
 
-- Assistant-facing:
-  - `.stan/context/dependency.meta.json` v2 (compact): traversal + sizing + optional descriptions; no hashes.
-  - `.stan/context/dependency.state.json` v2 (compact): directives (include/exclude + depth + kindMask).
-- Host-private:
-  - `.stan/context/dependency.map.json`: canonical nodeId → locatorAbs + size + full sha256 (staging verification); never archived.
-- Archive composition:
-  - `--context meta` omits dependency state always (clean slate).
-  - Config includes/excludes are ignored under `<stanPath>/**` (engine-owned selection).
+- Finish TypeDoc coverage for the actual library API under `src/**`.
+  - Meta archive does not include `src/**`, so create/use `.stan/context/dependency.state.json` to expand context from `src/index.ts` and `src/stan/index.ts` (depth 5) and re-run archive.
 
-## Decisions
+## Open questions
 
-- Slice 1 implemented in stan-core:
-  - Engine-owned STAN selection exceptions: include `<stanPath>/system/**` (excluding `.docs.meta.json`) and `<stanPath>/imports/**` regardless of `.gitignore`/config.
-  - Reserved `<stanPath>/context/dependency.map.json` so it is never archived.
-  - Meta archive omits dependency state always; optional include `<stanPath>/output/**` for combine mode.
-  - Follow-up fix: allow `includes` to re-include gitignored `<stanPath>/context/**` for dependency archive-flow wrappers; fixed test tmp import path.
-
-## Context note
-
-- All context tests updated to V2.
+- Confirm whether the scope is strictly the published public API (exports reachable from `src/index.ts`) or literally all `export` statements in the repo (including tool/config files).

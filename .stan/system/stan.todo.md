@@ -125,3 +125,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated build/stage/validate logic to use Map-driven integrity checks and V2 closure traversal.
   - Updated all unit tests to match V2 data structures and flows.
   - Resolved all typecheck and lint errors.
+
+- Docs: add TypeDoc comments for exported config symbols
+  - Added explicit TSDoc blocks for exported Rollup/Vitest/ESLint config exports (repo-root files present in the meta archive).
+  - Next: ingest `src/**` (via context expansion) and add TypeDoc comments for exported library API symbols.
