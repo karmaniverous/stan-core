@@ -1,12 +1,12 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-26Z (Editing Safety & Discovery)
+Last updated: 2026-01-26Z (Budgeting Hardening)
 
 ## Current focus
 
 - System Prompt Updates (Safety):
-  - Enforced "Load-Before-Edit" rule: never edit unloaded files known only via meta.
-  - Defined "Discovery Protocol" for broad prompts (use state/scratch to explore).
+  - Hardened Context Budgeting: Made "Half Remaining" a CRITICAL rule.
+  - Added mandatory pre-computation step for dependency expansion.
 
 ## Next step
 

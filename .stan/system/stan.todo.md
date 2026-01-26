@@ -36,6 +36,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Added "Load-Before-Edit" rule (critical) to prevent editing unloaded files.
   - Added "Discovery Protocol" for broad prompts.
 
+- Docs: harden context budgeting
+  - Elevated "Half Remaining" rule to CRITICAL status.
+  - Required explicit size pre-computation before state updates.
+
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
   - Keep `typedoc --emit none` at 0 warnings; when warnings appear, fix them in small slices and export any referenced public types.
