@@ -10,6 +10,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Replaced static "half context" rule with dynamic "half remaining" heuristic targeting diff size.
   - Updated `.stan/system/stan.requirements.md`.
 
+- Docs: add context mode termination trigger
+  - Added specific rule to request new thread when dependency state update is no longer feasible within budget.
+
 - Meta archive flexibility (CLI alignment)
   - Update `createMetaArchive` to accept `fileName` option (default `archive.meta.tar`).
   - Allows `stan-cli -m` to write `archive.tar` directly.

@@ -106,7 +106,7 @@ Budgeting and selection heuristics (assistant contract)
 - Context-mode archive size target (Dynamic "Half Remaining"):
   - Estimate the remaining context space ($R$) at the end of the current turn.
   - Target a dependency state update such that the **resulting diff archive** (patches + newly selected nodes) consumes no more than **50% of $R$**.
-  - *Formula:* $\text{Diff} \approx \text{Size}(\text{Patches}) + \text{Size}(\text{New Nodes})$.
+  - _Formula:_ $\text{Diff} \approx \text{Size}(\text{Patches}) + \text{Size}(\text{New Nodes})$.
   - Use `dependency.meta.json` sizes. If the plan exceeds this budget, prune the lowest-value nodes (e.g., dynamic imports, tests) from `dependency.state.json` before finalizing.
 - “Need” MUST be defined by the next planned step, not by indefinite future exploration (avoid runaway expansion).
 - Pruning MUST follow a deterministic ladder (highest-level intent; exact ordering may be refined but must remain stable):
@@ -372,3 +372,38 @@ Improve success on “new document” diffs commonly malformed in chat:
 - Interop threads (lightweight, deterministic)
   - Outgoing messages: `.stan/interop/stan-cli/<UTC>-<slug>.md` (atomic Markdown).
   - Incoming messages are staged via imports; scan first, and prune outgoing notes once resolved (via File Ops).
+
+## System‑level lint policy
+
+Formatting and linting are enforced by the repository configuration; this system prompt sets expectations:
+
+- Prettier is the single source of truth for formatting (including prose policy: no manual wrapping outside commit messages or code blocks).
+- ESLint defers to Prettier for formatting concerns and enforces TypeScript/ordering rules (see repo config).
+- Prefer small, automated style fixes over manual formatting in patches.
+- Keep imports sorted (per repo tooling) and avoid dead code.
+
+Assistant guidance
+
+- When emitting patches, respect house style; do not rewrap narrative Markdown outside the allowed contexts.
+- Opportunistic repair is allowed for local sections you are already modifying (e.g., unwrap manually wrapped paragraphs), but avoid repo‑wide reflows as part of unrelated changes.
+
+ESLint rule disablements (extraordinary)
+
+- The assistant MUST NOT add `eslint-disable` comments without a prior design discussion and agreement.
+- If a disablement is approved, scope it as narrowly as possible (prefer `eslint-disable-next-line <rule>`) and include an inline comment explaining the rationale and (when applicable) the removal plan.
+- Do not disable lint rules as a workaround for missing types; prefer proper typing, `unknown` + narrowing, or refactoring to smaller units.
+
+## Context window exhaustion (termination rule)
+
+When context is tight or replies risk truncation:
+
+1. Stop before partial output. Do not emit incomplete patches or listings.
+2. Dependency Graph Mode trigger:
+   - When the remaining context estimate has shrunk to the point where the assistant can no longer create a useful update to the dependency state file, the assistant should request the opening of a new thread.
+3. Prefer scratch-based continuity:
+   - If you can still safely emit patches, update `<stanPath>/system/stan.scratch.md` to reflect the current state and intended next step, then stop.
+4. If you cannot safely emit patches (including scratch), stop cleanly:
+   - Do not attempt to emit partial diffs or long listings.
+   - Ask the user to start a new thread and paste the tail of the current discussion alongside the most recent archives.
+
+This avoids half‑applied diffs and ensures integrity of the patch workflow.
