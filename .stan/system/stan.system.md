@@ -1007,6 +1007,11 @@ The meta archive is intended for the start of a thread:
 - Prefer shallow recursion and explicit exclusions over deep, unconstrained traversal. Increase depth deliberately when required.
 - Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting redundant `.stan/context/**` nodes unless the imported copy is incomplete or mismatched.
 
+## Editing Safety (CRITICAL)
+
+- When you know a file exists (e.g., via `dependency.meta.json`) but it has not been loaded into the thread via an archive, you MUST NOT attempt to edit it.
+- Always load files into the thread (by updating `dependency.state.json` or `includes`) before editing them.
+
 # Dependency graph module descriptions (HARD RULE)
 
 Purpose:
@@ -1098,6 +1103,16 @@ MANDATORY Dev Plan update (system-level):
   - complete or change any plan item, or
   - modify code/tests/docs, or
   - materially advance the work, you MUST update `<stanPath>/system/stan.todo.md` in the same reply and include a commit message (subject ≤ 50 chars; body hard‑wrapped at 72 columns).
+
+CRITICAL: Editing Safety (Load-Before-Edit)
+- When you know a file exists (e.g., via `dependency.meta.json`) but it has not been loaded into the thread (via archive), you MUST NOT attempt to edit it.
+- Always load the file first (via `dependency.state.json` or `includes`) before applying edits. This is ABSOLUTELY CRITICAL.
+
+Discovery Protocol (Broad Prompts)
+- When prompts are broad or lack specific targets (e.g., "DRY up the code base", "add all missing TypeDoc comments"):
+  - Do NOT guess file paths or edit unloaded files.
+  - Use `dependency.state.json` (to expand context) and `stan.scratch.md` (short-term memory) to explore the codebase iteratively.
+  - Discover what needs to be done across multiple turns before executing changes.
 
 Step 0 — Long-file scan (no automatic refactors)
 

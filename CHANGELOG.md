@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.8.4](https://github.com/karmaniverous/stan-core/compare/0.8.3...0.8.4)
+
+- docs: enforce load-before-edit safety and discovery protocol [`dccf304`](https://github.com/karmaniverous/stan-core/commit/dccf30483d761753055b56ebe886f23488eb5fdd)
+
 #### [0.8.3](https://github.com/karmaniverous/stan-core/compare/0.8.2...0.8.3)
 
+> 26 January 2026
+
+- chore: release v0.8.3 [`1c94da7`](https://github.com/karmaniverous/stan-core/commit/1c94da71ab5a9402686bbedb584254bd751dd783)
 - docs: make dependency mode thread-sticky [`c1f739a`](https://github.com/karmaniverous/stan-core/commit/c1f739a15a1557311c5ae3f75a04da7c051e1aa2)
 
 #### [0.8.2](https://github.com/karmaniverous/stan-core/compare/0.8.1...0.8.2)
