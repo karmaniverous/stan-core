@@ -17,6 +17,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated system prompt parts to mandate tilde fences for File Ops.
   - Added "Discussion Protocol" for "discuss before implementing" triggers.
 
+- Docs: refine protocol and hygiene
+  - Clarified discussion protocol to wait for "actionable conclusion".
+  - Added anti-pattern warning for unfenced File Ops.
+
 - Meta archive flexibility (CLI alignment)
   - Update `createMetaArchive` to accept `fileName` option (default `archive.meta.tar`).
   - Allows `stan-cli -m` to write `archive.tar` directly.

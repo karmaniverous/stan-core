@@ -1,12 +1,12 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-26Z (Discussion & Fencing)
+Last updated: 2026-01-26Z (Protocol Refinement)
 
 ## Current focus
 
 - System Prompt Updates:
-  - Enforced tilde fencing for File Ops blocks.
-  - Codified "Discuss before implementing" protocol.
+  - Refined Discussion Protocol to require "actionable conclusion".
+  - Added explicit anti-pattern warning for unfenced File Ops.
 
 ## Next step
 

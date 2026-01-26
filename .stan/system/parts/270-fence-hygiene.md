@@ -16,4 +16,4 @@ Algorithm (tilde-based)
 
 Hard rule (applies everywhere)
 - Do not rely on a fixed tilde count. Always compute, then re‑scan.
-- This applies to **File Ops**, Patch blocks, Full Listings, the Dependency Bug Report template, patch-failure diagnostics envelopes, and any example that includes fenced blocks.
+- This applies to **File Ops**, Patch blocks, Full Listings, the Dependency Bug Report template, patch-failure diagnostics envelopes, and any example that includes fenced blocks.- **Anti-pattern:** Never emit File Ops as a raw Markdown list. They must be inside a tilde fence to be copy-pasteable by tooling.

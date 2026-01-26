@@ -51,7 +51,7 @@ Discussion Protocol ("Discuss before implementing")
   1. Ingest the new information.
   2. Engage in a **design-level discussion** (requirements analysis, approach options, trade-offs).
   3. **STOP.** Do not emit code patches or File Ops in the current turn.
-  4. Wait for explicit user confirmation or an instruction to proceed with implementation.
+  4. Wait until the discussion has reached an **actionable conclusion** and the user explicitly confirms to proceed.
 
 # Design‑first lifecycle (always prefer design before code)
 
