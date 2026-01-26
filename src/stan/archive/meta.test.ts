@@ -138,6 +138,25 @@ describe('createMetaArchive', () => {
     expect(f(`${stan}/output/archive.tar`, undefined)).toBe(false);
   });
 
+  it('respects custom fileName option (e.g. for CLI -m archive.tar)', async () => {
+    await mkdir(path.join(dir, stan, 'context'), { recursive: true });
+    await writeFile(
+      path.join(dir, stan, 'context', 'dependency.meta.json'),
+      '{}\n',
+      'utf8',
+    );
+
+    const customName = 'archive.tar';
+    const out = await createMetaArchive(dir, stan, undefined, {
+      fileName: customName,
+    });
+
+    expect(out.endsWith(path.join('output', customName))).toBe(true);
+
+    const call = calls.find((c) => c.file.endsWith(customName));
+    expect(call).toBeTruthy();
+  });
+
   it('throws when dependency meta is missing', async () => {
     await mkdir(path.join(dir, stan, 'system'), { recursive: true });
     await expect(createMetaArchive(dir, stan)).rejects.toThrow(

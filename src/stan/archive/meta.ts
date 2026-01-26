@@ -39,6 +39,11 @@ export async function createMetaArchive(
      * (combine mode). Known STAN archive files remain excluded by tar filter.
      */
     includeOutputDir?: boolean;
+    /**
+     * Output file name (default: `archive.meta.tar`).
+     * Written to `<stanPath>/output/<fileName>`.
+     */
+    fileName?: string;
   },
 ): Promise<string> {
   const { outDir } = await ensureOutAndDiff(cwd, stanPath);
@@ -81,7 +86,7 @@ export async function createMetaArchive(
     ...(includeOutputDir ? [`${stanRel}/output`] : []),
   ]);
 
-  const archivePath = resolve(outDir, ARCHIVE_META_TAR);
+  const archivePath = resolve(outDir, options?.fileName ?? ARCHIVE_META_TAR);
   surfaceSelectionReport(
     {
       kind: 'meta',

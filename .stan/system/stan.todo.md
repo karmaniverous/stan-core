@@ -6,6 +6,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- Meta archive flexibility (CLI alignment)
+  - Update `createMetaArchive` to accept `fileName` option (default `archive.meta.tar`).
+  - Allows `stan-cli -m` to write `archive.tar` directly.
+
 - Context mode (`--context`) follow-through: stan-cli wiring
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
@@ -128,4 +132,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Docs: add TypeDoc comments for exported config symbols
   - Added explicit TSDoc blocks for exported Rollup/Vitest/ESLint config exports (repo-root files present in the meta archive).
-  - Next: ingest `src/**` (via context expansion) and add TypeDoc comments for exported library API symbols.
+  - Next: ingest `src/**` (via context expansion) and add TypeDoc comments for exported library API symbols.
+
+- Interop cleanup: prune stale messages
+  - Removed `selection-report-wiring.md` (CLI has ingested the API).
