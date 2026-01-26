@@ -27,7 +27,7 @@ Imported content under `.stan/imports/**` is read-only context staged by tooling
 
 ## When the assistant must act
 
-When `dependency.meta.json` is present in the archive, treat dependency graph mode as active for this thread.
+Treat dependency graph mode as active if `dependency.meta.json` is present in the current archive **OR** has been observed previously in this thread (thread-sticky). Only treat it as inactive if a *full* archive explicitly shows it deleted.
 
 When dependency graph mode is active, the assistant MUST update `.stan/context/dependency.state.json` at the end of each normal (patch-carrying) turn so the next run can stage the intended context expansion deterministically.
 

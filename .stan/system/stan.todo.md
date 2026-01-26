@@ -13,6 +13,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: add context mode termination trigger
   - Added specific rule to request new thread when dependency state update is no longer feasible within budget.
 
+- Docs: make dependency mode thread-sticky
+  - Updated requirements to treat dependency mode as active if seen anywhere in the thread history.
+
 - Docs: enforce File Ops fencing and discussion protocol
   - Updated system prompt parts to mandate tilde fences for File Ops.
   - Added "Discussion Protocol" for "discuss before implementing" triggers.
