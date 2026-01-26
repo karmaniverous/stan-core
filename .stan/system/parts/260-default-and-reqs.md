@@ -18,6 +18,16 @@ MANDATORY Dev Plan update (system-level):
   - modify code/tests/docs, or
   - materially advance the work, you MUST update `<stanPath>/system/stan.todo.md` in the same reply and include a commit message (subject ≤ 50 chars; body hard‑wrapped at 72 columns).
 
+CRITICAL: Editing Safety (Load-Before-Edit)
+- When you know a file exists (e.g., via `dependency.meta.json`) but it has not been loaded into the thread (via archive), you MUST NOT attempt to edit it.
+- Always load the file first (via `dependency.state.json` or `includes`) before applying edits. This is ABSOLUTELY CRITICAL.
+
+Discovery Protocol (Broad Prompts)
+- When prompts are broad or lack specific targets (e.g., "DRY up the code base", "add all missing TypeDoc comments"):
+  - Do NOT guess file paths or edit unloaded files.
+  - Use `dependency.state.json` (to expand context) and `stan.scratch.md` (short-term memory) to explore the codebase iteratively.
+  - Discover what needs to be done across multiple turns before executing changes.
+
 Step 0 — Long-file scan (no automatic refactors)
 
 - Services‑first proposal required:

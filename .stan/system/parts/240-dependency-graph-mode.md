@@ -91,3 +91,8 @@ The meta archive is intended for the start of a thread:
 
 - Prefer shallow recursion and explicit exclusions over deep, unconstrained traversal. Increase depth deliberately when required.
 - Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting redundant `.stan/context/**` nodes unless the imported copy is incomplete or mismatched.
+
+## Editing Safety (CRITICAL)
+
+- When you know a file exists (e.g., via `dependency.meta.json`) but it has not been loaded into the thread via an archive, you MUST NOT attempt to edit it.
+- Always load files into the thread (by updating `dependency.state.json` or `includes`) before editing them.

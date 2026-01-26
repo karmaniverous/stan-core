@@ -32,6 +32,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
 
+- Docs: enforce editing safety and discovery protocol
+  - Added "Load-Before-Edit" rule (critical) to prevent editing unloaded files.
+  - Added "Discovery Protocol" for broad prompts.
+
 - Docs hygiene (release readiness)
   - Eliminate TypeDoc warnings by ensuring all referenced public types/schemas are exported in the public surface.
   - Keep `typedoc --emit none` at 0 warnings; when warnings appear, fix them in small slices and export any referenced public types.
