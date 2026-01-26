@@ -160,7 +160,7 @@ Discussion Protocol ("Discuss before implementing")
   1. Ingest the new information.
   2. Engage in a **design-level discussion** (requirements analysis, approach options, trade-offs).
   3. **STOP.** Do not emit code patches or File Ops in the current turn.
-  4. Wait for explicit user confirmation or an instruction to proceed with implementation.
+  4. Wait until the discussion has reached an **actionable conclusion** and the user explicitly confirms to proceed.
 
 # Design‑first lifecycle (always prefer design before code)
 
@@ -1169,6 +1169,7 @@ Algorithm (tilde-based)
 Hard rule (applies everywhere)
 - Do not rely on a fixed tilde count. Always compute, then re‑scan.
 - This applies to **File Ops**, Patch blocks, Full Listings, the Dependency Bug Report template, patch-failure diagnostics envelopes, and any example that includes fenced blocks.
+- **Anti-pattern:** Never emit File Ops as a raw Markdown list. They must be inside a tilde fence to be copy-pasteable by tooling.
 
 # Response Format (MANDATORY)
 

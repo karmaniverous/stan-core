@@ -2,8 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.8.2](https://github.com/karmaniverous/stan-core/compare/0.8.1...0.8.2)
+
+- docs: add TypeDoc for exported configs [`48d8053`](https://github.com/karmaniverous/stan-core/commit/48d8053d70fec1e9a9f5d263a94e64c91bbcf0de)
+- feat: support custom fileName in createMetaArchive [`9c90c7f`](https://github.com/karmaniverous/stan-core/commit/9c90c7f3a5b7b47c60c202f5396b21db6bbb8090)
+- docs: add context mode termination trigger to requirements [`4e156f9`](https://github.com/karmaniverous/stan-core/commit/4e156f9f9c8569db76ef430c35dace19505870ae)
+- docs: refine discussion protocol and fence hygiene [`29aed26`](https://github.com/karmaniverous/stan-core/commit/29aed26c09b0838712b7f0970189fa6637258b47)
+- docs: update context budgeting to dynamic half-remaining rule [`b9ef78d`](https://github.com/karmaniverous/stan-core/commit/b9ef78d904a1a1156b6e4ac3f873c47024556487)
+- docs: enforce file ops fencing and codify discussion protocol [`c2abfdf`](https://github.com/karmaniverous/stan-core/commit/c2abfdf81efe2973699c56ff23e898f15e3150dd)
+- docs: refine discussion protocol and fence hygiene [`ba58fa6`](https://github.com/karmaniverous/stan-core/commit/ba58fa69004744c55c9d8220f3ff3db15ca6e7e8)
+
 #### [0.8.1](https://github.com/karmaniverous/stan-core/compare/0.8.0...0.8.1)
 
+> 26 January 2026
+
+- chore: release v0.8.1 [`3d54538`](https://github.com/karmaniverous/stan-core/commit/3d54538b48524c7947e34f8d4cc011b27307babd)
 - export writeDependencyMapFile [`23c658a`](https://github.com/karmaniverous/stan-core/commit/23c658adfe8896d7dd1a9bdc8d7dfd97988516c6)
 
 #### [0.8.0](https://github.com/karmaniverous/stan-core/compare/0.7.0...0.8.0)
