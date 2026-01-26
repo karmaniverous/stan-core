@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.8.5](https://github.com/karmaniverous/stan-core/compare/0.8.4...0.8.5)
+
+- docs: harden context budgeting policy [`bc97e6a`](https://github.com/karmaniverous/stan-core/commit/bc97e6ab02935a48ff6cb01a5ba81d05238e4815)
+
 #### [0.8.4](https://github.com/karmaniverous/stan-core/compare/0.8.3...0.8.4)
 
+> 26 January 2026
+
+- chore: release v0.8.4 [`7a9e45c`](https://github.com/karmaniverous/stan-core/commit/7a9e45cda06843e17660af2458fdc53dd088a94c)
 - docs: enforce load-before-edit safety and discovery protocol [`dccf304`](https://github.com/karmaniverous/stan-core/commit/dccf30483d761753055b56ebe886f23488eb5fdd)
 
 #### [0.8.3](https://github.com/karmaniverous/stan-core/compare/0.8.2...0.8.3)
