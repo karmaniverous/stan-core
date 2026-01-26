@@ -1,6 +1,6 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-26Z (Protocol Refinement)
+Last updated: 2026-01-26Z (Protocol Refinement Completed)
 
 ## Current focus
 
@@ -10,4 +10,4 @@ Last updated: 2026-01-26Z (Protocol Refinement)
 
 ## Next step
 
-- Resume TypeDoc coverage for library API (`src/**`).
+- Resume TypeDoc coverage for library API (`src/**`).
