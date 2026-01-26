@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.8.3](https://github.com/karmaniverous/stan-core/compare/0.8.2...0.8.3)
+
+- docs: make dependency mode thread-sticky [`c1f739a`](https://github.com/karmaniverous/stan-core/commit/c1f739a15a1557311c5ae3f75a04da7c051e1aa2)
+
 #### [0.8.2](https://github.com/karmaniverous/stan-core/compare/0.8.1...0.8.2)
 
+> 26 January 2026
+
+- chore: release v0.8.2 [`c393820`](https://github.com/karmaniverous/stan-core/commit/c39382018db6b40c7fec2c19261a2a88a85393ce)
 - docs: add TypeDoc for exported configs [`48d8053`](https://github.com/karmaniverous/stan-core/commit/48d8053d70fec1e9a9f5d263a94e64c91bbcf0de)
 - feat: support custom fileName in createMetaArchive [`9c90c7f`](https://github.com/karmaniverous/stan-core/commit/9c90c7f3a5b7b47c60c202f5396b21db6bbb8090)
 - docs: add context mode termination trigger to requirements [`4e156f9`](https://github.com/karmaniverous/stan-core/commit/4e156f9f9c8569db76ef430c35dace19505870ae)
