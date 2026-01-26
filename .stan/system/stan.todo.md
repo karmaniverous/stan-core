@@ -6,6 +6,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- Docs: update context budgeting policy
+  - Replaced static "half context" rule with dynamic "half remaining" heuristic targeting diff size.
+  - Updated `.stan/system/stan.requirements.md`.
+
 - Meta archive flexibility (CLI alignment)
   - Update `createMetaArchive` to accept `fileName` option (default `archive.meta.tar`).
   - Allows `stan-cli -m` to write `archive.tar` directly.
@@ -135,4 +139,4 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Next: ingest `src/**` (via context expansion) and add TypeDoc comments for exported library API symbols.
 
 - Interop cleanup: prune stale messages
-  - Removed `selection-report-wiring.md` (CLI has ingested the API).
+  - Removed `selection-report-wiring.md` (CLI has ingested the API).

@@ -1,11 +1,11 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-26Z (Meta Archive Flex)
+Last updated: 2026-01-26Z (Dynamic Budgeting)
 
 ## Current focus
 
-- Update `createMetaArchive` to accept a custom `fileName` option.
-  - Enables `stan-cli` to produce `archive.tar` (meta content) directly via `-m` without renaming.
+- Updated context budgeting policy in requirements.
+  - Switched from static "half of context" to dynamic "half of remaining context" targeting the diff size.
 
 ## Next step
 

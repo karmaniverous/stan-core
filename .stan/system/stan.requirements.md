@@ -103,14 +103,11 @@ Budgeting and selection heuristics (assistant contract)
 - Token estimation is approximate and deterministic:
   - Treat file size in bytes as a proxy for characters.
   - Estimate tokens as `bytes / 4`.
-- Context-mode archive size target:
-  - The archive payload SHOULD occupy roughly half of the assistant’s usable context budget.
-  - The assistant SHOULD expand dependency selection until it either:
-    - has what it believes it needs for the next planned step, or
-    - reaches the target budget,
-    - whichever comes LAST.
-  - The assistant MAY perform controlled extra expansion beyond the target when necessary to reach sufficiency, but MUST cap this extra expansion at 65% of the usable context budget.
-  - If over the target, the assistant MUST prune lowest-value context first until back at the target.
+- Context-mode archive size target (Dynamic "Half Remaining"):
+  - Estimate the remaining context space ($R$) at the end of the current turn.
+  - Target a dependency state update such that the **resulting diff archive** (patches + newly selected nodes) consumes no more than **50% of $R$**.
+  - *Formula:* $\text{Diff} \approx \text{Size}(\text{Patches}) + \text{Size}(\text{New Nodes})$.
+  - Use `dependency.meta.json` sizes. If the plan exceeds this budget, prune the lowest-value nodes (e.g., dynamic imports, tests) from `dependency.state.json` before finalizing.
 - “Need” MUST be defined by the next planned step, not by indefinite future exploration (avoid runaway expansion).
 - Pruning MUST follow a deterministic ladder (highest-level intent; exact ordering may be refined but must remain stable):
   - Remove `dynamic` traversal first unless the task explicitly requires it.
