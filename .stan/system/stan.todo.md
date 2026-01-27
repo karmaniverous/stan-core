@@ -186,4 +186,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Prompt: align discussion-only + intake with patch-only reality
   - Updated `.stan/system/parts/020-foundations.md` to allow dependency selection planning via `dependency.state.json` patches (with scratch/todo/commit) while still forbidding implementation changes in discussion-only mode.
   - Updated `.stan/system/parts/050-intake.md` to prohibit web search for in-repo source when archives are available (avoid version skew).
-  - Reminder: `.stan/system/stan.system.md` is generated; regenerate via `npm run gen:system`.
+  - Reminder: `.stan/system/stan.system.md` is generated; regenerate via `npm run gen:system`.
+
+- Prompt/docs: align dependency-state contract (v2)
+  - Updated `.stan/system/parts/240-dependency-graph-mode.md` to document v2 state schema only, fix meta archive clean-slate semantics (omit state always), and encode the “patch vs exact no-change signal” rule (no no-op state patches).
+  - Updated `.stan/system/parts/150-context-window-termination.md` to add a dependency-graph-mode termination trigger (request new thread when a safe state update is not feasible).
+  - Updated `guides/stan-assistant-guide.md` to document the same cross-turn dependency-state contract for integrators.

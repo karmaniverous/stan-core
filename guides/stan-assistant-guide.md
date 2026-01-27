@@ -371,6 +371,15 @@ Artifacts (under `.stan/context/`):
 - `dependency.state.json` — assistant-authored selection state (v2 compact):
   - captures selection intent for the next run.
 
+Assistant cross-turn contract (patch-carrying turns):
+
+- When dependency graph mode is active (dependency meta is present for the run/thread) and an assistant reply includes any code/doc Patch blocks, the assistant must do exactly one of:
+  - Patch `<stanPath>/context/dependency.state.json` with a real change (next-run selection intent), or
+  - Make no dependency state change and include the exact line `dependency.state.json: no change` under the reply’s “Input Data Changes” section.
+- No-op state patches are forbidden:
+  - Do not emit a Patch block for `dependency.state.json` unless the file contents change.
+- When the state changes (“WHAT”), also update `<stanPath>/system/stan.scratch.md` to record the rationale (“WHY”) so the next turn/thread can continue coherently.
+
 TypeScript injection (host contract):
 
 - When building the dependency graph, the host (typically `stan-cli`) should provide TypeScript explicitly.
