@@ -116,7 +116,7 @@ Budgeting and selection heuristics (assistant contract)
   - Drop low-signal subtrees (tests/fixtures/generated/docs) before core source, when they are not needed.
 - All policy-bearing thresholds and strings (including these budgeting constants) MUST be hoisted into named constants in feature-scoped constants modules.
 
-Dependency state update enforcement (assistant + tooling contract)
+Dependency state update enforcement (assistant + human-gated contract)
 
 - When dependency graph mode is active for a run (dependency meta is present), assistant replies that include any code patches MUST satisfy exactly one of:
   - Patch `<stanPath>/context/dependency.state.json` to request next-turn context changes, or
@@ -125,11 +125,7 @@ Dependency state update enforcement (assistant + tooling contract)
   - The assistant MUST NOT emit a Patch block for `dependency.state.json` unless it changes the file contents.
 - “No change” signal (stable, machine-checkable):
   - The assistant MUST include a bullet line exactly `dependency.state.json: no change` under `## Input Data Changes` when no state update is needed.
-- Tooling MUST enforce this rule when dependency graph mode is active:
-  - Validation MUST fail when dependency meta is present and neither:
-    - a Patch for `dependency.state.json`, nor
-    - the “no change” signal, is present.
-  - Validation MUST fail when both a state Patch and the “no change” signal are present.
+- Enforcement: in patch-only workflows (where tools only see user-copied patch payloads), this rule is enforced by the system prompt and human review; tooling cannot reliably validate cross-reply conditions it cannot observe.
 
 ### Purpose
 

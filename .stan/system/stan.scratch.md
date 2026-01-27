@@ -1,12 +1,13 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-27Z (Remove reply validator)
+Last updated: 2026-01-27Z (Remove reply validator + scrub docs)
 
 ## Current focus
 
-- Remove response/message validator from stan-core.
-  - Rationale: `stan patch` only receives the patch payload a human chooses to copy, not the full assistant reply, so reply-level validation cannot be enforced mechanically.
-  - Enforcement belongs in system-prompt rules + human gating (especially for dependency-state reasoning).
+- Response/reply validator has been removed from `stan-core` (code/tests/docs), because the CLI patch workflow only sees user-copied patch payloads (not the full assistant reply).
+- Dependency selection enforcement is human-gated:
+  - `.stan/context/dependency.state.json` captures WHAT is selected for the next run.
+  - `.stan/system/stan.scratch.md` captures WHY it was selected (decision record for the next thread/run).
 
 ## Next step
 

@@ -12,7 +12,6 @@ This guide is a compact, self-contained usage contract for `@karmaniverous/stan-
 - Dependency graph mode (context expansion; optional; context mode only)
 - Patch engine (git-apply cascade with jsdiff fallback + optional File Ops)
 - Imports staging (copy external artifacts into `<stanPath>/imports/<label>/...`)
-- Optional response-format validation utility
 
 It is presentation-free: the engine does not own CLI/TTY behavior.
 
@@ -507,21 +506,6 @@ Contract:
 - Only repo-relative POSIX paths are allowed (no absolute paths; no `..` traversal).
 - `dryRun=true` validates without changing the filesystem.
 - When you provide `stanPath`, the File Ops parser/executor refuse ops that target `<stanPath>/imports/**` (protected staged context).
-
-### Optional: response-format validation
-
-```ts
-import { validateResponseMessage } from '@karmaniverous/stan-core';
-
-const res = validateResponseMessage(assistantReplyText);
-if (!res.ok) throw new Error(res.errors.join('\n'));
-```
-
-This is intended for tooling that enforces a predictable assistant reply format.
-
-Notes:
-
-- The validator supports a dependency-graph mode enforcement switch: `{ dependencyMode: true, stanPath }`, which requires either a Patch for `<stanPath>/context/dependency.state.json` or the exact no-change signal `- dependency.state.json: no change` under `## Input Data Changes`.
 
 ## Prompt helper utilities (dev workflows)
 
