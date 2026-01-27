@@ -195,4 +195,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Prompt: normalize dependency-graph mode paths
   - Updated `.stan/system/parts/240-dependency-graph-mode.md` to use `<stanPath>/...` consistently (avoid hard-coded `.stan/...` paths in the baseline prompt parts).
-  - Next: regenerate `.stan/system/stan.system.md` from parts (`npm run gen:system`) and re-check monolith vs implementation.
+  - Next: regenerate `.stan/system/stan.system.md` from parts (`npm run gen:system`) and re-check monolith vs implementation.
+
+- Docs: align context-mode excludes semantics with implementation
+  - Updated `.stan/system/stan.requirements.md` to clarify that config `excludes` apply only to repo paths outside `<stanPath>/**` and do not deny engine-owned/staged paths under `<stanPath>/**` (including `<stanPath>/context/**`).
+  - Rewrote `.stan/system/stan.scratch.md` to remove stale “regen monolith” guidance and reflect the now-current, aligned model.

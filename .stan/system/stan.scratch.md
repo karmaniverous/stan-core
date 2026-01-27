@@ -1,18 +1,15 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-27Z (Dependency state contract alignment)
+Last updated: 2026-01-27Z (Requirements ↔ implementation sync)
 
 ## Current focus
 
-- Eliminate internal inconsistency in the generated system prompt by updating `.stan/system/parts/240-dependency-graph-mode.md`:
-  - Document dependency state schema as v2 only (`v: 2`, `i`/`x`, numeric `kindMask`).
-  - Ensure meta archive semantics are “omit dependency.state.json always” (clean slate).
-  - Make the cross-turn contract explicit: either patch `dependency.state.json` with a real change or emit the exact `dependency.state.json: no change` signal; no no-op state patches.
-- Make the dependency-graph-mode part portable by removing hard-coded `.stan/...` paths and using `<stanPath>/...` consistently.
-- Mirror the same cross-turn contract in `guides/stan-assistant-guide.md` so it’s discoverable outside the system prompt.
-- Keep termination guidance aligned: request a new thread when a safe dependency-state update is no longer feasible within remaining context.
+- Context-mode dependency selection is assistant + prompt + human gated (patch-only ingestion means tools may only see copied patch payloads, not whole replies).
+- Dependency state (WHAT): `<stanPath>/context/dependency.state.json` (v2: `v: 2`, `i`/`x`, numeric `kindMask`).
+- Scratch (WHY): `<stanPath>/system/stan.scratch.md` is rewritten each patch-carrying turn to record rationale/decisions for the next turn/thread.
+- Meta archive is a clean slate: `<stanPath>/output/archive.meta.tar` includes `<stanPath>/context/dependency.meta.json` but omits `dependency.state.json` always.
+- Config `includes`/`excludes` do not apply under `<stanPath>/**` (engine-owned). Do not expect config `excludes` to remove staged dependency payloads under `<stanPath>/context/**`.
 
 ## Next step
 
-- Regenerate `.stan/system/stan.system.md` from parts (`npm run gen:system`) so the monolith reflects the corrected v2 dependency-state contract and `<stanPath>`-normalized paths.
-- Do a final “monolith vs implementation” sync pass (ensure the generated `stan.system.md` contains no stale v1/meta-state wording).
+- Resume normal engine work (tests/docs/TypeDoc follow-through) now that dependency-state guidance is consistent across system prompt, docs, and implementation.

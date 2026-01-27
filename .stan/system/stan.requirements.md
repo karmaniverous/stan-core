@@ -61,7 +61,7 @@ Hard requirements
   - the repo-root Base selection,
   - engine-owned STAN workspace inclusions,
   - dependency meta and (when applicable) dependency state,
-  - and the dependency-state-selected file set (closure), with hard-denial `excludes`.
+  - and the dependency-state-selected file set (closure), subject to hard-denial `excludes` outside `<stanPath>/**`.
 - Config `includes` and `excludes` MUST be ignored for any paths under `<stanPath>/**`. `<stanPath>/**` selection is engine-owned.
 
 Base definition (fixed, config-driven)
@@ -82,10 +82,10 @@ Dependency graph universe vs archive selection
 
 Excludes precedence (hard denials)
 
-- In context mode, explicit `excludes` are hard denials and MUST be applied to:
+- In context mode, explicit `excludes` are hard denials for repo paths outside `<stanPath>/**` and MUST be applied to:
   - Base construction (repo-root base files),
-  - Repo-local node IDs selected by dependency closure,
-  - Staged external node IDs selected by dependency closure.
+  - Repo-local node IDs selected by dependency closure (repo paths outside `<stanPath>/**`).
+- Config `excludes` are ignored for any paths under `<stanPath>/**` (engine-owned), including staged dependency payloads under `<stanPath>/context/**`.
 - `.gitignore` semantics are applied by the existing selection model when building Base and when constructing the dependency graph universe.
 - Explicit selection via dependency state MAY override `.gitignore` (i.e., gitignored files may be included if explicitly selected), but MUST NOT override explicit `excludes` or reserved denials.
 - Config `includes`/`excludes` are ignored for `<stanPath>/**`, but `excludes` still apply to repo paths outside `<stanPath>/**`.
@@ -217,7 +217,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
   - Config `includes` and `excludes` MUST be ignored for any files under `<stanPath>/**`. Selection under `<stanPath>/**` is engine-owned.
   - Context mode selection (authoritative):
     - In `--context`, archive selection is allowlist-only: Base + selected dependency closure (repo-local node IDs + staged externals), subject to reserved denials and binary exclusion.
-    - Explicit `excludes` are hard denials and MUST apply to Base and closure.
+    - Explicit `excludes` are hard denials for repo paths outside `<stanPath>/**` and MUST apply to Base and repo-local closure nodes outside `<stanPath>/**`.
     - Explicit dependency selection MAY override `.gitignore`, but MUST NOT override explicit excludes or reserved denials.
   - Precedence (documented behavior):
     - `includes` override `.gitignore` (not `excludes`).
@@ -312,7 +312,7 @@ Notes
 ### Cross-repo configuration alignment (CLI perspective)
 
 - CLI MUST read and validate only the `stan-cli` top-level object (strict schema).
-- Legacy vendor extensions (e.g., `x-stan-cli`) and legacy root keys are not canonical; any temporary acceptance is for the shortest possible transition window to keep STAN functional.
+- Legacy vendor extensions (e.g., `x-stan-cli`) and legacy root keys are not canonical; any temporary acceptance is for the shortest possible transition window to keep STAN functional while both packages release the namespaced change.
 
 ### Patch ingestion — creation fallback (engine behavior)
 
