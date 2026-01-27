@@ -2,8 +2,21 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.9.0](https://github.com/karmaniverous/stan-core/compare/0.8.5...0.9.0)
+
+- chore: remove response message validator [`2ec3bcf`](https://github.com/karmaniverous/stan-core/commit/2ec3bcff3d5b2565883be7aed9db7d2d66d3bcf8)
+- docs: align guide and reply to stan-cli [`086a71b`](https://github.com/karmaniverous/stan-core/commit/086a71b75b07bd35cef755830e2811fc51492b49)
+- docs: normalize dependency graph mode paths [`9899573`](https://github.com/karmaniverous/stan-core/commit/9899573470290e910b9cdff898a7791586d3d994)
+- docs: align dependency state contract [`17a29a7`](https://github.com/karmaniverous/stan-core/commit/17a29a78d9908d5bec2daecc0207b760b0808848)
+- docs: update system prompt parts for patch-only use [`0920300`](https://github.com/karmaniverous/stan-core/commit/09203000cc2ccace202c46c96f006bc8c33f9744)
+- docs: remove tooling enforcement for dep state [`bcdaade`](https://github.com/karmaniverous/stan-core/commit/bcdaade06f19d1bc9f380433d0152b06be4e4ec6)
+- docs: align requirements with context selection [`18cbddc`](https://github.com/karmaniverous/stan-core/commit/18cbddca5e870c39e29ea065ffc3d8f3945c23e2)
+
 #### [0.8.5](https://github.com/karmaniverous/stan-core/compare/0.8.4...0.8.5)
 
+> 26 January 2026
+
+- chore: release v0.8.5 [`39ee27b`](https://github.com/karmaniverous/stan-core/commit/39ee27b20bbb75e84e710d4b5ceaf490a1e4a8ba)
 - docs: harden context budgeting policy [`bc97e6a`](https://github.com/karmaniverous/stan-core/commit/bc97e6ab02935a48ff6cb01a5ba81d05238e4815)
 
 #### [0.8.4](https://github.com/karmaniverous/stan-core/compare/0.8.3...0.8.4)
