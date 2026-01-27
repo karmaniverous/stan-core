@@ -59,8 +59,9 @@ Given `stanPath = ".stan"`:
 - `.stan/patch/` — patch workspace (excluded from archives by policy; used by patch tooling)
 - `.stan/imports/` — staged imports (copy-in area for external artifacts)
 - `.stan/context/` — dependency-graph artifacts and staged external context (context mode only):
-  - `dependency.meta.json` (assistant-facing graph meta)
-  - `dependency.state.json` (assistant-authored selection state)
+  - `dependency.meta.json` (assistant-facing graph meta; v2 compact)
+  - `dependency.state.json` (assistant-authored selection state; v2 compact)
+  - `dependency.map.json` (host-private integrity map; MUST NOT be archived)
 
 ## File selection model (mental model)
 
@@ -198,8 +199,10 @@ When the CLI enables “context mode”, the engine can generate a dependency gr
 The engine can build and persist the assistant-facing dependency meta file:
 
 ```ts
+import ts from 'typescript';
 import {
   buildDependencyMeta,
+  writeDependencyMapFile,
   writeDependencyMetaFile,
 } from '@karmaniverous/stan-core';
 
@@ -210,10 +213,14 @@ const built = await buildDependencyMeta({
   cwd,
   stanPath,
   selection: { includes: [], excludes: [] },
+  typescript: ts,
 });
 
 await writeDependencyMetaFile({ cwd, stanPath, meta: built.meta });
-// writes: <stanPath>/context/dependency.meta.json
+await writeDependencyMapFile({ cwd, stanPath, map: built.map });
+// writes:
+// - <stanPath>/context/dependency.meta.json
+// - <stanPath>/context/dependency.map.json (host-private; do not archive)
 ```
 
 ### Staging external dependency bytes (engine API)
@@ -228,17 +235,19 @@ import { stageDependencyContext } from '@karmaniverous/stan-core';
 await stageDependencyContext({
   cwd,
   stanPath,
-  meta: built.meta,
-  sources: built.sources,
+  map: built.map,
   clean: true, // clears <stanPath>/context/{npm,abs} before staging
 });
 ```
 
 Contract:
 
-- Stages only `<stanPath>/context/npm/**` and `<stanPath>/context/abs/**` node IDs.
-- Verifies sha256 (and size when present) against `meta.nodes[nodeId].metadata`.
-- Fails fast (throws) on mismatch/missing source locator.
+- Stages only external node IDs under `<stanPath>/context/npm/**` and `<stanPath>/context/abs/**`.
+- Verifies integrity via the host-private dependency map (`dependency.map.json`):
+  - `locatorAbs` (absolute file path),
+  - `size` (bytes),
+  - `sha256` (full content hash).
+- Fails fast (throws) on missing map entries, missing files, or hash/size mismatch.
 - No console I/O; returns `{ staged, skipped }` on success.
 
 Important:
@@ -261,7 +270,7 @@ import {
 const plan = await computeContextAllowlistPlan({
   cwd: process.cwd(),
   stanPath: '.stan',
-  meta, // dependency.meta.json contents
+  meta, // dependency.meta.json contents (v2)
   // state is optional; if omitted and dependency.state.json exists, it is loaded
 });
 
@@ -274,7 +283,7 @@ const budget = await summarizeContextAllowlistBudget({
 
 Contract:
 
-- Uses `meta.nodes[path].metadata.size` (bytes) when present.
+- Uses `meta.n[nodeId].s` (bytes) when present.
 - Falls back to `stat()` for repo files that are not in meta.
 - Returns `totalBytes`, `estimatedTokens = totalBytes / 4`, a breakdown (base-only / closure-only / overlap), and the largest entries.
 
@@ -283,7 +292,7 @@ Contract:
 For adapters that want a single “do the right thing” entrypoint (typically stan-cli), the engine also provides archive-flow wrappers that:
 
 - compute the stage set from dependency state closure (when provided),
-- stage only those external nodes,
+- stage only those external nodes (using the dependency map),
 - and force archive inclusion via `includes: ['<stanPath>/context/**']`.
 
 ```ts
@@ -297,8 +306,8 @@ const full = await createArchiveWithDependencyContext({
   stanPath,
   dependency: {
     meta: built.meta,
+    map: built.map,
     state: depState,
-    sources: built.sources,
     clean: true,
   },
   archive: { includeOutputDir: false },
@@ -309,8 +318,8 @@ const diff = await createArchiveDiffWithDependencyContext({
   stanPath,
   dependency: {
     meta: built.meta,
+    map: built.map,
     state: depState,
-    sources: built.sources,
     clean: false,
   },
   diff: { baseName: 'archive', updateSnapshot: 'createIfMissing' },
@@ -327,42 +336,40 @@ The engine provides:
 import { validateDependencySelection } from '@karmaniverous/stan-core';
 
 const res = await validateDependencySelection({
-  cwd,
   stanPath,
-  meta, // dependency.meta.json contents
+  meta, // dependency.meta.json contents (assistant-facing)
+  map, // dependency.map.json contents (host-private integrity map)
   state, // dependency.state.json contents (raw)
 });
+
 if (!res.ok) {
-  // res.mismatches contains per-node reasons (npm vs abs)
+  // res.mismatches contains per-node reasons (map-missing, file-missing, hash-mismatch, size-mismatch)
 }
 ```
 
-Contract (v1):
+Contract:
 
 - Computes selected node IDs from meta+state closure (excludes win).
-- Validates external nodes only:
-  - npm nodes under `<stanPath>/context/npm/**` by locating `<pkgName>@<pkgVersion>` in the current install and hashing `<pathInPackage>`.
-  - abs nodes under `<stanPath>/context/abs/**` by hashing `locatorAbs`.
-- Returns deterministic, structured mismatches for adapters to surface.
+- Validates external nodes (npm + abs) against the host-private map entries.
+- Returns deterministic, structured mismatches for adapters to surface (strict seam).
 
 Dependency requirements (loaded only when invoked):
 
 - `buildDependencyMeta` dynamically imports `@karmaniverous/stan-context` and throws if it is not installed.
-- TypeScript is required by `@karmaniverous/stan-context` and MUST be provided explicitly by the host (module injection or `typescriptPath`).
+- TypeScript is required by `@karmaniverous/stan-context` and MUST be provided explicitly by the host (`typescript` or `typescriptPath`).
 - This keeps non-context usage lean: these dependencies are not loaded unless the caller invokes context mode.
 
 Artifacts (under `.stan/context/`):
 
-- `dependency.meta.json` — assistant-facing graph meta:
-  - deterministic `nodes` and `edges`,
-  - per-node `metadata.hash` (sha256) and `metadata.size` (bytes) when applicable,
-  - per-node `description` (when available from the context compiler),
-  - `locatorAbs` only for abs/outside-root nodes (used for strict undo validation).
-- `dependency.state.json` — assistant-authored selection state:
-  - selects nodes to include and how deeply to traverse dependencies.
-- staged external context (engine-staged for archiving):
-  - `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
-  - `.stan/context/abs/<sha256(sourceAbs)>/<basename>`
+- `dependency.meta.json` — assistant-facing graph meta (v2 compact):
+  - nodes: `meta.n[nodeId]` entries with kind `k`, optional size `s`, optional description `d`, and optional edges `e`.
+  - edges are tuples under `meta.n[nodeId].e`: `[targetId, kindMask]` or `[targetId, kindMask, resMask]`.
+  - content hashes and absolute locators are omitted from assistant-facing meta to preserve context budget.
+- `dependency.map.json` — host-private integrity map (v1):
+  - canonical nodeId -> locatorAbs + size + sha256, used for staging and strict validation.
+  - MUST NOT be archived.
+- `dependency.state.json` — assistant-authored selection state (v2 compact):
+  - captures selection intent for the next run.
 
 TypeScript injection (host contract):
 
@@ -372,50 +379,7 @@ TypeScript injection (host contract):
   - `typescriptPath`: an absolute path to a CommonJS entry module file (for example, from `createRequire(import.meta.url).resolve('typescript')`).
 - stan-core does not attempt to resolve TypeScript itself; it passes host-provided values through to stan-context.
 
-Archive output:
-
-- `archive.meta.tar` is written under `.stan/output/` when context mode is enabled.
-  - It includes system files + dependency meta.
-  - It includes dependency state when it exists (assistant-authored selection intent).
-  - It includes repo-root (top-level) base files selected by the current selection config.
-  - It excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
-  - It excludes `.stan/system/.docs.meta.json`.
-
-Note:
-
-- Builtin (`node:*`) and missing/unresolved nodes are omitted from persisted `dependency.meta.json`; callers may surface them as warnings.
-
-State file schema (v1):
-
-```ts
-type DependencyEdgeType = 'runtime' | 'type' | 'dynamic';
-
-type DependencyStateEntry =
-  | string
-  | [string, number]
-  | [string, number, DependencyEdgeType[]];
-
-type DependencyStateFile = {
-  include: DependencyStateEntry[];
-  exclude?: DependencyStateEntry[]; // excludes win
-};
-```
-
-Defaults:
-
-- If `depth` is omitted, it defaults to `0` (include only that nodeId).
-- If `edgeKinds` is omitted, it defaults to `['runtime', 'type', 'dynamic']`.
-
-Selection semantics:
-
-- Expansion traverses outgoing edges up to depth, restricted to edgeKinds.
-- Excludes win and subtract using the same traversal semantics.
-- In dependency mode, expansion is intended to expand beyond baseline selection:
-  - overrides `.gitignore`,
-  - but never overrides reserved workspace denials or binary exclusion,
-  - and never overrides explicit `excludes`.
-
-### Meta archive (thread opener)
+Meta archive (thread opener)
 
 When context mode is enabled by a caller (typically stan-cli), the engine can create a small thread-opener archive at `.stan/output/archive.meta.tar`:
 
@@ -429,12 +393,54 @@ const p = await createMetaArchive(process.cwd(), '.stan');
 Contract:
 
 - Includes `<stanPath>/system/**` excluding `<stanPath>/system/.docs.meta.json`.
-- Includes `<stanPath>/context/dependency.meta.json`.
-- Includes `<stanPath>/context/dependency.state.json` when it exists (assistant-authored selection intent).
+- Includes `<stanPath>/context/dependency.meta.json` (required).
+- Omits `<stanPath>/context/dependency.state.json` always (clean slate for selections).
 - Includes repo-root (top-level) base files selected by the current selection config.
 - Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
 
-### Patch application pipeline
+State file schema (v2)
+
+Concepts:
+
+- `nodeId`: a repo-relative POSIX path (the archive address).
+- `depth`: recursion depth (hops) along outgoing edges; `0` means include only that nodeId (no traversal).
+- `kindMask`: which edge kinds to traverse (bitmask):
+  - runtime = 1
+  - type = 2
+  - dynamic = 4
+  - all = 7
+
+Types:
+
+```ts
+type DependencyStateEntryV2 =
+  | string
+  | [string, number]
+  | [string, number, number];
+
+type DependencyStateFileV2 = {
+  v: 2;
+  i: DependencyStateEntryV2[];
+  x?: DependencyStateEntryV2[]; // excludes win
+};
+```
+
+Defaults:
+
+- If `depth` is omitted, it defaults to `0`.
+- If `kindMask` is omitted, it defaults to `7` (runtime + type + dynamic).
+- Excludes win.
+
+Selection semantics:
+
+- Expansion traverses outgoing edges up to depth, restricted to `kindMask`.
+- Excludes win and subtract using the same traversal semantics.
+- In dependency mode, expansion is intended to expand beyond baseline selection:
+  - overrides `.gitignore`,
+  - but never overrides reserved workspace denials or binary exclusion,
+  - and never overrides explicit `excludes`.
+
+## Patch application pipeline
 
 Use this when you already have a unified diff text (string).
 
@@ -475,7 +481,7 @@ Contract:
   - `<stanPath>/imports/**` is protected staged context.
   - Always pass the correct `stanPath` so the protection rule is scoped correctly; the default is `.stan`.
 
-### File Ops (pre-ops)
+## File Ops (pre-ops)
 
 File Ops are a lightweight, safe structural operations layer (run before unified diffs):
 

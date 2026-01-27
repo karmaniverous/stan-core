@@ -175,4 +175,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: remove tooling-enforcement claim for dependency state
   - Updated `.stan/system/stan.requirements.md` to remove “tooling MUST enforce … validation MUST fail …” language (not possible in patch-only ingestion).
   - Kept the dependency-state contract as human-gated/prompt-gated and clarified the purpose of scratch (“WHY”) alongside state (“WHAT”).
-  - Removed validator references from `guides/stan-assistant-guide.md`.
+  - Removed validator references from `guides/stan-assistant-guide.md`.
+
+- Docs: align assistant guide with current context APIs
+  - Updated `guides/stan-assistant-guide.md` to match current v2 meta/state + host-private `dependency.map.json`, and to correct meta archive clean-slate semantics.
+
+- Interop: reply to stan-cli on meta archive labeling
+  - Posted `.stan/interop/stan-cli/20260127-190945Z-meta-archive-labeling.md` recommending explicit archive kind labeling (do not infer from output filename; prefer `SelectionReport.kind` when available).
