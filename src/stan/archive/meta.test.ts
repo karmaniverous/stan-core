@@ -55,10 +55,10 @@ describe('createMetaArchive', () => {
       'utf8',
     );
 
-    // dependency state exists on disk but MUST be omitted from meta archive
+    // dependency state exists on disk and SHOULD be included in meta archive
     await writeFile(
       path.join(dir, stan, 'context', 'dependency.state.json'),
-      '{"include":[]}\n',
+      '{"v":2,"i":[]}\n',
       'utf8',
     );
 
@@ -73,9 +73,9 @@ describe('createMetaArchive', () => {
     );
 
     const out = await createMetaArchive(dir, stan);
-    expect(out.endsWith(path.join('output', 'archive.meta.tar'))).toBe(true);
+    expect(out.endsWith(path.join('output', 'archive.tar'))).toBe(true);
 
-    const call = calls.find((c) => c.file.endsWith('archive.meta.tar'));
+    const call = calls.find((c) => c.file.endsWith('archive.tar'));
     expect(call).toBeTruthy();
     const files = call?.files ?? [];
 
@@ -84,6 +84,7 @@ describe('createMetaArchive', () => {
       expect.arrayContaining([
         `${stan}/system/stan.system.md`,
         `${stan}/context/dependency.meta.json`,
+        `${stan}/context/dependency.state.json`,
         'README.md',
       ]),
     );
@@ -92,7 +93,6 @@ describe('createMetaArchive', () => {
     expect(files).not.toEqual(
       expect.arrayContaining([
         `${stan}/system/.docs.meta.json`,
-        `${stan}/context/dependency.state.json`,
         `${stan}/context/npm/x/1.0.0/index.d.ts`,
         'src/a.ts',
       ]),
@@ -127,7 +127,7 @@ describe('createMetaArchive', () => {
 
     await createMetaArchive(dir, stan, undefined, { includeOutputDir: true });
 
-    const call = calls.find((c) => c.file.endsWith('archive.meta.tar'));
+    const call = calls.find((c) => c.file.endsWith('archive.tar'));
     expect(call).toBeTruthy();
     const files = call?.files ?? [];
     expect(files).toEqual(expect.arrayContaining([`${stan}/output`]));
@@ -138,7 +138,7 @@ describe('createMetaArchive', () => {
     expect(f(`${stan}/output/archive.tar`, undefined)).toBe(false);
   });
 
-  it('respects custom fileName option (e.g. for CLI -m archive.tar)', async () => {
+  it('respects custom fileName option (caller-controlled output filename)', async () => {
     await mkdir(path.join(dir, stan, 'context'), { recursive: true });
     await writeFile(
       path.join(dir, stan, 'context', 'dependency.meta.json'),
@@ -146,7 +146,7 @@ describe('createMetaArchive', () => {
       'utf8',
     );
 
-    const customName = 'archive.tar';
+    const customName = 'meta.custom.tar';
     const out = await createMetaArchive(dir, stan, undefined, {
       fileName: customName,
     });

@@ -24,10 +24,6 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Clarified discussion protocol to wait for "actionable conclusion".
   - Added anti-pattern warning for unfenced File Ops.
 
-- Meta archive flexibility (CLI alignment)
-  - Update `createMetaArchive` to accept `fileName` option (default `archive.meta.tar`).
-  - Allows `stan-cli -m` to write `archive.tar` directly.
-
 - Context mode (`--context`) follow-through: stan-cli wiring
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
@@ -199,4 +195,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Docs: align context-mode excludes semantics with implementation
   - Updated `.stan/system/stan.requirements.md` to clarify that config `excludes` apply only to repo paths outside `<stanPath>/**` and do not deny engine-owned/staged paths under `<stanPath>/**` (including `<stanPath>/context/**`).
-  - Rewrote `.stan/system/stan.scratch.md` to remove stale “regen monolith” guidance and reflect the now-current, aligned model.
+  - Rewrote `.stan/system/stan.scratch.md` to remove stale “regen monolith” guidance and reflect the now-current, aligned model.
+
+- Meta archive naming and contents alignment (stan-cli contract)
+  - Remove legacy `archive.meta.tar` references from system prompt/docs and treat META as `archive.tar` under `stan run --context --meta`.
+  - Ensure META archive includes `<stanPath>/context/dependency.state.json` (v2 empty written by host) alongside `<stanPath>/context/dependency.meta.json`.
+  - Ensure system prompt parts reflect that `stan run --context` (non-meta) writes only `archive.diff.tar` (and includes meta/state only when changed).

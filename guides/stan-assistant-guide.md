@@ -388,22 +388,22 @@ TypeScript injection (host contract):
   - `typescriptPath`: an absolute path to a CommonJS entry module file (for example, from `createRequire(import.meta.url).resolve('typescript')`).
 - stan-core does not attempt to resolve TypeScript itself; it passes host-provided values through to stan-context.
 
-Meta archive (thread opener)
+Meta archive (thread opener; written as archive.tar)
 
-When context mode is enabled by a caller (typically stan-cli), the engine can create a small thread-opener archive at `.stan/output/archive.meta.tar`:
+When context mode is enabled by a caller (typically stan-cli) in meta mode (`stan run --context --meta`), the engine can create a small thread-opener META archive at `<stanPath>/output/archive.tar`:
 
 ```ts
 import { createMetaArchive } from '@karmaniverous/stan-core';
 
 const p = await createMetaArchive(process.cwd(), '.stan');
-// p === <abs>/.stan/output/archive.meta.tar
+// p === <abs>/.stan/output/archive.tar
 ```
 
 Contract:
 
 - Includes `<stanPath>/system/**` excluding `<stanPath>/system/.docs.meta.json`.
 - Includes `<stanPath>/context/dependency.meta.json` (required).
-- Omits `<stanPath>/context/dependency.state.json` always (clean slate for selections).
+- Includes `<stanPath>/context/dependency.state.json` (v2) when present; `stan run --context --meta` writes `{ "v": 2, "i": [] }` before archiving for a clean slate.
 - Includes repo-root (top-level) base files selected by the current selection config.
 - Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
 

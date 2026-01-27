@@ -1,15 +1,14 @@
 /**
- * Creates a "meta" archive (system docs + dependency meta, plus optional
- * repo-root base files); omits dependency state (clean slate); excludes staged
- * payloads by omission and excludes `<stanPath>/system/.docs.meta.json`;
- * filesystem IO only.
+ * Creates a "meta" archive (system docs + dependency meta/state, plus optional
+ * repo-root base files); excludes staged payloads by omission and excludes
+ * `<stanPath>/system/.docs.meta.json`; filesystem IO only.
  * @module
  */
 
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { ARCHIVE_META_TAR } from '@/stan/archive/constants';
+import { ARCHIVE_TAR } from '@/stan/archive/constants';
 import type { SelectionReport } from '@/stan/archive/report';
 import { surfaceSelectionReport } from '@/stan/archive/report';
 import { makeTarFilter } from '@/stan/archive/util';
@@ -40,7 +39,7 @@ export async function createMetaArchive(
      */
     includeOutputDir?: boolean;
     /**
-     * Output file name (default: `archive.meta.tar`).
+     * Output file name (default: `archive.tar`).
      * Written to `<stanPath>/output/<fileName>`.
      */
     fileName?: string;
@@ -53,6 +52,7 @@ export async function createMetaArchive(
   const systemPrefix = `${stanRel}/system/`;
   const docsMetaRel = `${stanRel}/system/.docs.meta.json`;
   const depMetaRel = `${stanRel}/context/dependency.meta.json`;
+  const depStateRel = `${stanRel}/context/dependency.state.json`;
 
   const all = await listFiles(cwd);
 
@@ -60,9 +60,12 @@ export async function createMetaArchive(
   if (!all.includes(depMetaRel) || !existsSync(resolve(cwd, depMetaRel))) {
     throw new Error(
       `dependency meta not found at ${depMetaRel}; ` +
-        'generate dependency meta before creating archive.meta.tar',
+        'generate dependency meta before creating a meta archive',
     );
   }
+
+  const depStateExists =
+    all.includes(depStateRel) && existsSync(resolve(cwd, depStateRel));
 
   // Allowlist system files (minus .docs.meta.json)
   const sys = all
@@ -82,11 +85,12 @@ export async function createMetaArchive(
   const files = uniqSortedStrings([
     ...sys,
     depMetaRel,
+    ...(depStateExists ? [depStateRel] : []),
     ...repoRootBaseFiles,
     ...(includeOutputDir ? [`${stanRel}/output`] : []),
   ]);
 
-  const archivePath = resolve(outDir, options?.fileName ?? ARCHIVE_META_TAR);
+  const archivePath = resolve(outDir, options?.fileName ?? ARCHIVE_TAR);
   surfaceSelectionReport(
     {
       kind: 'meta',

@@ -2,9 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [Unreleased](https://github.com/karmaniverous/stan-core/compare/0.9.0...HEAD)
+
 #### [0.9.0](https://github.com/karmaniverous/stan-core/compare/0.8.5...0.9.0)
 
+> 27 January 2026
+
 - chore: remove response message validator [`2ec3bcf`](https://github.com/karmaniverous/stan-core/commit/2ec3bcff3d5b2565883be7aed9db7d2d66d3bcf8)
+- chore: release v0.9.0 [`85874e9`](https://github.com/karmaniverous/stan-core/commit/85874e93f97deb581e5548feebd2957353505ef8)
 - docs: align guide and reply to stan-cli [`086a71b`](https://github.com/karmaniverous/stan-core/commit/086a71b75b07bd35cef755830e2811fc51492b49)
 - docs: normalize dependency graph mode paths [`9899573`](https://github.com/karmaniverous/stan-core/commit/9899573470290e910b9cdff898a7791586d3d994)
 - docs: align dependency state contract [`17a29a7`](https://github.com/karmaniverous/stan-core/commit/17a29a78d9908d5bec2daecc0207b760b0808848)

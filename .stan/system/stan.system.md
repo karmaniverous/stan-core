@@ -570,7 +570,7 @@ Rules
 
 - Canonical path: `<stanPath>/system/stan.scratch.md`.
 - Base-always: the scratch file is always part of the Base set for archiving:
-  - It MUST be present in `archive.meta.tar` and full archives.
+  - It MUST be present in the META archive (written as `archive.tar` under `stan run --context --meta`) and full archives.
   - It MUST appear in the diff whenever it changes.
 - Top-of-thread priority:
   - When scratch exists and is relevant to the current user request, treat it as the highest-priority immediate context for the thread.
@@ -852,9 +852,8 @@ diff --git a/new/path/to/file/a.ts b/new/path/to/file/a.ts
 # Inputs (Source of Truth)
 
 - Primary artifacts live under `<stanPath>/output/`:
-  - `archive.tar` — full snapshot of files to read.
-  - `archive.diff.tar` — only files changed since the previous snapshot (always written when `--archive` is used).
-  - `archive.meta.tar` — meta/system-only thread opener (only when context mode is enabled; excludes dependency state and staged payloads).
+  - `archive.tar` — full snapshot of files to read (default). In `stan run --context --meta`, this path is used for the META archive (system + dependency meta + dependency state) and a diff archive is not written.
+  - `archive.diff.tar` — only files changed since the previous snapshot. In `stan run --context` (non-meta), this is the only archive written; it may include `dependency.meta.json` and/or `dependency.state.json` when those files change.
   - Script outputs (`test.txt`, `lint.txt`, `typecheck.txt`, `build.txt`) — deterministic stdout/stderr dumps from configured scripts. When `--combine` is used, these outputs are placed inside the archives and removed from disk.
 - When attaching artifacts for chat, prefer attaching `<stanPath>/output/archive.tar` (and `<stanPath>/output/archive.diff.tar` when present). If `--combine` was not used, you may also attach the text outputs individually.
 - Important: Inside any attached archive, contextual files are located in the directory matching the `stanPath` key from `stan.config.*` (default `.stan`). The bootloader resolves this automatically.
@@ -946,12 +945,11 @@ Dependency artifacts (workspace; gitignored):
 
 Archive outputs (under `<stanPath>/output/`):
 
-- `<stanPath>/output/archive.tar` (full)
-- `<stanPath>/output/archive.diff.tar` (diff)
-- `<stanPath>/output/archive.meta.tar` (meta; only when context mode enabled)
-  - Contains system files + dependency meta; omits dependency state always (clean slate for selections).
-  - Excludes staged payloads by omission.
-  - Never includes `dependency.map.json` (host-private; reserved denial).
+- `<stanPath>/output/archive.tar` (full by default; META when `stan run --context --meta`)
+- `<stanPath>/output/archive.diff.tar` (diff; only archive produced by `stan run --context` (non-meta))
+- In `stan run --context --meta`, `archive.diff.tar` is not written.
+  - The META archive contains system files + dependency meta + dependency state (the host writes `{ "v": 2, "i": [] }` before archiving so the assistant starts from a clean slate).
+  - It excludes staged payloads by omission and never includes `dependency.map.json` (host-private; reserved denial).
 
 ## Read-only staged imports (baseline rule)
 
@@ -1021,14 +1019,13 @@ Dependency expansion is intended to expand the archive beyond the baseline selec
 
 ## Meta archive behavior (thread opener)
 
-When context mode is enabled, tooling produces `<stanPath>/output/archive.meta.tar` in addition to the full and diff archives.
+In `stan run --context --meta`, tooling produces a META archive at `<stanPath>/output/archive.tar` and does not write a diff archive.
 
-The meta archive is intended for the start of a thread:
+The META archive is intended for the start of a thread:
 
-- It contains system docs + dependency meta.
-- It omits dependency state always (clean slate for selections).
+- It contains system docs + `dependency.meta.json` + `dependency.state.json` (v2 empty written by the host).
 - It excludes staged dependency payloads by omission.
-- The assistant should produce an initial `dependency.state.json` based on the prompt and then rely on full/diff archives for subsequent turns.
+- After the thread is started, `stan run --context` (non-meta) should rely on the diff archive (`archive.diff.tar`) for subsequent turns.
 
 ## Assistant guidance (anti-bloat)
 

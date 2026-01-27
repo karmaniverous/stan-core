@@ -96,7 +96,7 @@ Meta archive alignment
   - System prompt docs (per existing meta archive behavior),
   - `<stanPath>/context/dependency.meta.json`,
   - Repo-root base files (top-level files) selected by the current selection config.
-- The META archive MUST omit `<stanPath>/context/dependency.state.json` even when it exists on disk so the assistant starts from a clean slate for selection directives.
+- In `stan run --context --meta`, tooling MUST write an empty v2 dependency state file (`{ "v": 2, "i": [] }`) before archiving, and the META archive MUST include `<stanPath>/context/dependency.state.json` so the assistant starts from a clean slate without relying on omission.
 
 Budgeting and selection heuristics (assistant contract)
 
@@ -149,13 +149,11 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
         - `<stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
         - `<stanPath>/context/abs/<sha256(sourceAbs)>/<basename>`
     - Archive outputs live under `<stanPath>/output/`:
-      - `archive.tar` (full)
-      - `archive.diff.tar` (diff)
-      - `archive.meta.tar` (meta; only when context mode is enabled)
-        - The meta archive MUST include system files and dependency meta.
-        - The meta archive MUST omit dependency state even when it exists so the assistant starts from a clean slate for selections.
-        - The meta archive MUST exclude staged payloads under `<stanPath>/context/{npm,abs}/**`.
-        - The meta archive MUST exclude `<stanPath>/system/.docs.meta.json`.
+      - `archive.tar` (full by default; META when `stan run --context --meta`)
+      - `archive.diff.tar` (diff; only archive written by `stan run --context` (non-meta))
+        - In `stan run --context --meta`, tooling MUST write `archive.tar` as the META archive and MUST NOT write `archive.diff.tar`.
+        - The META archive MUST include system files + dependency meta + dependency state (v2 empty written by tooling before archiving).
+        - The META archive MUST exclude staged payloads under `<stanPath>/context/{npm,abs}/**` and MUST exclude `<stanPath>/system/.docs.meta.json`.
   - Node IDs (graph + state; v2 invariant)
     - Node IDs MUST be repo-relative POSIX paths.
     - Node IDs MUST be archive-addressable paths: the path where the file exists inside archives.
@@ -227,8 +225,8 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
   - Create full and diff archives:
     - `archive.tar` (full selection),
     - `archive.diff.tar` (changed since snapshot with snapshot management).
-  - Dependency graph mode MAY also produce:
-    - `archive.meta.tar` (system + dependency meta; omits dependency state always; excludes staged payloads by omission).
+  - Dependency graph mode thread-opener (`stan run --context --meta`) writes a META archive at `<stanPath>/output/archive.tar` and does not write a diff archive:
+    - Includes `<stanPath>/system/**`, `<stanPath>/context/dependency.meta.json`, and `<stanPath>/context/dependency.state.json` (v2 empty written by the host); excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
   - Classification at archive time:
     - Exclude binaries,
     - Flag large text by size and/or LOC.

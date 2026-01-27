@@ -6,12 +6,11 @@ Rules
 
 - Canonical path: `<stanPath>/system/stan.scratch.md`.
 - Base-always: the scratch file is always part of the Base set for archiving:
-  - It MUST be present in `archive.meta.tar` and full archives.
+  - It MUST be present in the META archive (written as `archive.tar` under `stan run --context --meta`) and full archives.
   - It MUST appear in the diff whenever it changes.
 - Top-of-thread priority:
   - When scratch exists and is relevant to the current user request, treat it as the highest-priority immediate context for the thread.
-  - Read scratch before proceeding with default “dev plan first” behavior.
-- Mandatory update cadence:
+  - Read scratch before proceeding with default “dev plan first” behavior.- Mandatory update cadence:
   - If you emit any Patch blocks in a turn (code or docs), you MUST also patch `stan.scratch.md` in the same reply.
   - This includes context-mode turns where the only functional change is updating dependency state.
 - Rewrite-only:

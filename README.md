@@ -158,13 +158,13 @@ Core file selection applies in this order:
 - `includes` are additive and can re-include paths ignored by `.gitignore`.
 - `excludes` are hard denials and override `includes`.
 
-## Meta archive (context-mode thread opener)
+## Meta archive (context-mode thread opener; written as archive.tar)
 
-When dependency graph mode is enabled, the engine can create a small `archive.meta.tar` (via `createMetaArchive`) intended as a thread opener:
+When dependency graph mode is enabled, the engine can create a small “meta archive” (via `createMetaArchive`) intended as a thread opener. In `stan run --context --meta`, the host writes this archive as `archive.tar` (and does not write a diff archive).
 
 - Includes `<stanPath>/system/**` (excluding `<stanPath>/system/.docs.meta.json`)
 - Includes `<stanPath>/context/dependency.meta.json` (required)
-- Omits `<stanPath>/context/dependency.state.json` always (clean slate for selections)
+- Includes `<stanPath>/context/dependency.state.json` (v2) when present (the host writes `{ "v": 2, "i": [] }` before archiving for a clean-slate selection)
 - Includes repo-root (top-level) base files selected by current selection config
 - Optionally includes `<stanPath>/output/**` when `includeOutputDir: true` (combine mode); archive files are still excluded by tar filter
 - Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission
