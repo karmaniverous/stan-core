@@ -6,27 +6,27 @@ When dependency graph mode is enabled (via the CLI “context mode”), STAN use
 
 Dependency artifacts (workspace; gitignored):
 
-- Graph (assistant-facing): `.stan/context/dependency.meta.json`
-- Selection state (assistant-authored; v2): `.stan/context/dependency.state.json`
-- Host-private integrity map (MUST NOT be archived): `.stan/context/dependency.map.json`
+- Graph (assistant-facing): `<stanPath>/context/dependency.meta.json`
+- Selection state (assistant-authored; v2): `<stanPath>/context/dependency.state.json`
+- Host-private integrity map (MUST NOT be archived): `<stanPath>/context/dependency.map.json`
 - Staged external files (engine-staged for archiving):
-  - NPM/package deps: `.stan/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
-  - Absolute/outside-root deps: `.stan/context/abs/<sha256(sourceAbs)>/<basename>`
+  - NPM/package deps: `<stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
+  - Absolute/outside-root deps: `<stanPath>/context/abs/<sha256(sourceAbs)>/<basename>`
 
-Archive outputs (under `.stan/output/`):
+Archive outputs (under `<stanPath>/output/`):
 
-- `.stan/output/archive.tar` (full)
-- `.stan/output/archive.diff.tar` (diff)
-- `.stan/output/archive.meta.tar` (meta; only when context mode enabled)
+- `<stanPath>/output/archive.tar` (full)
+- `<stanPath>/output/archive.diff.tar` (diff)
+- `<stanPath>/output/archive.meta.tar` (meta; only when context mode enabled)
   - Contains system files + dependency meta; omits dependency state always (clean slate for selections).
   - Excludes staged payloads by omission.
   - Never includes `dependency.map.json` (host-private; reserved denial).
 
 ## Read-only staged imports (baseline rule)
 
-Never create, patch, or delete any file under `.stan/imports/**`.
+Never create, patch, or delete any file under `<stanPath>/imports/**`.
 
-Imported content under `.stan/imports/**` is read-only context staged by tooling. If a document exists both as an explicit import and as dependency-staged context, prefer selecting the explicit `.stan/imports/**` copy in dependency state to avoid archive bloat.
+Imported content under `<stanPath>/imports/**` is read-only context staged by tooling. If a document exists both as an explicit import and as dependency-staged context, prefer selecting the explicit `<stanPath>/imports/**` copy in dependency state to avoid archive bloat.
 
 ## When the assistant must act
 
@@ -34,7 +34,7 @@ Treat dependency graph mode as active if `dependency.meta.json` is present in th
 
 When dependency graph mode is active and you emit any Patch blocks in a turn, you MUST do exactly one of:
 
-- Patch `.stan/context/dependency.state.json` with a real change (no no-op patches), or
+- Patch `<stanPath>/context/dependency.state.json` with a real change (no no-op patches), or
 - Make no dependency state change and include the exact line `dependency.state.json: no change` under `## Input Data Changes`.
 
 No-op state patches are forbidden: do not emit a Patch for `dependency.state.json` unless the file contents change.
@@ -47,7 +47,7 @@ Concepts:
 
 - `nodeId`: a repo-relative POSIX path (the archive address).
   - Repo-local nodes: e.g., `src/index.ts`, `packages/app/src/a.ts`
-  - Staged external nodes: e.g., `.stan/context/npm/zod/4.3.5/index.d.ts`
+  - Staged external nodes: e.g., `<stanPath>/context/npm/zod/4.3.5/index.d.ts`
 - `depth`: recursion depth (hops) along outgoing edges (`0` means seed only; no traversal).
 - `kindMask`: which edge kinds to traverse (bitmask).
   - runtime = `1`
@@ -90,7 +90,7 @@ Dependency expansion is intended to expand the archive beyond the baseline selec
 
 ## Meta archive behavior (thread opener)
 
-When context mode is enabled, tooling produces `.stan/output/archive.meta.tar` in addition to the full and diff archives.
+When context mode is enabled, tooling produces `<stanPath>/output/archive.meta.tar` in addition to the full and diff archives.
 
 The meta archive is intended for the start of a thread:
 
@@ -102,7 +102,7 @@ The meta archive is intended for the start of a thread:
 ## Assistant guidance (anti-bloat)
 
 - Prefer shallow recursion and explicit exclusions over deep, unconstrained traversal. Increase depth deliberately when required.
-- Prefer `.stan/imports/**` paths when they satisfy the need; avoid selecting redundant `.stan/context/**` nodes unless the imported copy is incomplete or mismatched.
+- Prefer `<stanPath>/imports/**` paths when they satisfy the need; avoid selecting redundant `<stanPath>/context/**` nodes unless the imported copy is incomplete or mismatched.
 
 ## Editing Safety (CRITICAL)
 

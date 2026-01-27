@@ -191,4 +191,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Prompt/docs: align dependency-state contract (v2)
   - Updated `.stan/system/parts/240-dependency-graph-mode.md` to document v2 state schema only, fix meta archive clean-slate semantics (omit state always), and encode the “patch vs exact no-change signal” rule (no no-op state patches).
   - Updated `.stan/system/parts/150-context-window-termination.md` to add a dependency-graph-mode termination trigger (request new thread when a safe state update is not feasible).
-  - Updated `guides/stan-assistant-guide.md` to document the same cross-turn dependency-state contract for integrators.
+  - Updated `guides/stan-assistant-guide.md` to document the same cross-turn dependency-state contract for integrators.
+
+- Prompt: normalize dependency-graph mode paths
+  - Updated `.stan/system/parts/240-dependency-graph-mode.md` to use `<stanPath>/...` consistently (avoid hard-coded `.stan/...` paths in the baseline prompt parts).
+  - Next: regenerate `.stan/system/stan.system.md` from parts (`npm run gen:system`) and re-check monolith vs implementation.
