@@ -1,6 +1,6 @@
 # STAN — Requirements (stan-core engine)
 
-This document lists durable requirements for the STAN engine (“stan-core”), which provides programmatic services for configuration, file selection, archiving/diffing/snapshotting, patch application, imports staging, response validation, and prompt assembly. It is intentionally free of CLI/TTY concerns, which are owned by stan-cli.
+This document lists durable requirements for the STAN engine (“stan-core”), which provides programmatic services for configuration, file selection, archiving/diffing/snapshotting, patch application, imports staging, and prompt assembly. It is intentionally free of CLI/TTY concerns, which are owned by stan-cli.
 
 ---
 
@@ -260,13 +260,6 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - Preserve “tail” paths relative to glob-parent,
     - Summarize staged files per label.
 
-- Validation utilities (optional)
-  - Response-format validator for assistant replies:
-    - One Patch per file,
-    - Correct `diff --git` header count/order,
-    - Commit Message last,
-    - TODO cadence rule.
-
 - Prompt helpers (engine-side utilities)
   - `getPackagedSystemPromptPath` (dist monolith lookup).
   - `assembleSystemMonolith` (assemble parts → monolith; quiet, no logs).
@@ -298,8 +291,6 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
 - Imports
   - `prepareImports({ cwd, stanPath, map }) → Promise<void>`
   - Optional callback: `onStage?: (label: string, files: string[]) => void` (where supported).
-- Validation
-  - `validateResponseMessage(text) → { ok, errors, warnings }`
 - Prompt helpers
   - `getPackagedSystemPromptPath(): string | null`
   - `assembleSystemMonolith(cwd, stanPath) → Promise<{ target: string; action: 'written' | 'skipped-no-parts' | 'skipped-no-md' }> `
@@ -355,7 +346,6 @@ Improve success on “new document” diffs commonly malformed in chat:
     - creation fallback (simple, nested paths, sandbox/check).
   - File Ops parsing/execution (safety checks, dry-run).
   - Prompt helpers (packaged path, assemble parts).
-  - Response-format validator (ordering, duplicate patches, commit position, TODO cadence).
 
 ### Documentation & versioning
 

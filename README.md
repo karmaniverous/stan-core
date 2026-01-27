@@ -13,7 +13,6 @@ This package exposes the STAN engine as a library:
 - Config loading/validation (top‑level `stan-core` in stan.config.yml|json)
 - Imports staging under <stanPath>/imports/<label>/…
 - Imports safety: patch + File Ops refuse to modify <stanPath>/imports/\*\* when the correct stanPath is provided
-- Response‑format validator (optional)
 
 For the CLI and TTY runner, see @karmaniverous/stan-cli.
 
@@ -136,14 +135,6 @@ await prepareImports({
 });
 ```
 
-Validate assistant responses (optional utility):
-
-```ts
-import { validateResponseMessage } from '@karmaniverous/stan-core';
-const res = validateResponseMessage(replyBody);
-if (!res.ok) console.error(res.errors.join('\n'));
-```
-
 ## API surface
 
 Top‑level (via `import '@karmaniverous/stan-core'`):
@@ -153,7 +144,6 @@ Top‑level (via `import '@karmaniverous/stan-core'`):
 - Patch engine: `applyPatchPipeline`, `detectAndCleanPatch`, `executeFileOps`, `parseFileOpsBlock`
 - Imports: `prepareImports`
 - Config: `loadConfig`, `loadConfigSync`, `resolveStanPath`, `resolveStanPathSync`
-- Validation: `validateResponseMessage`
 
 See CHANGELOG for behavior changes. Typedoc site is generated from source.
 

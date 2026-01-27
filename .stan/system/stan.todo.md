@@ -166,3 +166,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Docs: enforce File Ops fencing and discussion protocol
   - Updated system prompt parts to mandate tilde fences for File Ops.
   - Added "Discussion Protocol" for "discuss before implementing" triggers.
+
+- Breaking: remove response-format reply validator
+  - Removed `validateResponseMessage`/`validateOrThrow` and all related code/tests/docs.
+  - Rationale: stan-cli patch application only sees user-copied patch payloads (not the full assistant reply), so reply-level validation is not enforceable in tooling.
+  - Enforce dependency selection rationale via required `.stan/system/stan.scratch.md` updates and system-prompt/human gating instead.
