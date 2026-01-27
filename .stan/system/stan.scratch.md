@@ -1,6 +1,6 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-27Z (Docs alignment + stan-cli response)
+Last updated: 2026-01-27Z (System prompt alignment)
 
 ## Current focus
 
@@ -12,6 +12,9 @@ Last updated: 2026-01-27Z (Docs alignment + stan-cli response)
   - Align `guides/stan-assistant-guide.md` with current context-mode implementation (v2 meta/state + host-private `dependency.map.json`, current staging/validation APIs, meta archive clean-slate).
 - Interop:
   - Responded to stan-cli: meta archive labeling must not be inferred from output filename; prefer explicit `kind` (or `SelectionReport.kind`).
+- System prompt follow-through:
+  - Updated `.stan/system/parts/` to reflect the patch-only ingestion reality and to prohibit web search for in-repo code when archives are available.
+  - Reminder: `.stan/system/stan.system.md` is generated; run `npm run gen:system` to regenerate the monolith from parts.
 
 ## Next step
 

@@ -15,3 +15,8 @@
        Example: “Alert: New artifacts appear to be from a different project (was ‘alpha‑svc’, now ‘web‑console’). If this is intentional, reply ‘confirm’ to continue with the new project; otherwise attach the correct archives.”
    - Do not proceed with analysis or patching until the user explicitly confirms the new documents are correct.
    - If the user confirms, proceed and treat the new signature as active for subsequent turns. If not, wait for the correct artifacts.
+
+6. No web search for in-repo source code when archives are available.
+   - Web search is permitted only for third-party dependency research (Open-Source First) or time-sensitive external facts.
+   - External browsing (GitHub, npm docs) is non-authoritative unless the commit/tag is confirmed to match the attached archive.
+   - Do not use web search to “locate” repo modules that should be present in the provided artifacts.

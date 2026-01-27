@@ -181,4 +181,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Updated `guides/stan-assistant-guide.md` to match current v2 meta/state + host-private `dependency.map.json`, and to correct meta archive clean-slate semantics.
 
 - Interop: reply to stan-cli on meta archive labeling
-  - Posted `.stan/interop/stan-cli/20260127-190945Z-meta-archive-labeling.md` recommending explicit archive kind labeling (do not infer from output filename; prefer `SelectionReport.kind` when available).
+  - Posted `.stan/interop/stan-cli/20260127-190945Z-meta-archive-labeling.md` recommending explicit archive kind labeling (do not infer from output filename; prefer `SelectionReport.kind` when available).
+
+- Prompt: align discussion-only + intake with patch-only reality
+  - Updated `.stan/system/parts/020-foundations.md` to allow dependency selection planning via `dependency.state.json` patches (with scratch/todo/commit) while still forbidding implementation changes in discussion-only mode.
+  - Updated `.stan/system/parts/050-intake.md` to prohibit web search for in-repo source when archives are available (avoid version skew).
+  - Reminder: `.stan/system/stan.system.md` is generated; regenerate via `npm run gen:system`.
