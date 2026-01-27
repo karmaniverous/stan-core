@@ -2,7 +2,9 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
-#### [Unreleased](https://github.com/karmaniverous/stan-core/compare/0.9.0...HEAD)
+#### [0.9.1](https://github.com/karmaniverous/stan-core/compare/0.9.0...0.9.1)
+
+- docs+archive: align meta archive contract [`eeb6c09`](https://github.com/karmaniverous/stan-core/commit/eeb6c0927231797b703e96708e18f781c8bff6da)
 
 #### [0.9.0](https://github.com/karmaniverous/stan-core/compare/0.8.5...0.9.0)
 
