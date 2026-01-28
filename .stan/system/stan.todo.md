@@ -212,4 +212,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Context mode: Option B (FULL + DIFF) + snapshot keying
   - Updated stan-core docs to state `stan run --context` writes both `archive.tar` (FULL allowlist context) and `archive.diff.tar` (DIFF allowlist context).
   - Added `snapshotFileName` support to denylist and allowlist diff/snapshot APIs to prevent baseline clobbering across modes.
-  - Exported allowlist diff + allowlist snapshot writer from the public API and added regression tests for snapshot file naming.
+  - Exported allowlist diff + allowlist snapshot writer from the public API and added regression tests for snapshot file naming.
+
+- Interop: notify stan-cli about Option B + snapshot keying
+  - Posted `.stan/interop/stan-cli/20260128-000000Z-context-full-diff-snapshot-keying.md` summarizing the stan-core changes and required stan-cli wiring.
