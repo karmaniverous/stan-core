@@ -1,12 +1,13 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-28Z (interop note posted to stan-cli)
+Last updated: 2026-01-28Z (prompt tightened: dependency-state over manual paste)
 
 ## Current focus
 
 - Context-mode dependency selection remains assistant + prompt + human gated (patch-only ingestion means tools may only see copied patch payloads, not whole replies).
 - Dependency state (WHAT): `<stanPath>/context/dependency.state.json` (v2: `{ "v": 2, "i": [...], "x"?: [...] }`).
 - Scratch (WHY): `<stanPath>/system/stan.scratch.md` is rewritten each patch-carrying turn to record rationale/decisions for the next turn/thread.
+- Context acquisition hard rule: when `--context` is active and `dependency.meta.json` contains a useful candidate nodeId for the in-repo code needed to proceed, the assistant must update `dependency.state.json` to stage those paths into the next archive/diff instead of asking for pasted file contents (exceptions: already in archive, user declines rerun, or cannot be staged).
 - META archive filename: there is no `archive.meta.*` artifact in current STAN; `stan run --context --meta` writes the META archive as `<stanPath>/output/archive.tar` and does not write `archive.diff.tar`.
 - META archive contents: includes both `<stanPath>/context/dependency.meta.json` and `<stanPath>/context/dependency.state.json` (host writes `{ "v": 2, "i": [] }` before archiving for a clean slate).
 - Option B: `stan run --context` (non-meta) writes BOTH `<stanPath>/output/archive.tar` (FULL allowlist context) and `<stanPath>/output/archive.diff.tar` (DIFF allowlist context vs the context snapshot baseline).

@@ -40,6 +40,20 @@ No-op state patches are forbidden: do not emit a Patch for `dependency.state.jso
 
 When you change dependency selection, also update `<stanPath>/system/stan.scratch.md` to capture WHY the selection changed.
 
+## Acquiring additional in-repo context (HARD RULE)
+
+When dependency graph mode is active and `dependency.meta.json` contains a useful candidate nodeId for the code you need, you MUST request that code via `<stanPath>/context/dependency.state.json` and a new `stan run --context` archive/diff. You MUST NOT ask the user to paste file contents for in-repo files in this case.
+
+Default behavior:
+
+- If an error log references repo-relative paths (for example, `src/...`) that are not present in the current archive, seed `dependency.state.json` with those paths (depth 0–1) and request a new `--context` archive/diff.
+
+Allowed exceptions:
+
+- The file contents are already present in the currently attached archive.
+- The user explicitly declines running another archive cycle and insists on manual paste.
+- The target cannot be staged via dependency selection (outside the repo/graph).
+
 ## State file schema (v2)
 
 Concepts:

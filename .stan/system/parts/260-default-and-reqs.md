@@ -25,6 +25,8 @@ CRITICAL: Editing Safety (Load-Before-Edit)
 Discovery Protocol (Broad Prompts)
 - When prompts are broad or lack specific targets (e.g., "DRY up the code base", "add all missing TypeDoc comments"):
   - Do NOT guess file paths or edit unloaded files.
+  - If dependency graph mode is active and `dependency.meta.json` contains a useful candidate nodeId for the in-repo context you need, do NOT ask the user to paste file contents; update `dependency.state.json` to stage the exact paths into the next archive/diff and request a new `--context` run.
+  - Only ask for manual paste of in-repo file contents when the user explicitly declines another archive cycle, or when the needed target cannot be staged via dependency selection.
   - Use `dependency.state.json` (to expand context) and `stan.scratch.md` (short-term memory) to explore the codebase iteratively.
   - Discover what needs to be done across multiple turns before executing changes.
 

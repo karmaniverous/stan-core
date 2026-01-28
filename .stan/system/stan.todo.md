@@ -216,3 +216,7 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 - Interop: notify stan-cli about Option B + snapshot keying
   - Posted `.stan/interop/stan-cli/20260128-000000Z-context-full-diff-snapshot-keying.md` summarizing the stan-core changes and required stan-cli wiring.
+
+- Prompt: harden dependency-state acquisition rule (no manual paste)
+  - Tightened dependency graph mode and discovery protocol guidance: when `--context` is active and `dependency.meta.json` contains a useful candidate nodeId, use `dependency.state.json` + a new archive/diff instead of asking for pasted in-repo file contents.
+  - Mirrors stan-cli interop note and keeps the “archive is source of truth” workflow intact.
