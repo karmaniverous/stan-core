@@ -6,6 +6,13 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 
 ## Next up (priority order)
 
+- Context mode correctness: snapshot baselines per universe
+  - Added `snapshotFileName` support to diff/snapshot APIs so denylist runs and allowlist/context runs can maintain separate baselines under `<stanPath>/diff/`.
+  - Exported allowlist diff + allowlist snapshot writer from the public API so hosts do not need deep imports.
+
+- Docs: align context mode to Option B (FULL + DIFF for `stan run --context`)
+  - Updated stan-core prompt/docs to state that `stan run --context` (non-meta) writes both `archive.tar` and `archive.diff.tar`.
+
 - Docs: update context budgeting policy
   - Replaced static "half context" rule with dynamic "half remaining" heuristic targeting diff size.
   - Updated `.stan/system/stan.requirements.md`.
@@ -200,4 +207,9 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Meta archive naming and contents alignment (stan-cli contract)
   - Remove legacy `archive.meta.tar` references from system prompt/docs and treat META as `archive.tar` under `stan run --context --meta`.
   - Ensure META archive includes `<stanPath>/context/dependency.state.json` (v2 empty written by host) alongside `<stanPath>/context/dependency.meta.json`.
-  - Ensure system prompt parts reflect that `stan run --context` (non-meta) writes only `archive.diff.tar` (and includes meta/state only when changed).
+  - Ensure system prompt parts reflect that `stan run --context` (non-meta) writes only `archive.diff.tar` (and includes meta/state only when changed).
+
+- Context mode: Option B (FULL + DIFF) + snapshot keying
+  - Updated stan-core docs to state `stan run --context` writes both `archive.tar` (FULL allowlist context) and `archive.diff.tar` (DIFF allowlist context).
+  - Added `snapshotFileName` support to denylist and allowlist diff/snapshot APIs to prevent baseline clobbering across modes.
+  - Exported allowlist diff + allowlist snapshot writer from the public API and added regression tests for snapshot file naming.

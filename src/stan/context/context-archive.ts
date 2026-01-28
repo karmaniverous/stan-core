@@ -94,6 +94,7 @@ export const createContextArchiveDiffWithDependencyContext = async (args: {
   diff: {
     baseName: string;
     updateSnapshot?: SnapshotUpdateMode;
+    snapshotFileName?: string;
     includeOutputDirInDiff?: boolean;
     onArchiveWarnings?: (text: string) => void;
   };
@@ -122,6 +123,7 @@ export const createContextArchiveDiffWithDependencyContext = async (args: {
     baseName: diff.baseName,
     relFiles: plan.allowlistFiles,
     updateSnapshot: diff.updateSnapshot,
+    snapshotFileName: diff.snapshotFileName,
     includeOutputDirInDiff: diff.includeOutputDirInDiff,
     onArchiveWarnings: diff.onArchiveWarnings,
   });

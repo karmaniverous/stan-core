@@ -407,6 +407,15 @@ Contract:
 - Includes repo-root (top-level) base files selected by the current selection config.
 - Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
 
+Context-mode FULL + DIFF (non-meta)
+
+When context mode is enabled for normal operation (`stan run --context` without `--meta`), the host writes BOTH:
+
+- `<stanPath>/output/archive.tar` (FULL allowlist context archive)
+- `<stanPath>/output/archive.diff.tar` (DIFF allowlist context archive vs the context snapshot baseline)
+
+Snapshot baselines must be per selection universe (denylist vs allowlist/context). Use distinct snapshot file names under `<stanPath>/diff/` so context diffs do not clobber non-context baselines.
+
 State file schema (v2)
 
 Concepts:

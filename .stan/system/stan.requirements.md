@@ -149,7 +149,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
         - `<stanPath>/context/npm/<pkgName>/<pkgVersion>/<pathInPackage>`
         - `<stanPath>/context/abs/<sha256(sourceAbs)>/<basename>`
     - Archive outputs live under `<stanPath>/output/`:
-      - `archive.tar` (full by default; META when `stan run --context --meta`)
+      - `archive.diff.tar` (diff; written by `stan run` and by `stan run --context` (non-meta))
       - `archive.diff.tar` (diff; only archive written by `stan run --context` (non-meta))
         - In `stan run --context --meta`, tooling MUST write `archive.tar` as the META archive and MUST NOT write `archive.diff.tar`.
         - The META archive MUST include system files + dependency meta + dependency state (v2 empty written by tooling before archiving).
@@ -227,6 +227,7 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
     - `archive.diff.tar` (changed since snapshot with snapshot management).
   - Dependency graph mode thread-opener (`stan run --context --meta`) writes a META archive at `<stanPath>/output/archive.tar` and does not write a diff archive:
     - Includes `<stanPath>/system/**`, `<stanPath>/context/dependency.meta.json`, and `<stanPath>/context/dependency.state.json` (v2 empty written by the host); excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
+  - Dependency graph mode (`stan run --context` non-meta) writes BOTH a FULL allowlist context archive (`archive.tar`) and a DIFF allowlist context archive (`archive.diff.tar`) computed against a context snapshot baseline.
   - Classification at archive time:
     - Exclude binaries,
     - Flag large text by size and/or LOC.
@@ -237,8 +238,10 @@ Provide a cohesive, dependency-light engine that implements the durable capabili
 
 - Snapshotting
   - Compute per-file content hashes for the filtered selection.
-  - Read/write the diff snapshot (`.archive.snapshot.json`) and manage the sentinel (`.stan_no_changes`) path when there are no changes.
-
+  - Read/write the diff snapshot state and manage the sentinel (`.stan_no_changes`) path when there are no changes.
+  - Correctness requirement: snapshot baselines MUST be per selection universe (denylist vs allowlist/context).
+    - The engine MUST support host-selected snapshot file names under `<stanPath>/diff/` so context-mode diffs do not clobber non-context baselines.
+    - Default snapshot file name remains `.archive.snapshot.json` for backward compatibility.
 - Patch engine
   - Accept patch input as a string.
   - Worktree-first apply pipeline:

@@ -16,7 +16,7 @@ Dependency artifacts (workspace; gitignored):
 Archive outputs (under `<stanPath>/output/`):
 
 - `<stanPath>/output/archive.tar` (full by default; META when `stan run --context --meta`)
-- `<stanPath>/output/archive.diff.tar` (diff; only archive produced by `stan run --context` (non-meta))
+- `<stanPath>/output/archive.diff.tar` (diff; written by `stan run` and by `stan run --context` (non-meta))
 - In `stan run --context --meta`, `archive.diff.tar` is not written.
   - The META archive contains system files + dependency meta + dependency state (the host writes `{ "v": 2, "i": [] }` before archiving so the assistant starts from a clean slate).
   - It excludes staged payloads by omission and never includes `dependency.map.json` (host-private; reserved denial).
@@ -95,7 +95,7 @@ The META archive is intended for the start of a thread:
 
 - It contains system docs + `dependency.meta.json` + `dependency.state.json` (v2 empty written by the host).
 - It excludes staged dependency payloads by omission.
-- After the thread is started, `stan run --context` (non-meta) should rely on the diff archive (`archive.diff.tar`) for subsequent turns.
+- After the thread is started, `stan run --context` (non-meta) writes BOTH a FULL allowlist context archive (`archive.tar`) and a DIFF allowlist context archive (`archive.diff.tar`) for subsequent turns.
 
 ## Assistant guidance (anti-bloat)
 

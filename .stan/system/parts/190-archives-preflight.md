@@ -18,7 +18,7 @@
 
 - Primary artifacts live under `<stanPath>/output/`:
   - `archive.tar` — full snapshot of files to read (default). In `stan run --context --meta`, this path is used for the META archive (system + dependency meta + dependency state) and a diff archive is not written.
-  - `archive.diff.tar` — only files changed since the previous snapshot. In `stan run --context` (non-meta), this is the only archive written; it may include `dependency.meta.json` and/or `dependency.state.json` when those files change.
+  - `archive.diff.tar` — only files changed since the previous snapshot. In `stan run --context` (non-meta), this is the DIFF allowlist context archive; the FULL allowlist context archive is also written as `archive.tar`.
   - Script outputs (`test.txt`, `lint.txt`, `typecheck.txt`, `build.txt`) — deterministic stdout/stderr dumps from configured scripts. When `--combine` is used, these outputs are placed inside the archives and removed from disk.
 - When attaching artifacts for chat, prefer attaching `<stanPath>/output/archive.tar` (and `<stanPath>/output/archive.diff.tar` when present). If `--combine` was not used, you may also attach the text outputs individually.
 - Important: Inside any attached archive, contextual files are located in the directory matching the `stanPath` key from `stan.config.*` (default `.stan`). The bootloader resolves this automatically.

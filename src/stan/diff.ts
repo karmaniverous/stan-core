@@ -15,11 +15,9 @@ import {
   makeTarFilter,
   surfaceArchiveWarnings,
 } from './archive/util';
-import {
-  ARCHIVE_SNAPSHOT_FILE,
-  NO_CHANGES_SENTINEL_FILE,
-} from './diff/constants';
+import { NO_CHANGES_SENTINEL_FILE } from './diff/constants';
 import { computeFileHashes } from './diff/hash';
+import { snapshotPathFor } from './diff/snapshot';
 import { ensureOutAndDiff, filterFiles, listFiles } from './fs';
 import { functionGuard, resolveExport } from './util/ssr/resolve-export';
 type TarLike = {
@@ -33,9 +31,6 @@ type TarLike = {
   ) => Promise<void>;
 };
 export type SnapshotUpdateMode = 'never' | 'createIfMissing' | 'replace';
-
-const snapshotPathFor = (diffDir: string): string =>
-  join(diffDir, ARCHIVE_SNAPSHOT_FILE);
 
 const sentinelPathFor = (diffDir: string): string =>
   join(diffDir, NO_CHANGES_SENTINEL_FILE);
@@ -63,6 +58,7 @@ const getClassifyForArchive = async (): Promise<
  *   - stanPath: STAN workspace folder.
  *   - includes: Additive allow‑list globs (can re-include gitignored files); excludes still win.
  *   - excludes: Deny‑list globs.
+ *   - snapshotFileName: Optional snapshot file name override under `<stanPath>/diff/`.
  *
  * @example
  * ```ts
@@ -80,11 +76,13 @@ export async function writeArchiveSnapshot({
   stanPath,
   includes,
   excludes,
+  snapshotFileName,
 }: {
   cwd: string;
   stanPath: string;
   includes?: string[];
   excludes?: string[];
+  snapshotFileName?: string;
 }): Promise<string> {
   const { diffDir } = await ensureOutAndDiff(cwd, stanPath);
 
@@ -98,7 +96,7 @@ export async function writeArchiveSnapshot({
   });
 
   const current = await computeFileHashes(cwd, filtered);
-  const snapPath = snapshotPathFor(diffDir);
+  const snapPath = snapshotPathFor(diffDir, snapshotFileName);
   await writeFile(snapPath, JSON.stringify(current, null, 2), 'utf8');
   return snapPath;
 }
@@ -110,6 +108,7 @@ export async function writeArchiveSnapshot({
  * - Snapshot update behavior is controlled by updateSnapshot.
  * - When includeOutputDirInDiff === true, also include the entire <stanPath>/output tree
  *   (excluding <stanPath>/diff and the two archive files) regardless of change list length.
+ * - Snapshot location can be overridden via snapshotFileName (defaults to `.archive.snapshot.json`).
  *
  * @param args - Object with:
  *   - cwd: Repo root.
@@ -118,6 +117,7 @@ export async function writeArchiveSnapshot({
  *   - includes: Additive allow‑list globs (can re-include gitignored files); excludes still win.
  *   - excludes: Deny‑list globs (hard denials; take precedence over includes).
  *   - updateSnapshot: Controls when the snapshot file is replaced.
+ *   - snapshotFileName: Optional snapshot file name override under `<stanPath>/diff/`.
  *   - includeOutputDirInDiff: When true, include `stanPath/output` in the diff.
  * @returns `{ diffPath }` absolute path to the diff archive.
  *
@@ -140,6 +140,7 @@ export async function createArchiveDiff({
   includes,
   excludes,
   updateSnapshot = 'createIfMissing',
+  snapshotFileName,
   includeOutputDirInDiff = false,
   onArchiveWarnings,
   onSelectionReport,
@@ -150,6 +151,7 @@ export async function createArchiveDiff({
   includes?: string[];
   excludes?: string[];
   updateSnapshot?: SnapshotUpdateMode;
+  snapshotFileName?: string;
   includeOutputDirInDiff?: boolean;
   onArchiveWarnings?: (text: string) => void;
   onSelectionReport?: (report: SelectionReport) => void;
@@ -167,7 +169,7 @@ export async function createArchiveDiff({
 
   const current = await computeFileHashes(cwd, filtered);
 
-  const snapPath = snapshotPathFor(diffDir);
+  const snapPath = snapshotPathFor(diffDir, snapshotFileName);
   const hasPrev = existsSync(snapPath);
   const prev: Record<string, string> = hasPrev
     ? (JSON.parse(await readFile(snapPath, 'utf8')) as Record<string, string>)

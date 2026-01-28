@@ -9,6 +9,10 @@ export { createMetaArchive } from './archive/meta';
 export type { SelectionReport, SelectionReportCounts } from './archive/report';
 export * from './config/index';
 export * from './diff';
+export {
+  createArchiveDiffFromFiles,
+  writeArchiveSnapshotFromFiles,
+} from './diff/allowlist';
 // Patch engine (diff pipeline, file-ops, cleaners)
 export * from './patch';
 // Imports staging (label → staged files under <stanPath>/imports)

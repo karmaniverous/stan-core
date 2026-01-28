@@ -17,11 +17,9 @@ import {
   surfaceArchiveWarnings,
 } from '@/stan/archive/util';
 import type { SnapshotUpdateMode } from '@/stan/diff';
-import {
-  ARCHIVE_SNAPSHOT_FILE,
-  NO_CHANGES_SENTINEL_FILE,
-} from '@/stan/diff/constants';
+import { NO_CHANGES_SENTINEL_FILE } from '@/stan/diff/constants';
 import { computeFileHashes } from '@/stan/diff/hash';
+import { snapshotPathFor } from '@/stan/diff/snapshot';
 import { ensureOutAndDiff } from '@/stan/fs';
 import { uniqSortedStrings } from '@/stan/util/array/uniq';
 import { functionGuard, resolveExport } from '@/stan/util/ssr/resolve-export';
@@ -42,9 +40,6 @@ type TarLike = {
 const toPosix = (p: string): string =>
   p.replace(/\\/g, '/').replace(/^\.\/+/, '');
 
-const snapshotPathFor = (diffDir: string): string =>
-  join(diffDir, ARCHIVE_SNAPSHOT_FILE);
-
 const sentinelPathFor = (diffDir: string): string =>
   join(diffDir, NO_CHANGES_SENTINEL_FILE);
 
@@ -64,6 +59,35 @@ const getClassifyForArchive = async (): Promise<
 };
 
 /**
+ * Write a snapshot file under `<stanPath>/diff/` for an explicit allowlist.
+ *
+ * This allows callers (e.g., CLI) to maintain distinct snapshot baselines for
+ * different selection universes (denylist vs allowlist/context) by using
+ * different snapshot file names.
+ *
+ * @param args - Inputs including repo root, stanPath, allowlist files, and an
+ * optional snapshot file name override.
+ * @returns Absolute path to the written snapshot file.
+ */
+export async function writeArchiveSnapshotFromFiles(args: {
+  cwd: string;
+  stanPath: string;
+  relFiles: string[];
+  snapshotFileName?: string;
+}): Promise<string> {
+  const { cwd, stanPath, relFiles, snapshotFileName } = args;
+
+  const files = uniqSortedStrings(relFiles, toPosix);
+
+  const { diffDir } = await ensureOutAndDiff(cwd, stanPath);
+
+  const current = await computeFileHashes(cwd, files);
+  const snapPath = snapshotPathFor(diffDir, snapshotFileName);
+  await writeFile(snapPath, JSON.stringify(current, null, 2), 'utf8');
+  return snapPath;
+}
+
+/**
  * Create a diff tar at <stanPath>/output/<baseName>.diff.tar from an explicit
  * allowlist of repo-relative files.
  *
@@ -72,6 +96,7 @@ const getClassifyForArchive = async (): Promise<
  * - When snapshot exists: include only changed files (within allowlist).
  * - When snapshot missing: include full allowlist (diff equals full selection).
  * - No-changes case: write <stanPath>/diff/.stan_no_changes and include it.
+ * - Snapshot location can be overridden via snapshotFileName (defaults to `.archive.snapshot.json`).
  */
 export async function createArchiveDiffFromFiles(args: {
   cwd: string;
@@ -79,6 +104,7 @@ export async function createArchiveDiffFromFiles(args: {
   baseName: string;
   relFiles: string[];
   updateSnapshot?: SnapshotUpdateMode;
+  snapshotFileName?: string;
   includeOutputDirInDiff?: boolean;
   onArchiveWarnings?: (text: string) => void;
   onSelectionReport?: (report: SelectionReport) => void;
@@ -89,6 +115,7 @@ export async function createArchiveDiffFromFiles(args: {
     baseName,
     relFiles,
     updateSnapshot = 'createIfMissing',
+    snapshotFileName,
     includeOutputDirInDiff = false,
     onArchiveWarnings,
     onSelectionReport,
@@ -100,7 +127,7 @@ export async function createArchiveDiffFromFiles(args: {
 
   const current = await computeFileHashes(cwd, files);
 
-  const snapPath = snapshotPathFor(diffDir);
+  const snapPath = snapshotPathFor(diffDir, snapshotFileName);
   const hasPrev = existsSync(snapPath);
   const prev: Record<string, string> = hasPrev
     ? (JSON.parse(await readFile(snapPath, 'utf8')) as Record<string, string>)
@@ -174,4 +201,4 @@ export async function createArchiveDiffFromFiles(args: {
   return { diffPath };
 }
 
-export default { createArchiveDiffFromFiles };
+export default { createArchiveDiffFromFiles, writeArchiveSnapshotFromFiles };
