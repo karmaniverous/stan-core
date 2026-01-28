@@ -2,8 +2,16 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.9.2](https://github.com/karmaniverous/stan-core/compare/0.9.1...0.9.2)
+
+- feat: key diff snapshots by mode; align context docs [`fca888e`](https://github.com/karmaniverous/stan-core/commit/fca888e4a33365dba43950f5ff66cac66fbd0734)
+- chore: post stan-cli interop for context snapshots [`332752a`](https://github.com/karmaniverous/stan-core/commit/332752ad87c44c8fa3d038ed5c0b3dba6fb2c35d)
+
 #### [0.9.1](https://github.com/karmaniverous/stan-core/compare/0.9.0...0.9.1)
 
+> 28 January 2026
+
+- chore: release v0.9.1 [`5e36d20`](https://github.com/karmaniverous/stan-core/commit/5e36d207a9f7033aae47eadf4540735ac6f518f2)
 - docs+archive: align meta archive contract [`eeb6c09`](https://github.com/karmaniverous/stan-core/commit/eeb6c0927231797b703e96708e18f781c8bff6da)
 
 #### [0.9.0](https://github.com/karmaniverous/stan-core/compare/0.8.5...0.9.0)
