@@ -1,19 +1,15 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-28Z (prompt tightened: dependency-state over manual paste)
+Last updated: 2026-01-28Z
 
 ## Current focus
 
-- Context-mode dependency selection remains assistant + prompt + human gated (patch-only ingestion means tools may only see copied patch payloads, not whole replies).
-- Dependency state (WHAT): `<stanPath>/context/dependency.state.json` (v2: `{ "v": 2, "i": [...], "x"?: [...] }`).
-- Scratch (WHY): `<stanPath>/system/stan.scratch.md` is rewritten each patch-carrying turn to record rationale/decisions for the next turn/thread.
-- Context acquisition hard rule: when `--context` is active and `dependency.meta.json` contains a useful candidate nodeId for the in-repo code needed to proceed, the assistant must update `dependency.state.json` to stage those paths into the next archive/diff instead of asking for pasted file contents (exceptions: already in archive, user declines rerun, or cannot be staged).
-- META archive filename: there is no `archive.meta.*` artifact in current STAN; `stan run --context --meta` writes the META archive as `<stanPath>/output/archive.tar` and does not write `archive.diff.tar`.
-- META archive contents: includes both `<stanPath>/context/dependency.meta.json` and `<stanPath>/context/dependency.state.json` (host writes `{ "v": 2, "i": [] }` before archiving for a clean slate).
-- Option B: `stan run --context` (non-meta) writes BOTH `<stanPath>/output/archive.tar` (FULL allowlist context) and `<stanPath>/output/archive.diff.tar` (DIFF allowlist context vs the context snapshot baseline).
-- Correctness: snapshot state must be per-mode/per-universe; stan-core adds `snapshotFileName` so hosts can keep separate baselines (e.g., `.archive.snapshot.run.json` vs `.archive.snapshot.context.json`) under `<stanPath>/diff/`.
-- Interop: posted `.stan/interop/stan-cli/20260128-000000Z-context-full-diff-snapshot-keying.md` with the required stan-cli wiring actions.
+- Implement “stop-and-stage” guardrails in dependency graph mode to prevent speculative patches for repo files not loaded via archives.
+- Prompt behavior: in dependency graph mode, `## Input Data Changes` must include:
+  - Patch targets outside `<stanPath>/system/**` with `present: yes|no`.
+  - Dependency selection shown as dependency.state.json seed entries (`i`/`x`) only (no closure expansion), or `dependency.state.json: no change`.
+- Hard gate: if any patch target is not present in the current archive, do a stage-only turn (dependency.state.json + scratch + todo + commit) and request a new `stan run --context` archive/diff.
 
 ## Next step
 
-- Coordinate with stan-cli to ensure context Option B is implemented using the allowlist context archive APIs and a distinct context snapshot file name.
+- Regenerate `.stan/system/stan.system.md` from parts (`npm run gen:system`) after applying the prompt-part patches.

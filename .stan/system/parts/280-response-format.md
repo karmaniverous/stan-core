@@ -52,6 +52,9 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 ## Input Data Changes
 
 - Bullet points summarizing integrity, availability, and a short change list.
+- When dependency graph mode is active, include this checklist (do not expand dependency closure):
+  - Patch targets (outside `<stanPath>/system/**`): `<path> — present: yes|no`
+  - Dependency selection (seed entries): list `i`/`x` entries you are setting, or include the exact line `dependency.state.json: no change`
 
 ## CREATED: path/to/file/a.ts
 

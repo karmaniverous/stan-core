@@ -220,3 +220,4 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
 - Prompt: harden dependency-state acquisition rule (no manual paste)
   - Tightened dependency graph mode and discovery protocol guidance: when `--context` is active and `dependency.meta.json` contains a useful candidate nodeId, use `dependency.state.json` + a new archive/diff instead of asking for pasted in-repo file contents.
   - Mirrors stan-cli interop note and keeps the “archive is source of truth” workflow intact.
+- Prompt: add dependency-mode patch-target availability checklist (seed-only selection display; no closure expansion).

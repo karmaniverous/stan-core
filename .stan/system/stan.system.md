@@ -984,6 +984,21 @@ Allowed exceptions:
 - The user explicitly declines running another archive cycle and insists on manual paste.
 - The target cannot be staged via dependency selection (outside the repo/graph).
 
+## Target-file availability checklist (MANDATORY)
+
+When dependency graph mode is active and your reply includes any Patch that targets a path outside `<stanPath>/system/**`, you MUST include a checklist under `## Input Data Changes`:
+
+- Patch targets (outside `<stanPath>/system/**`; present in current archive):
+  - `<path>` — present: `yes|no`
+- Dependency selection (seed entries only; do not expand closure):
+  - If you patch `<stanPath>/context/dependency.state.json` in this reply, list the include (`i`) and exclude (`x`) entries exactly as written (string or tuple forms).
+  - Otherwise include the exact line `dependency.state.json: no change`.
+
+Hard gate:
+
+- If any listed patch target is `present: no`, you MUST NOT emit patches for those files in this turn.
+- Instead, emit only patches for `<stanPath>/context/dependency.state.json` (to stage the missing files), `<stanPath>/system/stan.scratch.md` (WHY), `<stanPath>/system/stan.todo.md`, and a commit message, then request a new `stan run --context` archive/diff.
+
 ## State file schema (v2)
 
 Concepts:
@@ -1281,6 +1296,9 @@ Use these headings exactly; wrap each Patch (and optional Full Listing, when app
 ## Input Data Changes
 
 - Bullet points summarizing integrity, availability, and a short change list.
+- When dependency graph mode is active, include this checklist (do not expand dependency closure):
+  - Patch targets (outside `<stanPath>/system/**`): `<path> — present: yes|no`
+  - Dependency selection (seed entries): list `i`/`x` entries you are setting, or include the exact line `dependency.state.json: no change`
 
 ## CREATED: path/to/file/a.ts
 
