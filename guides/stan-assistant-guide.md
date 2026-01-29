@@ -152,6 +152,30 @@ Contract:
   - flags large text files (included, but warned).
 - The engine does not write warnings to disk; warnings are surfaced via callback (when provided).
 
+### Full archive from an explicit allowlist (stable public API; context building block)
+
+When a host needs to create a FULL archive from an explicit, precomputed allowlist (repo-relative POSIX paths), use:
+
+```ts
+import { createArchiveFromFiles } from '@karmaniverous/stan-core';
+
+const tarAbs = await createArchiveFromFiles(
+  process.cwd(),
+  '.stan',
+  ['README.md', '.stan/system/stan.system.md'],
+  { includeOutputDir: false },
+);
+```
+
+Contract:
+
+- Selection is allowlist-only: only the provided paths are considered (after de-dupe/normalization).
+- Reserved workspace denials still apply (diff/patch/output archive files, etc.).
+- Archive-time classifier:
+  - excludes binaries from the tar,
+  - flags large text files (included, but warned).
+- Archive rotation behavior matches `createArchive`: existing output tar is copied to `<stanPath>/diff/archive.prev.tar` before overwrite.
+
 ### Diff archive + snapshot management
 
 ```ts
@@ -255,6 +279,10 @@ Important:
 - `<stanPath>/context/**` is typically gitignored, so callers must ensure it is selected for archiving. The engine’s selection model supports this via `includes` because includes override `.gitignore`:
   - `includes: ['<stanPath>/context/**']` (use the concrete `stanPath`, e.g. `.stan/context/**`)
 
+### Context mode FULL + DIFF (recommended path: engine-owned orchestration)
+
+In context mode, the host should not attempt to approximate allowlist selection with denylist `excludes` hacks. Instead, use the engine-owned orchestration helpers that compute Base + closure allowlists, stage selected externals, and then create FULL+DIFF within that allowlist universe.
+
 ### Deterministic sizing report for context mode (budgeting support)
 
 Context mode needs deterministic “what did we select and how big is it?” reporting so assistants can follow the `bytes/4` heuristic without reading file bodies.
@@ -295,6 +323,8 @@ For adapters that want a single “do the right thing” entrypoint (typically s
 - stage only those external nodes (using the dependency map),
 - and force archive inclusion via `includes: ['<stanPath>/context/**']`.
 
+Note: these wrappers are for “stage context + keep denylist selection” flows. For context mode allowlist-only FULL+DIFF, prefer `createContextArchiveWithDependencyContext` / `createContextArchiveDiffWithDependencyContext` below.
+
 ```ts
 import {
   createArchiveWithDependencyContext,
@@ -323,6 +353,38 @@ const diff = await createArchiveDiffWithDependencyContext({
     clean: false,
   },
   diff: { baseName: 'archive', updateSnapshot: 'createIfMissing' },
+});
+```
+
+### Context-mode allowlist orchestration (FULL + DIFF)
+
+```ts
+import {
+  createContextArchiveWithDependencyContext,
+  createContextArchiveDiffWithDependencyContext,
+} from '@karmaniverous/stan-core';
+
+const full = await createContextArchiveWithDependencyContext({
+  cwd,
+  stanPath,
+  dependency: {
+    meta,
+    map,
+    state,
+    clean: true,
+  },
+  selection: { includes: [], excludes: [] },
+});
+
+const diff = await createContextArchiveDiffWithDependencyContext({
+  cwd,
+  stanPath,
+  dependency: { meta, map, state, clean: false },
+  selection: { includes: [], excludes: [] },
+  diff: {
+    baseName: 'archive',
+    snapshotFileName: '.archive.snapshot.context.json',
+  },
 });
 ```
 

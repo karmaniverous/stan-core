@@ -50,6 +50,26 @@ const { diffPath } = await createArchiveDiff({
 });
 ```
 
+Create a full archive from an explicit allowlist (context-mode building block):
+
+```ts
+import { createArchiveFromFiles } from '@karmaniverous/stan-core';
+
+const cwd = process.cwd();
+const stanPath = '.stan';
+
+const tarPath = await createArchiveFromFiles(
+  cwd,
+  stanPath,
+  [
+    // repo-relative POSIX paths
+    'README.md',
+    `${stanPath}/system/stan.system.md`,
+  ],
+  { includeOutputDir: false },
+);
+```
+
 Apply a unified diff (with safe fallback) and/or run File Ops:
 
 ```ts
@@ -139,11 +159,13 @@ await prepareImports({
 
 Top‑level (via `import '@karmaniverous/stan-core'`):
 
-- Archiving/diff/snapshot: `createArchive`, `createArchiveDiff`, `writeArchiveSnapshot`
+- Archiving/diff/snapshot (denylist selection): `createArchive`, `createArchiveDiff`, `writeArchiveSnapshot`
+- Archiving/diff/snapshot (explicit allowlist): `createArchiveFromFiles`, `createArchiveDiffFromFiles`, `writeArchiveSnapshotFromFiles`
 - Selection/FS: `listFiles`, `filterFiles`
 - Patch engine: `applyPatchPipeline`, `detectAndCleanPatch`, `executeFileOps`, `parseFileOpsBlock`
 - Imports: `prepareImports`
 - Config: `loadConfig`, `loadConfigSync`, `resolveStanPath`, `resolveStanPathSync`
+- Context mode orchestration (Base + closure allowlist): `createContextArchiveWithDependencyContext`, `createContextArchiveDiffWithDependencyContext`
 
 See CHANGELOG for behavior changes. Typedoc site is generated from source.
 
@@ -186,6 +208,33 @@ await buildDependencyMeta({
   cwd: process.cwd(),
   stanPath: '.stan',
   typescript: ts,
+});
+```
+
+## Context mode (allowlist-only FULL + DIFF; recommended engine-owned orchestration)
+
+In context mode, the correct archive selection universe is allowlist-only: Base (system + dependency meta/state + repo-root base files) + the dependency-state-selected closure. Hosts (e.g., `stan-cli`) should use the engine-owned orchestration helpers:
+
+```ts
+import {
+  createContextArchiveWithDependencyContext,
+  createContextArchiveDiffWithDependencyContext,
+} from '@karmaniverous/stan-core';
+
+const cwd = process.cwd();
+const stanPath = '.stan';
+
+const full = await createContextArchiveWithDependencyContext({
+  cwd,
+  stanPath,
+  dependency: { meta, map, state, clean: true },
+});
+
+const diff = await createContextArchiveDiffWithDependencyContext({
+  cwd,
+  stanPath,
+  dependency: { meta, map, state, clean: false },
+  diff: { baseName: 'archive', snapshotFileName: '.archive.snapshot.context.json' },
 });
 ```
 

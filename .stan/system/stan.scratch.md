@@ -1,15 +1,14 @@
 # STAN Scratch (short-term memory)
 
-Last updated: 2026-01-28Z
+Last updated: 2026-01-29Z
 
 ## Current focus
 
-- Implement “stop-and-stage” guardrails in dependency graph mode to prevent speculative patches for repo files not loaded via archives.
-- Prompt behavior: in dependency graph mode, `## Input Data Changes` must include:
-  - Patch targets outside `<stanPath>/system/**` with `present: yes|no`.
-  - Dependency selection shown as dependency.state.json seed entries (`i`/`x`) only (no closure expansion), or `dependency.state.json: no change`.
-- Hard gate: if any patch target is not present in the current archive, do a stage-only turn (dependency.state.json + scratch + todo + commit) and request a new `stan run --context` archive/diff.
+- Close the stan-cli interop gap for context mode Option B FULL+DIFF by making the allowlist FULL primitive (`createArchiveFromFiles`) a stable public API and documenting the correct engine-owned context orchestration path.
+- Core semantic expectation for context mode:
+  - FULL archive must be allowlist-only: Base (system + dependency meta/state + repo-root base files) + dependency-state-selected closure.
+  - DIFF must be computed against a context-specific snapshot baseline (e.g., `.archive.snapshot.context.json`) for that same allowlist universe.
 
 ## Next step
 
-- Regenerate `.stan/system/stan.system.md` from parts (`npm run gen:system`) after applying the prompt-part patches.
+- Coordinate with stan-cli to ensure it uses `createContextArchiveWithDependencyContext` / `createContextArchiveDiffWithDependencyContext` for context FULL+DIFF (not the denylist `createArchive` path).

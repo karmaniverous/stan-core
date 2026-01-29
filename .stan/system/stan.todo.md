@@ -35,6 +35,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Coordinate with stan-cli to consume `onSelectionReport` from stan-core during run/snap/context flows (presentation only; no engine output files).
   - Keep the report deterministic and small (counts/options/snapshot + classifier summary); rely on `onArchiveWarnings` for detailed file lists.
 
+- Context mode Option B (FULL + DIFF) correctness: allowlist FULL API + docs
+  - Export `createArchiveFromFiles` from the top-level API so stan-cli and other hosts can use it without deep imports.
+  - Document both the stable allowlist FULL primitive and the recommended engine-owned context orchestration path in README and the assistant guide.
+
 - Docs: enforce editing safety and discovery protocol
   - Added "Load-Before-Edit" rule (critical) to prevent editing unloaded files.
   - Added "Discovery Protocol" for broad prompts.
@@ -221,3 +225,8 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Tightened dependency graph mode and discovery protocol guidance: when `--context` is active and `dependency.meta.json` contains a useful candidate nodeId, use `dependency.state.json` + a new archive/diff instead of asking for pasted in-repo file contents.
   - Mirrors stan-cli interop note and keeps the “archive is source of truth” workflow intact.
 - Prompt: add dependency-mode patch-target availability checklist (seed-only selection display; no closure expansion).
+- Docs/API: export allowlist FULL archiving + document context orchestration
+  - Exported `createArchiveFromFiles` from the public `@karmaniverous/stan-core` barrel.
+  - Updated README and `guides/stan-assistant-guide.md` to document:
+    - `createArchiveFromFiles` as a stable public API, and
+    - `createContextArchiveWithDependencyContext` / `createContextArchiveDiffWithDependencyContext` as the recommended context-mode FULL+DIFF path.
