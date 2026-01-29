@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.10.1](https://github.com/karmaniverous/stan-core/compare/0.10.0...0.10.1)
+
+- feat: selection reports in context wrappers [`807888f`](https://github.com/karmaniverous/stan-core/commit/807888ff2dd5eaffa6ebf785d622eb91ecf76f70)
+
 #### [0.10.0](https://github.com/karmaniverous/stan-core/compare/0.9.4...0.10.0)
 
+> 29 January 2026
+
+- chore: release v0.10.0 [`065e84d`](https://github.com/karmaniverous/stan-core/commit/065e84d233f8ef58a9007a4690d80c58b3870127)
 - docs: export createArchiveFromFiles [`6c7faaf`](https://github.com/karmaniverous/stan-core/commit/6c7faaf3c9a8745d78132b845c8c61654feaf67e)
 
 #### [0.9.4](https://github.com/karmaniverous/stan-core/compare/0.9.3...0.9.4)
