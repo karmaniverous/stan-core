@@ -13,6 +13,7 @@
  */
 import type { CreateArchiveOptions } from '../archive';
 import { createArchive } from '../archive';
+import type { SelectionReport } from '../archive/report';
 import type { SnapshotUpdateMode } from '../diff';
 import { createArchiveDiff } from '../diff';
 import { isUnder, normalizePrefix } from '../path/prefix';
@@ -165,6 +166,7 @@ export const createArchiveDiffWithDependencyContext = async (args: {
     updateSnapshot?: SnapshotUpdateMode;
     includeOutputDirInDiff?: boolean;
     onArchiveWarnings?: (text: string) => void;
+    onSelectionReport?: (report: SelectionReport) => void;
   };
 }): Promise<CreateArchiveDiffWithDependencyContextResult> => {
   const { cwd, stanPath, dependency, diff } = args;
@@ -198,6 +200,7 @@ export const createArchiveDiffWithDependencyContext = async (args: {
     updateSnapshot: diff.updateSnapshot,
     includeOutputDirInDiff: diff.includeOutputDirInDiff,
     onArchiveWarnings: diff.onArchiveWarnings,
+    onSelectionReport: diff.onSelectionReport,
   });
 
   return { ...staged, diffPath: out.diffPath };

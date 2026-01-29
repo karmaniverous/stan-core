@@ -229,4 +229,10 @@ This plan tracks near‑term and follow‑through work for the stan‑core engin
   - Exported `createArchiveFromFiles` from the public `@karmaniverous/stan-core` barrel.
   - Updated README and `guides/stan-assistant-guide.md` to document:
     - `createArchiveFromFiles` as a stable public API, and
-    - `createContextArchiveWithDependencyContext` / `createContextArchiveDiffWithDependencyContext` as the recommended context-mode FULL+DIFF path.
+    - `createContextArchiveWithDependencyContext` / `createContextArchiveDiffWithDependencyContext` as the recommended context-mode FULL+DIFF path.
+
+- API: pass onSelectionReport through context orchestration wrappers
+  - Added `onSelectionReport` pass-through for:
+    - `createContextArchiveWithDependencyContext` / `createContextArchiveDiffWithDependencyContext` (allowlist context FULL+DIFF), and
+    - `createArchiveDiffWithDependencyContext` (denylist diff wrapper that stages dependency context).
+  - Added regression tests and documented callback availability in README and the assistant guide.

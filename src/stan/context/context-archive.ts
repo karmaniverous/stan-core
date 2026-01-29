@@ -8,6 +8,7 @@
 
 import type { CreateArchiveFromFilesOptions } from '@/stan/archive/allowlist';
 import { createArchiveFromFiles } from '@/stan/archive/allowlist';
+import type { SelectionReport } from '@/stan/archive/report';
 import type { SnapshotUpdateMode } from '@/stan/diff';
 import { createArchiveDiffFromFiles } from '@/stan/diff/allowlist';
 
@@ -19,7 +20,7 @@ import { stageDependencyContext } from './stage';
 
 export type CreateContextArchiveOptions = Pick<
   CreateArchiveFromFilesOptions,
-  'fileName' | 'onArchiveWarnings'
+  'fileName' | 'onArchiveWarnings' | 'onSelectionReport'
 > & {
   /** Context mode should remain allowlist-only; output dir inclusion is rarely desired. */
   includeOutputDir?: false;
@@ -69,6 +70,7 @@ export const createContextArchiveWithDependencyContext = async (args: {
       includeOutputDir: false,
       fileName: archive?.fileName,
       onArchiveWarnings: archive?.onArchiveWarnings,
+      onSelectionReport: archive?.onSelectionReport,
     },
   );
 
@@ -97,6 +99,7 @@ export const createContextArchiveDiffWithDependencyContext = async (args: {
     snapshotFileName?: string;
     includeOutputDirInDiff?: boolean;
     onArchiveWarnings?: (text: string) => void;
+    onSelectionReport?: (report: SelectionReport) => void;
   };
 }): Promise<CreateContextArchiveDiffResult> => {
   const { cwd, stanPath, dependency, selection, diff } = args;
@@ -126,6 +129,7 @@ export const createContextArchiveDiffWithDependencyContext = async (args: {
     snapshotFileName: diff.snapshotFileName,
     includeOutputDirInDiff: diff.includeOutputDirInDiff,
     onArchiveWarnings: diff.onArchiveWarnings,
+    onSelectionReport: diff.onSelectionReport,
   });
 
   return { diffPath: out.diffPath, plan, stage };

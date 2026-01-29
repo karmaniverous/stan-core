@@ -228,16 +228,24 @@ const full = await createContextArchiveWithDependencyContext({
   cwd,
   stanPath,
   dependency: { meta, map, state, clean: true },
+  archive: {
+    onArchiveWarnings: (text) => console.log(text),
+    onSelectionReport: (report) => console.log(report),
+  },
 });
 
 const diff = await createContextArchiveDiffWithDependencyContext({
   cwd,
   stanPath,
   dependency: { meta, map, state, clean: false },
-  diff: { baseName: 'archive', snapshotFileName: '.archive.snapshot.context.json' },
+  diff: {
+    baseName: 'archive',
+    snapshotFileName: '.archive.snapshot.context.json',
+    onArchiveWarnings: (text) => console.log(text),
+    onSelectionReport: (report) => console.log(report),
+  },
 });
-```
-
+```
 ## Environment variables
 
 See [Env Vars](./guides/env-vars.md) for a complete list of environment variable switches observed by the engine, tests, and release scripts.

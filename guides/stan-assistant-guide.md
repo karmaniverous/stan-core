@@ -374,6 +374,10 @@ const full = await createContextArchiveWithDependencyContext({
     clean: true,
   },
   selection: { includes: [], excludes: [] },
+  archive: {
+    onArchiveWarnings: (text) => console.log(text),
+    onSelectionReport: (report) => console.log(report),
+  },
 });
 
 const diff = await createContextArchiveDiffWithDependencyContext({
@@ -384,6 +388,8 @@ const diff = await createContextArchiveDiffWithDependencyContext({
   diff: {
     baseName: 'archive',
     snapshotFileName: '.archive.snapshot.context.json',
+    onArchiveWarnings: (text) => console.log(text),
+    onSelectionReport: (report) => console.log(report),
   },
 });
 ```
@@ -435,12 +441,14 @@ Artifacts (under `.stan/context/`):
 
 Assistant cross-turn contract (patch-carrying turns):
 
-- When dependency graph mode is active (dependency meta is present for the run/thread) and an assistant reply includes any code/doc Patch blocks, the assistant must do exactly one of:
+- When dependency graph mode is active (dependency meta is present for the run/thread) and an assistant reply includes any code patches MUST satisfy exactly one of:
   - Patch `<stanPath>/context/dependency.state.json` with a real change (next-run selection intent), or
-  - Make no dependency state change and include the exact line `dependency.state.json: no change` under the reply’s “Input Data Changes” section.
+  - Explicitly indicate that no dependency state change is needed for the next turn and omit any dependency state patch.
 - No-op state patches are forbidden:
   - Do not emit a Patch block for `dependency.state.json` unless the file contents change.
-- When the state changes (“WHAT”), also update `<stanPath>/system/stan.scratch.md` to record the rationale (“WHY”) so the next turn/thread can continue coherently.
+- “No change” signal (stable, machine-checkable):
+  - The assistant MUST include a bullet line exactly `dependency.state.json: no change` under `## Input Data Changes` when no state update is needed.
+- Enforcement: in patch-only workflows (where tools only see user-copied patch payloads), this rule is enforced by the system prompt and human review; tooling cannot reliably validate cross-reply conditions it cannot observe.
 
 TypeScript injection (host contract):
 
@@ -467,7 +475,7 @@ Contract:
 - Includes `<stanPath>/context/dependency.meta.json` (required).
 - Includes `<stanPath>/context/dependency.state.json` (v2) when present; `stan run --context --meta` writes `{ "v": 2, "i": [] }` before archiving for a clean slate.
 - Includes repo-root (top-level) base files selected by the current selection config.
-- Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission.
+- Excludes staged payloads under `<stanPath>/context/{npm,abs}/**` by omission
 
 Context-mode FULL + DIFF (non-meta)
 
