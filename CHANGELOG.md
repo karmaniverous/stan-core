@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [0.10.0](https://github.com/karmaniverous/stan-core/compare/0.9.4...0.10.0)
+
+- docs: export createArchiveFromFiles [`6c7faaf`](https://github.com/karmaniverous/stan-core/commit/6c7faaf3c9a8745d78132b845c8c61654feaf67e)
+
 #### [0.9.4](https://github.com/karmaniverous/stan-core/compare/0.9.3...0.9.4)
 
+> 29 January 2026
+
+- chore: release v0.9.4 [`6a34960`](https://github.com/karmaniverous/stan-core/commit/6a34960a8b5d3baa62defcd42516a2f7839e9e35)
 - docs: enforce dependency-mode target checklist [`e50fad5`](https://github.com/karmaniverous/stan-core/commit/e50fad5f593dfd2e71d0c1f94bc4e38b88433f82)
 
 #### [0.9.3](https://github.com/karmaniverous/stan-core/compare/0.9.2...0.9.3)
